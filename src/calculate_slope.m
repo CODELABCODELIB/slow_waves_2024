@@ -21,8 +21,13 @@ function [slope] = calculate_slope(twa,options)
 arguments
     twa
     options.sel_field = "mxdnslp";
+    options.pool_method = 'median'
 end
 twa_cell = struct2cell(twa');
 fields = fieldnames(twa);
-slope = cellfun(@(chan) median(cell2mat(chan)),twa_cell(strcmp(fields',options.sel_field),:));
+if strcmp(options.pool_method, 'median')
+    slope = cellfun(@(chan) median(cell2mat(chan)),twa_cell(strcmp(fields',options.sel_field),:));
+elseif strcmp(options.pool_method, 'none')
+    slope = cellfun(@(chan) cell2mat(chan),twa_cell(strcmp(fields',options.sel_field),:),'UniformOutput',false);
+end
 end

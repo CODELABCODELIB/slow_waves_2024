@@ -24,8 +24,13 @@ arguments
     twa
     options.sel_field_pos = "maxpospkamp";
     options.sel_field_neg = "maxnegpkamp";
+    options.pool_method = 'median';
 end
 twa_cell = struct2cell(twa');
 fields = fieldnames(twa);
-amp = cellfun(@(maxamp_ch,minamp_ch) median(cellfun(@(maxamp_wv,minamp_wv) maxamp_wv-minamp_wv,maxamp_ch,minamp_ch)),twa_cell(find(strcmp(fields',options.sel_field_pos)),:),twa_cell(find(strcmp(fields',options.sel_field_neg)),:));
+if strcmp(options.pool_method, 'median')
+    amp = cellfun(@(maxamp_ch,minamp_ch) median(cellfun(@(maxamp_wv,minamp_wv) maxamp_wv-minamp_wv,maxamp_ch,minamp_ch)),twa_cell(find(strcmp(fields',options.sel_field_pos)),:),twa_cell(find(strcmp(fields',options.sel_field_neg)),:));
+elseif strcmp(options.pool_method, 'none')
+    amp = cellfun(@(maxamp_ch,minamp_ch) cellfun(@(maxamp_wv,minamp_wv) maxamp_wv-minamp_wv,maxamp_ch,minamp_ch),twa_cell(find(strcmp(fields',options.sel_field_pos)),:),twa_cell(find(strcmp(fields',options.sel_field_neg)),:),'UniformOutput',false);
+end
 end
