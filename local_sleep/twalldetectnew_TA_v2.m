@@ -150,15 +150,15 @@ for i=1:size(LoadedEEG.data,1) % (i) is the number of the channel
         if waveamp>thramp %GBtest (p2p amplitude)
     
 %% Wave parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    channels(ch).negzx{wvi}=round((single(wavest)./128).*orig_fs); % position of wave start (in s)
-    channels(ch).poszx{wvi}=round((single(poszx)./128).*orig_fs); % position of positive zero crossing (in s)
-    channels(ch).wvend{wvi}=round((single(wavend)./128).*orig_fs); % position of wave end (in s)
-    channels(ch).negpks{wvi}={round((single(bx)./128).*orig_fs)}; % position of neg peaks (in s)
-    channels(ch).maxnegpk{wvi}=round((single(maxbx)./128).*orig_fs); % position of max neg peak (in s)
+    channels(ch).negzx{wvi}=round((single(wavest)./128).*orig_fs); % position of wave start (in ms)
+    channels(ch).poszx{wvi}=round((single(poszx)./128).*orig_fs); % position of positive zero crossing (in ms)
+    channels(ch).wvend{wvi}=round((single(wavend)./128).*orig_fs); % position of wave end (in ms)
+    channels(ch).negpks{wvi}={round((single(bx)./128).*orig_fs)}; % position of neg peaks (in ms)
+    channels(ch).maxnegpk{wvi}=round((single(maxbx)./128).*orig_fs); % position of max neg peak (in ms)
     channels(ch).negpkamp{wvi}=single(b); % neg peak amps
     channels(ch).maxnegpkamp{wvi}=single(maxb); % max neg peak amp
-    channels(ch).pospks{wvi}={round((single(cx)./128).*orig_fs)}; % position of pos peaks (in s)
-    channels(ch).maxpospk{wvi}=round((single(maxcx)./128).*orig_fs); % position of max pos peak (in s)
+    channels(ch).pospks{wvi}={round((single(cx)./128).*orig_fs)}; % position of pos peaks (in ms)
+    channels(ch).maxpospk{wvi}=round((single(maxcx)./128).*orig_fs); % position of max pos peak (in ms)
     channels(ch).pospkamp{wvi}=single(c); % pos peak amps
     channels(ch).maxpospkamp{wvi}=single(maxc); % max pos peak amp
     channels(ch).mxdnslp{wvi}=single(mxdn);

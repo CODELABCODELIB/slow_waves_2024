@@ -3,6 +3,7 @@ function [] = visualize_wave_pars(wave_pars)
 field_names = fieldnames(wave_pars);
 
 for i = 1:length(field_names)
+    clf;
     field_name = field_names{i};
     if strcmp(field_name, 'wvspermin')
         plot_title = 'Slow-Wave Density';
@@ -22,9 +23,9 @@ for i = 1:length(field_names)
         par_name = 'uslope';
     end
   
-    topoplot(wvspermin, EEG.chanlocs, 'style', 'both', 'shading', 'interp', 'plotrad', 0.85, 'headrad', 0.84);
+    topoplot(wave_pars.(field_name), EEG.chanlocs, 'style', 'both', 'shading', 'interp', 'plotrad', 0.85, 'headrad', 0.84);
     colormap(parula);
-    clim([floor(min(wave_par)) ceil(max(wave_par))]);
+    clim([floor(min(wave_pars.(field_name))) ceil(max(wave_pars.(field_name)))]);
     title(plot_title,'FontSize', 18);
     cb = colorbar;
     cb.FontSize = 12;
