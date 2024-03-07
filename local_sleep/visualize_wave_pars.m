@@ -1,4 +1,4 @@
-function [] = visualize_wave_pars(wave_pars)
+function [] = visualize_wave_pars(wave_pars, chan_locs)
 
 field_names = fieldnames(wave_pars);
 
@@ -23,7 +23,7 @@ for i = 1:length(field_names)
         par_name = 'uslope';
     end
   
-    topoplot(wave_pars.(field_name), EEG.chanlocs, 'style', 'both', 'shading', 'interp', 'plotrad', 0.85, 'headrad', 0.84);
+    topoplot(wave_pars.(field_name), chan_locs, 'style', 'both', 'shading', 'interp', 'plotrad', 0.85, 'headrad', 0.84);
     colormap(parula);
     clim([floor(min(wave_pars.(field_name))) ceil(max(wave_pars.(field_name)))]);
     title(plot_title,'FontSize', 18);

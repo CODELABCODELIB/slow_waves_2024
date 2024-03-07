@@ -14,4 +14,4 @@
  
 module load MATLAB/2023b
 cd /home/s3821013
-matlab -nosplash -nodesktop -r "addpath(genpath('.')); eeglab nogui; EEG = pop_loadset('filename', '12_57_07_05_18.set', 'filepath', '/data1/s3821013/local_sleep/AT08'); processed_EEG = test_processing4(EEG, 'data_part', 'phone'); results = twalldetectnew_TA_v2(processed_EEG.data, 1000, 0); top10_filtered_results = filter_results(results); save('top10_filtered_results.mat', 'top10_filtered_results'); wave_pars = compute_wave_pars(top10_filtered_results, 1000); visualize_wave_pars(wave_pars); exit"
+matlab -nosplash -nodesktop -r "addpath(genpath('.')); eeglab nogui; EEG = pop_loadset('filename', '12_57_07_05_18.set', 'filepath', '/data1/s3821013/local_sleep/AT08'); processed_EEG = test_processing4(EEG, 'data_part', 'phone'); results = twalldetectnew_TA_v2(processed_EEG.data, EEG.srate, 0); top10_filtered_results = filter_results(results); save('top10_filtered_results.mat', 'top10_filtered_results'); wave_pars = compute_wave_pars(top10_filtered_results, EEG.srate); visualize_wave_pars(wave_pars, EEG.chanlocs); exit"
