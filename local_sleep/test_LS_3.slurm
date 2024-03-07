@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script performs all processing steps + visualization of the extracted wave parameters on the complete EEG data.
+# This script performs all processing steps + visualization of the extracted wave parameters on the complete EEG data of participant AT08.
 
 #SBATCH --job-name=test_LS
 #SBATCH --output=test_LS.out
