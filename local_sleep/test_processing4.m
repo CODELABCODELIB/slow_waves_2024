@@ -16,7 +16,7 @@ if ~isempty(varargin)
     end
 end
 
-% Process EEG data based on 'data_part'
+% Select EEG data based on 'data_part'
 if exist('data_part', 'var')
     switch data_part
         case 'movie'
@@ -26,14 +26,20 @@ if exist('data_part', 'var')
     end
 end
 
-% Apply high-pass filter >0.1 Hz using a two-pass fifth-order Butterworth filter
-[bf, af] = butter(5, 0.1/(EEG.srate/2), 'high');
-EEG.data = filtfilt(bf, af, double(EEG.data));
+% Design a fifth-order Butterworth high-pass filter (> 0.1 Hz)
+d = designfilt('highpassiir', 'FilterOrder', 5, 'HalfPowerFrequency', 0.1, ...
+               'SampleRate', EEG.srate, 'DesignMethod', 'butter');
 
-% Apply notch filter (stopband: [45, 55] Hz, fourth-order Butterworth filter) to remove line noise
-notchFreq = [45 55]; % 45 to 55 Hz for 50 Hz line noise
-[bf, af] = butter(4, notchFreq/(EEG.srate/2), 'stop');
-EEG.data = filtfilt(bf, af, double(EEG.data));
+% Apply the filter using 'filtfilt' to avoid phase distortion
+EEG.data = filtfilt(d, double(EEG.data));
+
+% Design a fourth-order Butterworth notch filter (stopband: [45, 55] Hz) to remove line noise
+d = designfilt('bandstopiir', 'FilterOrder', 4, ...
+               'HalfPowerFrequency1', 45, 'HalfPowerFrequency2', 55, ...
+               'SampleRate', EEG.srate, 'DesignMethod', 'butter');
+
+% Apply the filter using 'filtfilt' to avoid phase distortion
+EEG.data = filtfilt(d, double(EEG.data));
 
 % Re-reference the EEG signal
 EEG = pop_reref(EEG, ref_electrodes, 'keepref', 'on');
