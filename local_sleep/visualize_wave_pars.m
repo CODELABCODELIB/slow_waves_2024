@@ -1,5 +1,12 @@
 function [] = visualize_wave_pars(wave_pars, chan_locs)
 
+% Ensure the 'Topoplots' directory exists
+if ~exist('Topoplots', 'dir')
+    mkdir('Topoplots');
+end
+
+dir = 'Topoplots';
+
 field_names = fieldnames(wave_pars);
 
 for i = 1:length(field_names)
@@ -39,7 +46,7 @@ for i = 1:length(field_names)
     set(lines(5), 'LineWidth', 3);
     set(lines(2:4), 'LineWidth', 1.5);
     set(lines(1), 'MarkerSize', 5);
-    filename = sprintf('topoplot_%s.png', par_name);
+    filename = sprintf('%s/topoplot_%s.png', dir, par_name);
     saveas(gcf, filename);
 end
 

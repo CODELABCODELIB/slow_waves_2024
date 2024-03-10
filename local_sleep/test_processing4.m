@@ -1,6 +1,9 @@
 function [processed_EEG] = test_processing4(EEG, varargin)
 
-% Arguments: 'EEG', 'data_part' (optional; 'movie'/'phone'), 'ref_electrodes' (optional)
+% Arguments:
+% 'EEG'
+% 'data_part' (optional; 'movie'/'phone'; defaults to using complete EEG data)
+% 'ref_electrodes' (optional; numeric vector; defaults to mastoid electrodes [52 58])
 
 % Initialize default for 'ref_electrodes'
 ref_electrodes = [52 58];

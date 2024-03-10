@@ -1,0 +1,50 @@
+#########################################################################
+Short Description of the Functions/Scripts on the Directory 'local_sleep'
+#########################################################################
+
+############################################
+Author: David Hof (last updated: 10-03-2024)
+############################################
+
+Functions:
+
+– test_processing4: Pre-processing of EEG data (as in Andrillon et al., 2021; except Chebyshev
+		   filtering & downsampling --> included in next function) and optional selection
+		   of movie/phone part of the recording.
+
+– twalldetectnew_TA_v2: Delta/theta wave detection (code by Andrillon et al., 2021) + Chebyshev
+		       filtering & downsampling in a first step.
+– twalldetectnew_TA_v3: Same as above but adapted by David Hof to perform the wave detection
+		       iteratively on 8 equal-sized bins of the input data (--> temporal analysis).
+
+– meanfilt: Smoothing of the EEG signal. This function is called within 'twalldetectnew_TA_v2/v3'.
+
+– filter_results: Filtering of the detected slow waves according to criteria used in Andrillon et
+		 al. (2021).
+– filter_results2: Same as above but adapted to handle the 8 equal-sized bins of the data created
+		  in 'twalldetectnew_TA_v3'.
+– filter_results_thresh: Same as 'filter_results' but performs the filtering iteratively for 4
+                         different P2P-amplitude relative thresholds (--> heuristic analysis).
+
+– compute_wave_pars: Computing of the wave parameters.
+– compute_wave_pars2: Same as above but adapted to handle the 8 equal-sized bins of the data
+		     created in 'twalldetectnew_TA_v3'.
+– compute_wave_pars_thresh: Same as 'compute_wave_pars' but adapted to handle the 4 different
+			   versions of the filtered waves created in 'filter_results_thresh'.
+
+– visualize_wave_pars: Creating topographical plots for the wave parameters.
+– visualize_wave_pars2: Same as above but for all 8 equal-sized bins of the data created in
+		       'twalldetectnew_TA_v3'.
+– visualize_wave_pars_thresh: Same as 'visualize_wave_pars' but for all 4 different versions of the
+			     filtered waves created in 'filter_results_thresh'.
+
+Other Scripts:
+
+– par_corr: Computing correlations between wave parameters across EEG electrodes.
+
+– test_LS_3(.slurm): Batch script for full data pipeline on complete EEG data.
+– test_LS_4(.slurm): Batch script for full data pipeline on movie EEG data.
+– test_LS_5(.slurm): Batch script for full data pipeline on phone EEG data.
+– test_LS_6(.slurm): Batch script for full data pipeline on temporally segmented EEG data.
+– test_LS_7(.slurm): Batch script for full data pipeline on complete EEG data using different
+		    P2P-amplitude relative thresholds.
