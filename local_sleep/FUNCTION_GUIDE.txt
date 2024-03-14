@@ -42,6 +42,11 @@ Other Scripts:
 
 – par_corr: Computing correlations between wave parameters across EEG electrodes.
 
+– SWfreq_timeseries_plot: Creating a time-series plot of slow-wave frequency for a specific channel.
+– SWfreq_timeseries_plot2: Same as above but for the comparison of anterior/posterior channels.
+– SWfreq_timeseries_plot3: Same as above but for the comparison of central/peripheral channels.
+– SWfreq_timeseries_plot4: Same as above but for the comparison of right/left channels.
+
 – test_LS_3(.slurm): Batch script for full data pipeline on complete EEG data.
 – test_LS_4(.slurm): Batch script for full data pipeline on movie EEG data.
 – test_LS_5(.slurm): Batch script for full data pipeline on phone EEG data.
