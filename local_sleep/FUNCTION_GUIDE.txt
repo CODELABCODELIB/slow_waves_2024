@@ -6,6 +6,7 @@ Short Description of the Functions/Scripts on the Directory 'local_sleep'
 Author: David Hof (last updated: 10-03-2024)
 ############################################
 
+
 Functions:
 
 – test_processing4: Pre-processing of EEG data (as in Andrillon et al., 2021; except Chebyshev
@@ -17,7 +18,7 @@ Functions:
 – twalldetectnew_TA_v3: Same as above but adapted by David Hof to perform the wave detection
 		       iteratively on 8 equal-sized bins of the input data (--> temporal analysis).
 
-– meanfilt: Smoothing of the EEG signal. This function is called within 'twalldetectnew_TA_v2/v3'.
+– meanfilt: Smoothing of the EEG signal. Helper function for 'twalldetectnew_TA_v2/v3'.
 
 – filter_results: Filtering of the detected slow waves according to criteria used in Andrillon et
 		 al. (2021).
@@ -38,6 +39,13 @@ Functions:
 – visualize_wave_pars_thresh: Same as 'visualize_wave_pars' but for all 4 different versions of the
 			     filtered waves created in 'filter_results_thresh'.
 
+– merge_intervals: Merging of intervals around slow waves. Helper function for 'blink_rate'.
+
+– get_complement_intervals: Identifying of complementary intervals. Helper function for 'blink_rate'.
+
+– count_blinks_in_intervals: Counting of blinks in intervals. Helper function for 'blink_rate'.
+
+
 Other Scripts:
 
 – par_corr: Computing correlations between wave parameters across EEG electrodes.
@@ -46,6 +54,10 @@ Other Scripts:
 – SWfreq_timeseries_plot2: Same as above but for the comparison of anterior/posterior channels.
 – SWfreq_timeseries_plot3: Same as above but for the comparison of central/peripheral channels.
 – SWfreq_timeseries_plot4: Same as above but for the comparison of right/left channels.
+
+– SWandBLfreq_timeseries_plot: Creating a time-series plot for slow-wave vs. blink frequency.
+
+– blink_rate: Determining the blink rate around slow waves vs. not around slow waves.
 
 – test_LS_3(.slurm): Batch script for full data pipeline on complete EEG data.
 – test_LS_4(.slurm): Batch script for full data pipeline on movie EEG data.
