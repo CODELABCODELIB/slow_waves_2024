@@ -3,7 +3,7 @@ Short Description of the Functions/Scripts on the Directory 'local_sleep'
 #########################################################################
 
 ############################################
-Author: David Hof (last updated: 10-03-2024)
+Author: David Hof (last updated: 20-03-2024)
 ############################################
 
 
@@ -56,6 +56,15 @@ Other Scripts:
 – SWfreq_timeseries_plot4: Same as above but for the comparison of right/left channels.
 
 – SWandBLfreq_timeseries_plot: Creating a time-series plot for slow-wave vs. blink frequency.
+
+– SWp2p_timeseries_plot: Creating a time-series plot for slow-wave peak-to-peak amplitude (optional
+		        comparison of anterior/posterior, central/peripheral, right/left channels).
+
+– SWp2p_and_BLfreq_timeseries_plot: Creating a time-series plot for slow-wave peak-to-peak amplitude
+				  vs. blink frequency.
+
+– SWfreq_and_SWp2p_timeseries_plot: Creating a time-series plot for slow-wave frequency vs. slow-wave
+				  peak-to-peak amplitude.
 
 – blink_rate: Determining the blink rate around slow waves vs. not around slow waves.
 

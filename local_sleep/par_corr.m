@@ -42,3 +42,13 @@ title('Correlation Matrix');
 
 % Adjust the colormap
 colormap jet;
+
+%%
+
+% Scatter plot for the correlation between 'wvspermin' and 'p2pamp'
+figure;
+scatter(wvspermin, p2pamp, 'filled');
+xlabel('Slow-Wave Density (wvspermin)');
+ylabel('Peak-To-Peak Amplitude (p2pamp)');
+title('Scatter Plot of Slow-Wave Density vs. Peak-To-Peak Amplitude');
+grid on;
