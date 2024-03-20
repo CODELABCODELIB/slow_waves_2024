@@ -59,6 +59,8 @@ Other Scripts:
 
 – blink_rate: Determining the blink rate around slow waves vs. not around slow waves.
 
+– blink_explore: Creating time-series event plots for slow waves and blinks in random X-min interval.
+
 – test_LS_3(.slurm): Batch script for full data pipeline on complete EEG data.
 – test_LS_4(.slurm): Batch script for full data pipeline on movie EEG data.
 – test_LS_5(.slurm): Batch script for full data pipeline on phone EEG data.
