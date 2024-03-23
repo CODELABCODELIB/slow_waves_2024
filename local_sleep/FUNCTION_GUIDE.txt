@@ -70,6 +70,8 @@ Other Scripts:
 – SWfreq_and_SWp2p_HighLowCmp_ts_plot: Same as above but for comparison of channels with high slow-
 				     wave density and high slow-wave peak-to-peak amplitude.
 
+– SWpower_timeseries_plot: Creating a time-series plot for slow-wave (delta) power.
+
 – blink_rate: Determining the blink rate around slow waves vs. not around slow waves.
 
 – blink_explore: Creating time-series event plots for slow waves and blinks in random X-min interval.
