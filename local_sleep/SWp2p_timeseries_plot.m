@@ -69,6 +69,11 @@ channels_group1 = 1:64; % All channels
 % channels_group2 = [63, 49, 60, 48, 33, 32, 18, 47, 59, 31, 17, 6, 46, 16, ... % Left channels
 %                    30, 5, 15, 58, 45, 29, 14, 28, 44, 27, 57, 43, 61, 56];
 
+% channels_group1 = [4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 24, 25, 26, 27, 28, 29, ... % Low-amplitude channels
+%                    40, 41, 42, 43, 44, 45, 51, 52, 53, 54, 55, 56, 57, 58, 61, 62];
+% channels_group2 = [1, 2, 3, 7, 8, 9, 17, 18, 19, 20, 21, 22, 23, 30, 31, 32, ... % High-amplitude channels
+%                    33, 34, 35, 36, 37, 38, 39, 46, 47, 48, 49, 50, 59, 60, 63, 64];
+
 % Initialize arrays to hold the peak-to-peak amplitude bin averages for the channel groups
 avg_p2p_amp_grp1 = [];
 avg_p2p_amp_grp2 = [];
@@ -103,9 +108,9 @@ end
 figure;
 bin_centers = bin_edges(1:end-1) + diff(bin_edges) / 2;
 plot(bin_centers / 60, avg_p2p_amp_grp1, 'o-', 'LineWidth', 2); % Use for averaging over all channels / a single channel
-% plot(bin_centers / 60, avg_p2p_amp_grp1, 'o-r', 'LineWidth', 2);
+% plot(bin_centers / 60, avg_p2p_amp_grp1, 'o-r', 'LineWidth', 2); % Use for contrasting two groups of channels / two single channels
 hold on;
-% plot(bin_centers / 60, avg_p2p_amp_grp2, 'o-b', 'LineWidth', 2);
+% plot(bin_centers / 60, avg_p2p_amp_grp2, 'o-b', 'LineWidth', 2); % Use for contrasting two groups of channels / two single channels
 xlabel('Time (minutes)');
 ylabel('Peak-To-Peak Amplitude (μV)');
 title('Unsmoothed Slow-Wave Peak-To-Peak Amplitude per 5 Minutes - All Channels');
@@ -113,9 +118,11 @@ title('Unsmoothed Slow-Wave Peak-To-Peak Amplitude per 5 Minutes - All Channels'
 % title('Unsmoothed Slow-Wave Peak-To-Peak Amplitude per 5 Minutes - Anterior vs. Posterior Channels');
 % title('Unsmoothed Slow-Wave Peak-To-Peak Amplitude per 5 Minutes - Central vs. Peripheral Channels');
 % title('Unsmoothed Slow-Wave Peak-To-Peak Amplitude per 5 Minutes - Right vs. Left Channels');
+% title('Unsmoothed Slow-Wave Peak-To-Peak Amplitude per 5 Minutes: Low- vs. High-Amplitude Channels');
 % legend('Anterior', 'Posterior', 'Location', 'northeast');
 % legend('Central', 'Peripheral', 'Location', 'northeast');
 % legend('Right', 'Left', 'Location', 'northeast');
+% legend('Low Amplitude', 'High Amplitude', 'Location', 'northeast');
 grid on;
 hold off;
 
@@ -132,9 +139,9 @@ avg_p2p_amp_grp2_sm = movmean(avg_p2p_amp_grp2, window_size);
 figure;
 bin_centers = bin_edges(1:end-1) + diff(bin_edges) / 2;
 plot(bin_centers / 60, avg_p2p_amp_grp1_sm, 'o-', 'LineWidth', 2); % Use for averaging over all channels / a single channel
-% plot(bin_centers / 60, avg_p2p_amp_grp1_sm, 'o-r', 'LineWidth', 2);
+% plot(bin_centers / 60, avg_p2p_amp_grp1_sm, 'o-r', 'LineWidth', 2); % Use for contrasting two groups of channels / two single channels
 hold on;
-% plot(bin_centers / 60, avg_p2p_amp_grp2_sm, 'o-b', 'LineWidth', 2);
+% plot(bin_centers / 60, avg_p2p_amp_grp2_sm, 'o-b', 'LineWidth', 2); % Use for contrasting two groups of channels / two single channels
 xlabel('Time (minutes)');
 ylabel('Peak-To-Peak Amplitude (Smoothed; μV)');
 title('Smoothed Slow-Wave Peak-To-Peak Amplitude per 5 Minutes - All Channels');
@@ -142,8 +149,10 @@ title('Smoothed Slow-Wave Peak-To-Peak Amplitude per 5 Minutes - All Channels');
 % title('Smoothed Slow-Wave Peak-To-Peak Amplitude per 5 Minutes - Anterior vs. Posterior Channels');
 % title('Smoothed Slow-Wave Peak-To-Peak Amplitude per 5 Minutes - Central vs. Peripheral Channels');
 % title('Smoothed Slow-Wave Peak-To-Peak Amplitude per 5 Minutes - Right vs. Left Channels');
+% title('Smoothed Slow-Wave Peak-To-Peak Amplitude per 5 Minutes: Low- vs. High-Amplitude Channels');
 % legend('Anterior', 'Posterior', 'Location', 'northeast');
 % legend('Central', 'Peripheral', 'Location', 'northeast');
 % legend('Right', 'Left', 'Location', 'northeast');
+% legend('Low Amplitude', 'High Amplitude', 'Location', 'northeast');
 grid on;
 hold off;
