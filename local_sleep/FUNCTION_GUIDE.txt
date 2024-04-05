@@ -3,41 +3,41 @@ Short Description of the Functions/Scripts on the Directory 'local_sleep'
 #########################################################################
 
 ############################################
-Author: David Hof (last updated: 23-03-2024)
+Author: David Hof (last updated: 05-04-2024)
 ############################################
 
 
 Functions:
 
 – test_processing4: Pre-processing of EEG data (as in Andrillon et al., 2021; except Chebyshev
-		   filtering & downsampling --> included in next function) and optional selection
-		   of movie/phone part of the recording.
+                    filtering & downsampling --> included in next function) and optional selection
+                    of movie/phone part of the recording.
 
 – twalldetectnew_TA_v2: Delta/theta wave detection (code by Andrillon et al., 2021) + Chebyshev
-		       filtering & downsampling in a first step.
+                        filtering & downsampling in a first step.
 – twalldetectnew_TA_v3: Same as above but adapted by David Hof to perform the wave detection
-		       iteratively on 8 equal-sized bins of the input data (--> temporal analysis).
+                        iteratively on 8 equal-sized bins of the input data (--> temporal analysis).
 
 – meanfilt: Smoothing of the EEG signal. Helper function for 'twalldetectnew_TA_v2/v3'.
 
 – filter_results: Filtering of the detected slow waves according to criteria used in Andrillon et
-		 al. (2021).
+                  al. (2021).
 – filter_results2: Same as above but adapted to handle the 8 equal-sized bins of the data created
-		  in 'twalldetectnew_TA_v3'.
+                   in 'twalldetectnew_TA_v3'.
 – filter_results_thresh: Same as 'filter_results' but performs the filtering iteratively for 4
                          different P2P-amplitude relative thresholds (--> heuristic analysis).
 
 – compute_wave_pars: Computing of the wave parameters.
 – compute_wave_pars2: Same as above but adapted to handle the 8 equal-sized bins of the data
-		     created in 'twalldetectnew_TA_v3'.
+                      created in 'twalldetectnew_TA_v3'.
 – compute_wave_pars_thresh: Same as 'compute_wave_pars' but adapted to handle the 4 different
-			   versions of the filtered waves created in 'filter_results_thresh'.
+                            versions of the filtered waves created in 'filter_results_thresh'.
 
 – visualize_wave_pars: Creating topographical plots for the wave parameters.
 – visualize_wave_pars2: Same as above but for all 8 equal-sized bins of the data created in
-		       'twalldetectnew_TA_v3'.
+                        'twalldetectnew_TA_v3'.
 – visualize_wave_pars_thresh: Same as 'visualize_wave_pars' but for all 4 different versions of the
-			     filtered waves created in 'filter_results_thresh'.
+                              filtered waves created in 'filter_results_thresh'.
 
 – merge_intervals: Merging of intervals around slow waves. Helper function for 'blink_rate'.
 
@@ -59,16 +59,16 @@ Other Scripts:
 – SWandBLfreq_timeseries_plot: Creating a time-series plot for slow-wave vs. blink frequency.
 
 – SWp2p_timeseries_plot: Creating a time-series plot for slow-wave peak-to-peak amplitude (optional
-		        comparison of anterior/posterior, central/peripheral, right/left, low-/high-
-		        amplitude channels).
+                         comparison of anterior/posterior, central/peripheral, right/left, low-/high-
+                         amplitude channels).
 
 – SWp2p_and_BLfreq_timeseries_plot: Creating a time-series plot for slow-wave peak-to-peak amplitude
-				  vs. blink frequency.
+                                    vs. blink frequency.
 
 – SWfreq_and_SWp2p_timeseries_plot: Creating a time-series plot for slow-wave frequency vs. slow-wave
-				  peak-to-peak amplitude.
+                                    peak-to-peak amplitude.
 – SWfreq_and_SWp2p_HighLowCmp_ts_plot: Same as above but for comparison of channels with high slow-
-				     wave density and high slow-wave peak-to-peak amplitude.
+                                       wave density and high slow-wave peak-to-peak amplitude.
 
 – SWpower_timeseries_plot: Creating a time-series plot for slow-wave (delta) power.
 
@@ -76,11 +76,12 @@ Other Scripts:
 
 – blink_explore: Creating time-series event plots for slow waves and blinks in random X-min interval.
 
-– JID_SW: Creating a JID plot for taps within slow waves.
+– JID_SW: Creating JID plots for taps within / outside of slow waves and for slow waves themselves
+          (in the movie / phone part of the recording).
 
 – test_LS_3(.slurm): Batch script for full data pipeline on complete EEG data.
 – test_LS_4(.slurm): Batch script for full data pipeline on movie EEG data.
 – test_LS_5(.slurm): Batch script for full data pipeline on phone EEG data.
 – test_LS_6(.slurm): Batch script for full data pipeline on temporally segmented EEG data.
 – test_LS_7(.slurm): Batch script for full data pipeline on complete EEG data using different
-		    P2P-amplitude relative thresholds.
+                     P2P-amplitude relative thresholds.
