@@ -3,20 +3,26 @@ Short Description of the Functions/Scripts on the Directory 'local_sleep'
 #########################################################################
 
 ############################################
-Author: David Hof (last updated: 05-04-2024)
+Author: David Hof (last updated: 26-05-2024)
 ############################################
 
 
 Functions:
 
 – test_processing4: Pre-processing of EEG data (as in Andrillon et al., 2021; except Chebyshev
-                    filtering & downsampling --> included in next function) and optional selection
-                    of movie/phone part of the recording.
+                    filtering & downsampling --> included in 'twalldetectnew_TA_v2') and optional
+                    selection of movie/phone part of the recording.
+– preprocessing_complete: Newly developed pre-processing pipeline (including optional selection of
+                          movie/phone part of the recording).
 
 – twalldetectnew_TA_v2: Delta/theta wave detection (code by Andrillon et al., 2021) + Chebyshev
                         filtering & downsampling in a first step.
 – twalldetectnew_TA_v3: Same as above but adapted by David Hof to perform the wave detection
                         iteratively on 8 equal-sized bins of the input data (--> temporal analysis).
+– twalldetectnew_TA_v4: Same as 'twalldetectnew_TA_v2', but the pre-processing steps previously
+                        included in this function have been removed.
+– twalldetectnew_TA_v5: Same as 'twalldetectnew_TA_v3', but the pre-processing steps previously
+                        included in this function have been removed.
 
 – meanfilt: Smoothing of the EEG signal. Helper function for 'twalldetectnew_TA_v2/v3'.
 
@@ -85,3 +91,11 @@ Other Scripts:
 – test_LS_6(.slurm): Batch script for full data pipeline on temporally segmented EEG data.
 – test_LS_7(.slurm): Batch script for full data pipeline on complete EEG data using different
                      P2P-amplitude relative thresholds.
+– test_LS_8(.slurm): Batch script for full data pipeline on complete EEG data (using newly developed
+                     pre-processing pipeline, i.e., 'preprocessing_complete').
+– test_LS_9(.slurm): Batch script for full data pipeline on movie EEG data (using newly developed
+                     pre-processing pipeline).
+– test_LS_10(.slurm): Batch script for full data pipeline on phone EEG data (using newly developed
+                      pre-processing pipeline).
+– test_LS_11(.slurm): Batch script for full data pipeline on temporally segmented EEG data (using
+                      newly developed pre-processing pipeline).
