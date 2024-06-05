@@ -124,7 +124,7 @@ end
 f = @calculate_p2p_amplitude;
 [jid_amp,amp_per_triad,not_occupied_bins] = jid_per_param(refilter.channels,selected_waves,dt_dt_r, f, 'sel_field',"maxpospkamp");
 % NNMFamp
-[reshaped_jid_amp,kept_bins] = prepare_sw_data_for_nnmf(jid_amp,'zscore', 1, 'threshold',0.75, 'log_transform',0);
+[reshaped_jid_amp,kept_bins] = prepare_sw_data_for_nnmf(jid_amp,'zscore', 0, 'threshold',1, 'log_transform',0);
 if ~isempty(reshaped_jid_amp)
-    [reconstruct,stable_basis] = perform_sw_param_nnmf(reshaped_jid_amp,kept_bins, 'repetitions_cv',2);
+    [reconstruct,stable_basis] = perform_sw_param_nnmf(reshaped_jid_amp,kept_bins, 'repetitions_cv',50);
 end

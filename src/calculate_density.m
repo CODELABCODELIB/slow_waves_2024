@@ -22,5 +22,5 @@ arguments
 end
 twa_cell = struct2cell(twa');
 fields = fieldnames(twa);
-density = cellfun(@(chan) length(chan),twa_cell(strcmp(fields',options.sel_field),:));
+density = cellfun(@(data,datalength) length(data)/(datalength/128/60),twa_cell(strcmp(fields',options.sel_field),:),twa_cell(strcmp(fields','datalength'),:));
 end

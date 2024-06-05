@@ -22,15 +22,22 @@ function [amp] = calculate_p2p_amplitude(twa,options)
 %
 arguments
     twa
-    options.sel_field_pos = "maxpospkamp";
-    options.sel_field_neg = "maxnegpkamp";
+    options.sel_field = "maxpospkamp";
     options.pool_method = 'median';
 end
+if contains('maxpospkamp','pos')
+    sel_field_pos = options.sel_field;
+    sel_field_neg = replace(options.sel_field, 'pos', 'neg');
+elseif contains('maxpospkamp','neg')
+    sel_field_neg = options.sel_field;
+    sel_field_pos = replace(options.sel_field, 'neg', 'pos');
+end
+
 twa_cell = struct2cell(twa');
 fields = fieldnames(twa);
 if strcmp(options.pool_method, 'median')
-    amp = cellfun(@(maxamp_ch,minamp_ch) median(cellfun(@(maxamp_wv,minamp_wv) maxamp_wv-minamp_wv,maxamp_ch,minamp_ch)),twa_cell(find(strcmp(fields',options.sel_field_pos)),:),twa_cell(find(strcmp(fields',options.sel_field_neg)),:));
+    amp = cellfun(@(maxamp_ch,minamp_ch) median(cellfun(@(maxamp_wv,minamp_wv) maxamp_wv-minamp_wv,maxamp_ch,minamp_ch)),twa_cell(find(strcmp(fields',sel_field_pos)),:),twa_cell(find(strcmp(fields',sel_field_neg)),:));
 elseif strcmp(options.pool_method, 'none')
-    amp = cellfun(@(maxamp_ch,minamp_ch) cellfun(@(maxamp_wv,minamp_wv) maxamp_wv-minamp_wv,maxamp_ch,minamp_ch),twa_cell(find(strcmp(fields',options.sel_field_pos)),:),twa_cell(find(strcmp(fields',options.sel_field_neg)),:),'UniformOutput',false);
+    amp = cellfun(@(maxamp_ch,minamp_ch) cellfun(@(maxamp_wv,minamp_wv) maxamp_wv-minamp_wv,maxamp_ch,minamp_ch),twa_cell(find(strcmp(fields',sel_field_pos)),:),twa_cell(find(strcmp(fields',sel_field_neg)),:),'UniformOutput',false);
 end
 end
