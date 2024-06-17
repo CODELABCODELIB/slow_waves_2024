@@ -1,4 +1,4 @@
-function [pooled,duplicates_sel] = pool_duplicates(dt_dt,microstates,options)
+function [pooled,duplicates_sel,duplicates] = pool_duplicates(dt_dt,microstates,options)
 %% find multiple triads in each bin
 %
 % **Usage:**

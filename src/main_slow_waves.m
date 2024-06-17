@@ -107,6 +107,31 @@ for chan=1:length(refilter.channels)
         triad_lengths(triad_idx,1) = triad(end)-triad(1);
     end
 end
+%%
+selected_waves = cell(64,length(taps)-2);
+triad_lengths = nan(length(taps)-2,1);
+for chan=1:length(refilter.channels)
+    slow_waves = [refilter.channels(chan).maxnegpk{:}];
+    for triad_idx = 1:length(taps)-2
+        triad = taps(triad_idx:triad_idx+2);
+        tmp = slow_waves>triad(1) & slow_waves<triad(end);
+        selected_waves{chan,triad_idx} = tmp;
+        triad_lengths(triad_idx,1) = triad(end)-triad(1);
+        if isempty(jid_microstates{gridx == dt_dt(triad_idx,3),gridx == dt_dt(triad_idx,4)})
+            jid_microstates{gridx == dt_dt(triad_idx,3),gridx == dt_dt(triad_idx,4)} = {mstate_sequence};
+            % if it is occupied concat the new sequence to existing one(s)
+        else
+            jid_microstates{gridx == dt_dt(triad_idx,3),gridx == dt_dt(triad_idx,4)} = cat(1,jid_microstates{gridx == dt_dt(triad_idx,3),gridx == dt_dt(triad_idx,4)},{mstate_sequence});
+        end
+    end
+end
+        for triad_idx = 1:length(taps)-2
+            triad = taps(triad_idx:triad_idx+2); % triad indexes
+            % select microstate sequences during the triad
+            mstate_sequence = microstates(triad(1):triad(3));
+            % check if the bin is occupied already if not add the sequences
+
+        end
 %% upward slopes JID
 f = @calculate_slope;
 [jid_upslp,upslp_per_triad] = jid_per_param(refilter.channels,selected_waves,dt_dt_r, f, 'sel_field',"mxupslp");
@@ -117,6 +142,7 @@ f = @calculate_slope;
 [jid_density,density_per_triad] = jid_per_param(refilter.channels,selected_waves,dt_dt_r, [], triad_lengths);
 %% NNMF density
 [reshaped_jid_density,kept_bins] = prepare_sw_data_for_nnmf(jid_density,'threshold',0, 'log_transform',0);
+%%
 if ~isempty(reshaped_jid_density)
     [reconstruct,stable_basis] = perform_sw_param_nnmf(reshaped_jid_density,kept_bins, 'repetitions_cv',2);
 end
@@ -126,5 +152,5 @@ f = @calculate_p2p_amplitude;
 % NNMFamp
 [reshaped_jid_amp,kept_bins] = prepare_sw_data_for_nnmf(jid_amp,'zscore', 1, 'threshold',0.75, 'log_transform',0);
 if ~isempty(reshaped_jid_amp)
-    [reconstruct,stable_basis] = perform_sw_param_nnmf(reshaped_jid_amp,kept_bins, 'repetitions_cv',2);
+    [reconstruct,stable_basis] = perform_sw_param_nnmf(reshaped_jid_amp,kept_bins, 'repetitions_cv',50);
 end

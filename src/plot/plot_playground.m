@@ -76,17 +76,18 @@ set(gca, 'fontsize',18)
 xlabel('Electrodes')
 ylabel('Bins')
 %% plot nnmf results
-figure; 
+h = figure; 
 best_k_overall = size(reconstruct,2);
 tiledlayout(best_k_overall,2)
 for k=1:best_k_overall
     nexttile;
     plot_jid(reshape(reconstruct(:,k),50,50))
+    % clim([0 2])
     colorbar;
     set(gca, 'fontsize', 18)
     nexttile;
     topoplot(stable_basis(1:62,k),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
-    clim([0 1])
+    clim([0 1.5])
     colorbar;
     set(gca, 'fontsize', 18)
 end

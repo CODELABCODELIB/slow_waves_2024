@@ -11,7 +11,7 @@ end
 if isempty(f) && isempty(triad_lengths)
     error('Provide triad lengths')
 end
-tmp = zeros(1,length(selected_waves(1,:)));
+
 param_per_triad = cell(length(twa),1);
 jid_param = cell(length(twa),1);
 if ~isempty(f)
@@ -26,16 +26,14 @@ for chan=1:length(twa)
     % calculate the density 
     if isempty(f)
         tmp_taps = cellfun(@(triad) sum(triad),tmp_taps);
-        [pooled,duplicates,duplicates_all] = pool_duplicates(dt_dt,tmp_taps, 'pool_method','sum');
+        [pooled,duplicates] = pool_duplicates(dt_dt,tmp_taps, 'pool_method','sum');
         pooled(pooled == 0) = NaN;
-        % pooled = pooled./cellfun(@(sel_tap) length(sel_tap), duplicates);
-
-        for sel=1:length(triad_lengths)
-            tmp(sel) = sum(triad_lengths(duplicates_all(sel,:)));
-        end
-        pooled = pooled./tmp;
+        pooled = pooled./cellfun(@(sel_tap) length(sel_tap), duplicates);
+        pooled = pooled./triad_lengths;
         param_per_triad{chan} = pooled;
         pooled(isnan(pooled)) = 0;
+
+
     else
         tmp_param = [param{chan}];
         param_per_triad{chan} = cellfun(@(tap) median(tmp_param(tap)),tmp_taps);
