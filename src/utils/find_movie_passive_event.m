@@ -56,4 +56,5 @@ indexes.right = find(labels_1 == true);
 labels_3 = strcmp(labels, 'S 36')'; % 4 --> LThumb
 indexes.left = find(labels_3 == true);
 passive_RT_present = any(labels_1) && any(labels_3);
+indexes.movie_latencies = latencies([indexes.right,indexes.left]);
 end

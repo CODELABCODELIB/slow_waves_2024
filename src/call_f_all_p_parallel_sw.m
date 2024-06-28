@@ -70,7 +70,7 @@ for i=1:length(files_grouped)
     
     % select participants where all above criteria are met
     % files_grouped{i} =  intersect(selected_1, selected_2);
-    files_grouped{i} =  intersect(selected_1,all_set_files(1,:));
+    files_grouped{i} = intersect(selected_1,all_set_files(1,:));
     num_files = length(files_grouped{i});
     
     if num_files > 1
