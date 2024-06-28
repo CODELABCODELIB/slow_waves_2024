@@ -2,13 +2,13 @@
 %%%%%%%%%%%%%%%%%%%%%%% data preperation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% path to raw data
-processed_data_path = '/media/Storage/User_Specific_Data_Storage/ruchella/Feb_2022_BS_to_tap_classification_EEG';
+processed_data_path = '/mnt/ZETA18/User_Specific_Data_Storage/ruchella/Feb_2022_BS_to_tap_classification_EEG';
 figures_save_path = '/home/ruchella/slow_waves_2023/figures';
 %% add folders to paths
 addpath(genpath('/home/ruchella/slow_waves_2023'))
 addpath(genpath('/home/ruchella/imports'))
 addpath(genpath('/home/ruchella/NNMF/nnmf_pipeline_spams'))
-addpath(genpath('/media/Storage/User_Specific_Data_Storage/ruchella/EEGsynclib_Mar_2022'))
+addpath(genpath('/mnt/ZETA18/User_Specific_Data_Storage/ruchella/EEGsynclib_Mar_2022'))
 addpath(genpath(processed_data_path), '-end')
 %% Load EEG data
 EEG = pop_loadset('/media/Storage/User_Specific_Data_Storage/ruchella/Feb_2022_BS_to_tap_classification_EEG/DS01/13_09_01_03_19.set');
@@ -22,8 +22,18 @@ num_taps = size(find(EEG.Aligned.BS_to_tap.Phone == 1),2);
 [EEG_taps] = preprocess_EEG(EEG_taps);
 pop_saveset(EEG_taps,'EEG_taps.set');
 %%
+[EEG_taps] = preprocess_EEG(EEG_taps);
 [twa_results]=twalldetectnew_TA_v4(EEG_taps.data,EEG.srate,0);
 refilter = filter_results(twa_results);
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%all subjects %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+save_path_upper = sprintf('/mnt/ZETA18/User_Specific_Data_Storage/ruchella/EEGsynclib_Mar_2022'); 
+if ~exist(save_path_upper, 'dir'); mkdir(save_path_upper); end
+unique_name = 'sw'; f = @sw_detection; f2 = @call_f_all_p_parallel_sw; 
+bandpass_lower = 1; bandpass_upper = 4; 
+gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data_path',processed_data_path,'save_path_upper',save_path_upper, 'count',28);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% plotting %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
