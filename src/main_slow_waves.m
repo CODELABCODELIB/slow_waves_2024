@@ -31,9 +31,9 @@ refilter = filter_results(twa_results);
 %%
 save_path_upper = sprintf('/mnt/ZETA18/User_Specific_Data_Storage/ruchella/EEGsynclib_Mar_2022'); 
 if ~exist(save_path_upper, 'dir'); mkdir(save_path_upper); end
-unique_name = 'sw'; f = @sw_detection; f2 = @call_f_all_p_parallel_sw; 
+unique_name = 'sw2'; f = @sw_detection; f2 = @call_f_all_p_parallel_sw; 
 bandpass_lower = 1; bandpass_upper = 4; 
-gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data_path',processed_data_path,'save_path_upper',save_path_upper, 'count',28);
+gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data_path',processed_data_path,'save_path_upper',save_path_upper, 'count',1);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% plotting %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

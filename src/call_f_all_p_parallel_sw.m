@@ -75,9 +75,11 @@ for i=1:length(files_grouped)
     
     if num_files > 1
         EEG_all = [];
+        
         for j=1:num_files
             EEG = pop_loadset(sprintf('%s/%s',folder{i}, files_grouped{i}{j}));
             EEG = gettechnicallycleanEEG_sw(EEG, [],[]);
+            EEG.BadChannels = [];
 
             [~,EEG.movie_indexes,EEG.movie_present] = find_movie_passive_event(EEG);
             if select_from_EEG_struct_3(EEG) && size(EEG.data,1) == 64 && (EEG.movie_present || isfield(EEG, 'Aligned.BS_to_tap'))

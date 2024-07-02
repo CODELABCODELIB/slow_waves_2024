@@ -33,7 +33,7 @@ arguments
     options.tap_only logical = 0;
 end
 % select the smartphone events 
-if isfield(EEG, 'Aligned.BS_to_tap') && ~options.tap_only
+if isfield(EEG, 'Aligned.BS_to_tap')
     % epoch around aligned tap
     num_taps = size(find(EEG.Aligned.BS_to_tap.Phone == 1),2);
     [EEG] = add_events(EEG,[find(EEG.Aligned.BS_to_tap.Phone == 1)],num_taps,'pt');
@@ -41,19 +41,17 @@ if isfield(EEG, 'Aligned.BS_to_tap') && ~options.tap_only
     EEG.taps = latencies(strcmp({EEG.event.type}, 'pt'));
     [EEG.phone_indexes] = find_gaps_in_taps(taps);
 end
-% perform SW detection on smartphone events only
+% seperate 
 if isfield(EEG, 'Aligned.BS_to_tap') && options.tap_only
     [EEG,indexes] = prepare_EEG_w_taps_only(EEG_taps);
     EEG.indexes = indexes;
 end
 
-%% SW detection
 [EEG] = preprocess_EEG(EEG);
 [twa_results]= twalldetectnew_TA_v4(EEG.data,EEG.srate,0);
 refilter = filter_results(twa_results);
-
-%% data to save
 EEG.data = [];
+%% data to save
 data{1} = participant;
 % EEG.data removed due to save time
 data{2} = EEG;
