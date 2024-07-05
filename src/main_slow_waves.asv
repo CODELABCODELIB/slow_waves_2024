@@ -164,4 +164,3 @@ f = @calculate_p2p_amplitude;
 if ~isempty(reshaped_jid_amp)
     [reconstruct,stable_basis] = perform_sw_param_nnmf(reshaped_jid_amp,kept_bins, 'repetitions_cv',50);
 end
-%%

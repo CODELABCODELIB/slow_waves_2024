@@ -27,11 +27,11 @@ function [data,EEG] = sw_detection(EEG, participant, options)
 %   -filter_results.m
 %
 % Author: R.M.D. Kock, Leiden University
-arguments
-    EEG;
-    participant;
-    options.tap_only logical = 0;
-end
+% arguments
+%     EEG;
+%     participant;
+%     options.tap_only logical = 0;
+% end
 % select the smartphone events 
 if isfield(EEG, 'Aligned.BS_to_tap') && ~options.tap_only
     % epoch around aligned tap
@@ -49,7 +49,7 @@ end
 
 %% SW detection
 [EEG] = preprocess_EEG(EEG);
-[twa_results]= twalldetectnew_TA_v4(EEG.data,EEG.srate,0);
+[twa_results]= twalldetectnew_TA_v4(EEG.data,1000,0);
 refilter = filter_results(twa_results);
 
 %% data to save

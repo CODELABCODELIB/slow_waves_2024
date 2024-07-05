@@ -18,7 +18,7 @@ function [EEG,indexes,passive_RT_present,latencies] = find_movie_passive_event(E
 % Author: Arko Ghosh, Leiden University
 % Edited : Ruchella Kock, Leiden University
 %%
-labels = {EEG.urevent.type}';
+labels = {EEG.event.type}';
 search_range = 30; % number of trials
 if length(labels) <= search_range
     passive_RT_present = 0;
@@ -26,7 +26,7 @@ if length(labels) <= search_range
     return
 end
 
-latencies = [EEG.urevent.latency]';
+latencies = [EEG.event.latency]';
 labels_1 = strcmp(labels, 'S 33')'; % 1 --> RThumb
 labels_2 = strcmp(labels, 'S 34')'; % 2 --> RLittle
 labels_3 = strcmp(labels, 'S 36')'; % 4 --> LThumb
@@ -55,12 +55,12 @@ EEG.event(~Idx_movie) = [];
 EEG.event(rt_indexes.right) = [];
 EEG.event(rt_indexes.left) = [];
 %% recalculate indexes
-labels = {EEG.urevent.type}';
-latencies = [EEG.urevent.latency]';
+labels = {EEG.event.type}';
+latencies = [EEG.event.latency]';
 labels_1 = strcmp(labels, 'S 33')'; % 1 --> RThumb
 indexes.right = find(labels_1 == true);
 labels_3 = strcmp(labels, 'S 36')'; % 4 --> LThumb
 indexes.left = find(labels_3 == true);
 passive_RT_present = any(labels_1) && any(labels_3);
-indexes.movie_latencies = latencies([indexes.right,indexes.left]);
+indexes.movie_latencies = latencies(unique([indexes.right,indexes.left]));
 end
