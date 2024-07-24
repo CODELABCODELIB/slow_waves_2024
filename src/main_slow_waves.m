@@ -4,6 +4,7 @@
 %% path to raw data
 processed_data_path = '/mnt/ZETA18/User_Specific_Data_Storage/ruchella/Feb_2022_BS_to_tap_classification_EEG';
 figures_save_path = '/home/ruchella/slow_waves_2023/figures';
+save_path_upper = '/mnt/ZETA18/User_Specific_Data_Storage/ruchella/slow_waves/';
 %% add folders to paths
 addpath(genpath('/home/ruchella/slow_waves_2023'))
 addpath(genpath('/home/ruchella/imports'))
@@ -13,97 +14,33 @@ addpath(genpath(processed_data_path), '-end')
 %% Load EEG data
 EEG = pop_loadset('/media/Storage/User_Specific_Data_Storage/ruchella/Feb_2022_BS_to_tap_classification_EEG/DS01/13_09_01_03_19.set');
 EEG = pop_loadset('/media/Storage/User_Specific_Data_Storage/ruchella/Feb_2022_BS_to_tap_classification_EEG/AT08/12_57_07_05_18.set');
-%% select only smartphone data
-% epoch around aligned tap
-num_taps = size(find(EEG.Aligned.BS_to_tap.Phone == 1),2);
-[EEG_taps] = add_events(EEG,[find(EEG.Aligned.BS_to_tap.Phone == 1)],num_taps,'pt');
-[EEG_taps,indexes] = prepare_EEG_w_taps_only(EEG_taps);
-%% run slow waves detection
-[EEG_taps] = preprocess_EEG(EEG_taps);
-pop_saveset(EEG_taps,'EEG_taps.set');
-%%
-[EEG_taps] = preprocess_EEG(EEG_taps);
-[twa_results]=twalldetectnew_TA_v4(EEG_taps.data,EEG.srate,0);
-refilter = filter_results(twa_results);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%all subjects %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% Pre-processing %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
-save_path_upper = sprintf('/mnt/ZETA18/User_Specific_Data_Storage/ruchella/EEGsynclib_Mar_2022'); 
+%% perform the sw detection on phone and movie data with checkpoints
+% create folder to save the results
 if ~exist(save_path_upper, 'dir'); mkdir(save_path_upper); end
-unique_name = 'sw2'; f = @sw_detection; f2 = @call_f_all_p_parallel_sw; 
-bandpass_lower = 1; bandpass_upper = 4; 
-gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data_path',processed_data_path,'save_path_upper',save_path_upper, 'count',16);
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% plotting %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-save_path = '/home/ruchella/slow_waves_2023/figures';
-subject = 'DS01';
-%% plot single trials
-chan=1; 
-for wave = 1:10;
-    figure;
-    plot(twa_results.channels(chan).negzx{wave}:twa_results.channels(chan).wvend{wave},EEG_refilter.data(chan,twa_results.channels(chan).negzx{wave}:twa_results.channels(chan).wvend{wave})); 
-    xline(twa_results.channels(chan).maxnegpk{wave}, 'r'); yline(twa_results.channels(chan).maxnegpkamp{wave}, 'r')
-    xline(twa_results.channels(chan).maxpospk{wave}); yline(twa_results.channels(chan).maxpospkamp{wave})
-end
-%% plot erp 
-% maxnegpk = cell2mat(twa_results.channels(1).maxnegpk);
-% [EEG_taps_ch1] = add_events(EEG_taps,maxnegpk,length(maxnegpk),'maxnegpk');
-% [EEG_epoched_ch1, indices] = pop_epoch(EEG_taps_ch1, {'maxnegpk'},[-2 2]);
-chan=19;
-[epochedvals] = getepocheddata(EEG_refilter.data(chan,:), cell2mat(twa_results.channels(chan).negzx), [-2000,2000]);
-figure; plot(trimmean(epochedvals,20,1));
-title(sprintf('E %d',chan))
-%% plot density
-density = calculate_density(refilter.channels);
-h= figure; topoplot(density(1:62),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
-title('Density') 
-clim([round(min(density)),round(max(density))])
-colormap parula; colorbar;
-saveas(h,sprintf('%s/density_total_%s.svg',save_path,subject))
-% %% plot density per min;
-% [densities] = calculate_density_per_dur(twa_results.channels,length(EEG.times)); 
-% density_min = [densities.med];
-% h = figure; topoplot(density_min(1:62),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
-% title('Density per min')
-% clim([round(min(density_min)),round(max(density_min))])
-% colormap parula; colorbar;
-% saveas(h,sprintf('%s/density_per_min_%s.svg',save_path,subject))
-%% plot p2p amp
-[amp] = calculate_p2p_amplitude(refilter.channels);
-h = figure; topoplot(amp(1:60),EEG.chanlocs(1:60), 'electrodes', 'off', 'style', 'map');
-title('Peak-to-peak amplitude')
-clim([round(min(amp(1:60))),round(max(amp(1:60)))])
-colormap parula; colorbar;
-saveas(h,sprintf('%s/median_amplitude_%s.svg',save_path,subject))
-%% plot downward slope
-[dnslp] = calculate_slope(twa_results.channels, 'sel_field',"mxdnslp");
-h = figure; topoplot(dnslp(1:60),EEG.chanlocs(1:60), 'electrodes', 'off', 'style', 'map');
-title('Downward slope')
-clim([round(min(dnslp(1:60))),round(max(dnslp(1:60)))])
-colormap parula; colorbar;
-saveas(h,sprintf('%s/median_downward_slope_%s.svg',save_path,subject))
-%% plot upward slope
-[upslp] = calculate_slope(twa_results.channels, 'sel_field',"mxupslp");
-h=figure; topoplot(upslp(1:60),EEG.chanlocs(1:60), 'electrodes', 'off', 'style', 'map');
-title('Upward slope')
-clim([round(min(upslp(1:60))),round(max(upslp(1:60)))])
-colormap parula; colorbar;
-saveas(h,sprintf('%s/median_upward_slope_%s.svg',save_path,subject))
-%% Timing of all the waves
-% start_times = double([twa_results.channels(1).negzx{:}]);
-start_times = [twa_results.channels.negzx];
-start_times = cell2mat(start_times);
-recording_times = zeros(1,length(EEG_refilter.times));
-recording_times(start_times) = 1;
-figure;
-imagesc(recording_times);
-colorbar parula;
+% file naming
+unique_name = 'sw2'; bandpass_lower = 1; bandpass_upper = 4; 
+% run f using f2
+f = @sw_detection; 
+f2 = @call_f_all_p_parallel_sw; 
+gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data_path',processed_data_path,'save_path_upper',save_path_upper, 'count',1);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% JID-waves %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[taps] = find_taps(EEG_taps, indexes); % tap indexes
+save_path = sprintf('%s/jid_amp',save_path_upper); 
+data_path = 
+load_str='sw2'; data_name='A';
+if ~exist(save_path, 'dir')
+       mkdir(save_path); addpath(genpath(save_path))
+end
+f = @jid_waves_main;
+run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 1);
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% JID-waves %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[taps] = find_taps(EEG, indexes); % tap indexes
 [dt_dt_r,~] = calculate_ITI_K_ITI_K1(taps, 'shuffle', 0); 
 %% identify waves occuring during triads
 selected_waves = cell(64,length(taps)-2);
@@ -159,7 +96,7 @@ end
 %% amplitude JID
 f = @calculate_p2p_amplitude;
 [jid_amp,amp_per_triad,not_occupied_bins] = jid_per_param(refilter.channels,selected_waves,dt_dt_r, f, 'sel_field',"maxpospkamp");
-% NNMFamp
+%% NNMFamp
 [reshaped_jid_amp,kept_bins] = prepare_sw_data_for_nnmf(jid_amp,'zscore', 1, 'threshold',0.75, 'log_transform',0);
 if ~isempty(reshaped_jid_amp)
     [reconstruct,stable_basis] = perform_sw_param_nnmf(reshaped_jid_amp,kept_bins, 'repetitions_cv',50);
