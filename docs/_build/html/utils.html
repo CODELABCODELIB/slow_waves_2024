@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Utility functions &#8212; Slow waves surrounding smartphone behaviors 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=def86cc0" />
+    
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Joint probability interval distribution (JID-state)" href="jid_slow_waves.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="mat-modindex.html" title="MATLAB Module Index"
+             >matlab index</a> |</li>
+        <li class="right" >
+          <a href="jid_slow_waves.html" title="Joint probability interval distribution (JID-state)"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Slow waves surrounding smartphone behaviors 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Utility functions</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="utility-functions">
+<h1>Utility functions<a class="headerlink" href="#utility-functions" title="Link to this heading">¶</a></h1>
+<dl class="mat function" id="module-utils">
+<dt class="sig sig-object mat" id="utils.get_phone_data">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">get_phone_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">EEG</span></em>, <em class="sig-param"><span class="pre">indices</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.get_phone_data" title="Link to this definition">¶</a></dt>
+<dd><p>Get smartphone data based on different alignment rules</p>
+<p><strong>Usage:</strong> [Phone, Transitions, idx] = get_phone_data(EEG, indices)</p>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>EEG = EEG data from one participant</p></li>
+<li><dl class="simple">
+<dt>indices =</dt><dd><ul>
+<li><p>If 0 use uncorrected phone indices</p></li>
+<li><p>If 1 use corrected phone indices</p></li>
+<li><p>If 2 use model corrected phone indices</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>Phone =</p></li>
+<li><p>Transitions =</p></li>
+<li><p>idx =</p></li>
+</ul>
+</dd>
+</dl>
+<p>Arko Ghosh, Leiden University</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.calculate_date_differences">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">calculate_date_differences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">eeg_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.calculate_date_differences" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the difference between all dates and smallest date
+This function is used to ignore the second file of curfew
+participants(ignore the data after curfew)</p>
+<p><strong>Usage:</strong> [eeg_name] = calculate_date_differences(eeg_name)</p>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>eeg_name = loaded status.mat for one participant</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>eeg_name =  status.mat with new field datediff</p></li>
+</ul>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.gen_checkpoints">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">gen_checkpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">unique_name</span></em>, <em class="sig-param"><span class="pre">bandpass_lower</span></em>, <em class="sig-param"><span class="pre">bandpass_upper</span></em>, <em class="sig-param"><span class="pre">f</span></em>, <em class="sig-param"><span class="pre">f2</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.gen_checkpoints" title="Link to this definition">¶</a></dt>
+<dd><p>Calls functions to generate ERP/ERSP and saves results in checkpoint files
+Each checkpoint has 2 participant’s data</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>gen_checkpoints(unique_name,bandpass_upper, banpass_lower, aligned, erp_data)</p></li>
+<li><p>gen_checkpoints(… , ‘count’, 10)</p></li>
+<li><p>gen_checkpoints(… , ‘epoch_window_ms’, [-2000 2000])</p></li>
+<li><p>gen_checkpoints(… , ‘epoch_window_baseline’, [-2000 -1500])</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>unique_name = Description of data being saved, part of checkpoint file name</p></li>
+<li><p>bandpass_upper = Upper range bandpass filter</p></li>
+<li><p>bandpass_lower = Lower range bandpass filter</p></li>
+<li><p>f = function handle that function f2 will call</p></li>
+<li><p>f2 = function handle that this script will call</p></li>
+</ul>
+</dd>
+<dt>Optional input parameter(s):</dt><dd><ul class="simple">
+<li><p>aligned = Load aligned (1) or unaligned (0) data</p></li>
+<li><p>erp_data = load erp data (1) or ersp data (0)</p></li>
+<li><p>options.count <strong>optional</strong> = the number of participant to start the checkpoint</p></li>
+<li><p>options.epoch_window_ms <strong>optional</strong> = Epoch window in milliseconds</p></li>
+<li><p>options.epoch_window_baseline <strong>optional</strong> = Baseline window in milliseconds</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>Saved checkpoint files, file name format check_&lt;unique_name&gt;_&lt;count_start&gt;_&lt;count_end&gt;</p></li>
+</ul>
+<p>Example: check_erspaligned10s45_10_to_12
+Contains aligned ersp data of length 10 seconds bandpass filtered at upper bount 45 participant 10 to 12</p>
+</dd>
+<dt>Requires:</dt><dd><ul class="simple">
+<li><p>process_EEG</p></li>
+<li><p>call_f_all_p_parallel</p></li>
+</ul>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.gettechnicallycleanEEG">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">gettechnicallycleanEEG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">INEEG</span></em>, <em class="sig-param"><span class="pre">bandpass_upper_range</span></em>, <em class="sig-param"><span class="pre">bandpass_lower_range</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.gettechnicallycleanEEG" title="Link to this definition">¶</a></dt>
+<dd><p>OUTEEG = gettechnincallycleanEEG(INEEG,bandpass_upper_range)</p>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>INEEG: EEG struct to process</p></li>
+<li><p>bandpass_upper_range: Upper range for bandpass filtering of EEG data</p></li>
+</ul>
+</dd>
+</dl>
+<p>Assume 1.ICA performed, 2. Bad channels have been marked, 3. channel locations already placed 4. Electrode locations present 
+Performs the following steps</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Remove blinks according to ICA</p></li>
+<li><p>Interpolate missing channels</p></li>
+<li><p>Re-reference data to average channel</p></li>
+</ol>
+</div></blockquote>
+<p>pop_jointprob( EEG, 1, [1:62],5, 5, [0], 1, 0);
+Remove non_EEG data</p>
+<p>Arko Ghosh, Leiden University
+Added at line 43 – [INEEG] = pop_eegfiltnew(INEEG, 0.5, []);</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.find_movie_passive_event">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">find_movie_passive_event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">EEG</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.find_movie_passive_event" title="Link to this definition">¶</a></dt>
+<dd><p>find where the movie passive events took place and select them</p>
+<p><strong>Usage:</strong> [EEG] = find_movie_passive_event(EEG)</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Input(s)</dt><dd><ul class="simple">
+<li><p>EEG = EEG data struct</p></li>
+</ul>
+</dd>
+<dt>Output(s)</dt><dd><ul class="simple">
+<li><p>EEG = EEG data struct with edited urevent only containing passive touches during movie</p></li>
+<li><dl class="simple">
+<dt>indexes = struct with indexes of movie left and right passive stimulations</dt><dd><ul>
+<li><p>indexes.right : right thumb stimulation</p></li>
+<li><p>indexes.left : left thumb stimulation</p></li>
+<li><p>indexes_movie_latencies : latency of all movie events (left and right)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>passive_RT_present (logical) = Movie data present (1) or not (0)</p></li>
+<li><p>latencies = latencies of all events after preprocessing urevent</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p>Author: Arko Ghosh, Leiden University
+Edited : Ruchella Kock, Leiden University</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.select_from_EEG_struct_3">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">select_from_EEG_struct_3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">EEG</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.select_from_EEG_struct_3" title="Link to this definition">¶</a></dt>
+<dd><p>Select participants with no saving error and attys is false</p>
+<p><strong>Usage:</strong>  [select_3] = select_from_EEG_struct_3(EEG)</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>EEG = EEG struct</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>select_3 = logical 1 select EEG struct, 0 otherwise</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p>Author: R.M.D. Kock</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.load_checkpoints_fs">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">load_checkpoints_fs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">data_path</span></em>, <em class="sig-param"><span class="pre">load_str</span></em>, <em class="sig-param"><span class="pre">data_name</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.load_checkpoints_fs" title="Link to this definition">¶</a></dt>
+<dd><p>load erp and or ersp checkpoints</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><blockquote>
+<div><ul class="simple">
+<li><p>[load_data] = load_checkpoints(path, load_str, data_name,)</p></li>
+<li><p>[load_data] = load_checkpoints(…, ‘split_trials’, 0)</p></li>
+<li><p>[load_data] = load_checkpoints(…, ‘erp_data’, 1)</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>path = path to checkpoint files with erp and ersp data</p></li>
+<li><p>load_str = unique string in checkpoint name</p></li>
+<li><p>data_name = saved variable name e.g. ‘A’</p></li>
+<li><p>options.split_trials <strong>optional</strong> logical = split trials (1) or not (0) (see split_trials.m)</p></li>
+<li><p>options.erp_data <strong>optional</strong> = load erp data (1) or ersp data (0)</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>load_data = EEG data from all checkpoints</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.nanzscore">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">nanzscore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.nanzscore" title="Link to this definition">¶</a></dt>
+<dd><p>Usage: [result] = nanzscore(x)</p>
+<p>Calculates the zscore ignoring NANs</p>
+<p>Author: Enea Ceolini</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.interp_RW">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">interp_RW</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">load_data</span></em>, <em class="sig-param"><span class="pre">index</span></em>, <em class="sig-param"><span class="pre">split</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.interp_RW" title="Link to this definition">¶</a></dt>
+<dd><p>Interpolate erp data for RW participants with lower sampling frequencies
+RW participants were sampled at 500 Hz wheras other participants at 1000
+Hz. This function interpolates the data of RW participants to 1000 Hz.
+Can be used for any participants as long as sampling rate is &lt; 1000 Hz and needs to be doubled</p>
+<dl>
+<dt><strong>Usage:</strong> [load_data] = interp_RW(load_data, index, split)</dt><dd><blockquote>
+<div><ul class="simple">
+<li><p>interp_RW(… ‘time_range’, 4000)</p></li>
+<li><p>interp_RW(… ‘channels’, 62)</p></li>
+</ul>
+</div></blockquote>
+<dl>
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>load_data = cell containing eeg data (see process_EEG)</p></li>
+<li><dl class="simple">
+<dt>index = ERP data index </dt><dd><ul>
+<li><p>2: ERP based on trimmedmean leaving out top and bottom 20%</p></li>
+<li><p>3: ERP based on mean</p></li>
+<li><p>4: Epoched data channel x time x trial;</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>split = Whether the trials the interpolation should (1) or shouldn’t (0) occur for each trial</p></li>
+<li><p>options.time_range <strong>Optional</strong> = Total size of epoch window in ms</p></li>
+<li><p>options.channels <strong>Optional</strong> = maximum number of channels</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>load_data = cell containing eeg data (see process_EEG) with</p></li>
+</ul>
+<p>interpolated erp for RW participants</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.gen_set_file_names">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">gen_set_file_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">path</span></em>, <em class="sig-param"><span class="pre">start_idx</span></em>, <em class="sig-param"><span class="pre">end_idx</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.gen_set_file_names" title="Link to this definition">¶</a></dt>
+<dd><p>Get names of files to read</p>
+<p><strong>Usage:</strong> [files_grouped,folder] = gen_set_file_names(path,start_idx,end_idx)</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>path = path to raw data folders</p></li>
+<li><p>start_idx = Folder number to start at</p></li>
+<li><p>end_idx = Folder number to end at</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>files_grouped = File names to read</p></li>
+<li><p>folder = Folder names</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p>Author: R.M.D. Kock</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.getreactiotimepart">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">getreactiotimepart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">EEG</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.getreactiotimepart" title="Link to this definition">¶</a></dt>
+<dd><p>[EEGSET RTSET] = getreactiotimepart(eeg_name, RT, direeg)
+Given a status file with .set file names, output the reaction time data
+If RT ONLY is set to true, the EEGSET is returened []
+Output
+EEGSET , In struct, truncated EEG data containing reaction time events only
+RTSET, In struct, reaction time events gathered in the data;
+The size of the struct is the same as number of EEG sessions
+EEGSET contains the EEG data
+Note, the EEG folder should be in direeg
+this</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.decision_peak_prominance">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">decision_peak_prominance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">epoched_model_predictions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.decision_peak_prominance" title="Link to this definition">¶</a></dt>
+<dd><p>Participant selection based on the difference between the aligned largest peak and second largest peak</p>
+<p><strong>Usage:</strong> [simple, differences_bs] = decision_peak_prominance(epoched_model_predictions)</p>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>epoched_model_predictions = epoched model predictions timelocked to aligned taps</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>simple = 1: participant kept , 0 = participant rejected</p></li>
+<li><p>differences_bs = difference between the largest peak and second largest peak</p></li>
+</ul>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.select_from_status_2">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">select_from_status_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">all_set_files</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.select_from_status_2" title="Link to this definition">¶</a></dt>
+<dd><p>select participants where there is BS data and alignment were successful</p>
+<p><strong>Usage:</strong> [selected_2] = select_from_status_2(all_set_files)</p>
+<blockquote>
+<div><dl>
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>all_set_files = cell based on status_2.mat file containing meta data of</p></li>
+</ul>
+<p>the EEG measurement. Specifically whether BS data is present and 
+whether participant’s data was aligned</p>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>selected_2 = file names for selected participants</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p>Author: R.M.D. Kock</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.select_from_status_1">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">select_from_status_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">eeg_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.select_from_status_1" title="Link to this definition">¶</a></dt>
+<dd><p>Select participants with EEG and phone data and select only first file for curfew participants</p>
+<p><strong>Usage:</strong> [selected_1] = select_from_status_1(eeg_name)</p>
+<blockquote>
+<div><dl>
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>eeg_name = struct based on status.mat file containing meta data of</p></li>
+</ul>
+<p>the EEG measurement. Specifically whether Phone or EEG data is present.
+Whether participant is a curfew participant.</p>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>selected_1 = file names for selected participants</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p>Author: R.M.D. Kock</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.mergeStructs">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">mergeStructs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">struct_a</span></em>, <em class="sig-param"><span class="pre">struct_b</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.mergeStructs" title="Link to this definition">¶</a></dt>
+<dd><p>Merge two structs</p>
+<p><strong>Usage</strong>: [merged_struct] = mergeStructs(struct_a,struct_b)</p>
+<dl class="simple">
+<dt>Input(s): </dt><dd><ul class="simple">
+<li><p>struct_a: Struct to merge</p></li>
+<li><p>struct_b: Struct to merge</p></li>
+</ul>
+</dd>
+<dt>Output(s): </dt><dd><ul class="simple">
+<li><p>merged_struct: Merged Struct</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.call_f_all_p_parallel">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">call_f_all_p_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">path</span></em>, <em class="sig-param"><span class="pre">f</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.call_f_all_p_parallel" title="Link to this definition">¶</a></dt>
+<dd><p>General function that calls a function for all the participants in parallel</p>
+<dl>
+<dt><strong>Usage:</strong> [files_grouped,A,parfor_time] = call_f_all_p_parallel(path,f)</dt><dd><blockquote>
+<div><ul class="simple">
+<li><p>call_f_all_p_parallel(…, ‘cycles’, [1 0.7])</p></li>
+<li><p>call_f_all_p_parallel(…, ‘erp_data’, 1)</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>path = path to raw data</p></li>
+<li><p>f = function handle of function to be called</p></li>
+<li><p>options.start_idx <strong>optional</strong> double = start index of the loop</p></li>
+<li><p>options.end_idx <strong>optional</strong> double = end index of the loop</p></li>
+<li><p>options.epoch_window_ms <strong>optional</strong> cell (1,2) = epoch window in ms (e.g. [-1000 500])</p></li>
+<li><p>options.epoch_window_baseline <strong>optional</strong> cell (1,2) = baseline window in MS (e.g. [-1000 -800])</p></li>
+<li><p>options.erp_data = load erp data (1) or ersp data (0)</p></li>
+<li><p>options.cycles <strong>optional</strong> double = [1 0.5] 0 for FFT or array for wavelet transform (See newtimef cycles)</p></li>
+<li><p>options.bandpass_upper <strong>optional</strong> = upper range bandpass filter</p></li>
+<li><p>options.bandpass_lower <strong>optional</strong> = lower range bandpass filter</p></li>
+<li><p>options.aligned  <strong>optional</strong> logical = Load aligned (1) or unaligned (0) data</p></li>
+<li><p>option.delay  <strong>optional</strong> = Known delay for participant (used for alignment correction, assumed aligned is 0)</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>files_grouped = names of files to read</p></li>
+<li><p>A = cell with generated data</p></li>
+<li><p>parfor_time = duration of function</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Requires:</dt><dd><ul class="simple">
+<li><p>gen_set_file_names</p></li>
+<li><p>select_from_status_1.m</p></li>
+<li><p>select_from_status_2.m</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.getepocheddata">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">getepocheddata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Data</span></em>, <em class="sig-param"><span class="pre">triggersample</span></em>, <em class="sig-param"><span class="pre">SampleRange</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.getepocheddata" title="Link to this definition">¶</a></dt>
+<dd><p>Usage: [epochedvals] = getepocheddata(Data, triggersample, Sample Range)</p>
+<dl class="simple">
+<dt>Input(s)</dt><dd><ul class="simple">
+<li><p>Data –&gt; Samples as in timeseries</p></li>
+<li><p>triggersample —&gt; The samples containing trigger as in cell number of T.</p></li>
+<li><p>Sample range —-&gt; [-100 100], takes 100 samples before and 100 after.</p></li>
+</ul>
+</dd>
+<dt>Output(s)</dt><dd><ul class="simple">
+<li><p>epocedvals —-&gt; The values before and after the trigger</p></li>
+</ul>
+</dd>
+</dl>
+<p>Arko Ghosh, Leiden University, 28/05/2019</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="utils.add_events">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">add_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">EEG</span></em>, <em class="sig-param"><span class="pre">data</span></em>, <em class="sig-param"><span class="pre">num</span></em>, <em class="sig-param"><span class="pre">type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.add_events" title="Link to this definition">¶</a></dt>
+<dd><p>Adds identified events to EEG.event and EEG.urevent
+In this case the events are predicted peak locations or tap locations</p>
+<p><strong>Usage:</strong> [EEG] = add_events(EEG,data,num,type)</p>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>EEG = EEG struct</p></li>
+<li><p>data = the event indices</p></li>
+<li><p>num = number of events</p></li>
+<li><p>type = char array (’ ‘) denoting event type
+(phone taps are denoted as pt and predictions as pred_d for deltas and pred_i for integrals)</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>EEG = EEG struct with added EEG events</p></li>
+</ul>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University</p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="jid_slow_waves.html"
+                          title="previous chapter">Joint probability interval distribution (JID-state)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/utils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="mat-modindex.html" title="MATLAB Module Index"
+             >matlab index</a> |</li>
+        <li class="right" >
+          <a href="jid_slow_waves.html" title="Joint probability interval distribution (JID-state)"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Slow waves surrounding smartphone behaviors 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Utility functions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright .
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Joint probability interval distribution (JID-state) &#8212; Slow waves surrounding smartphone behaviors 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=def86cc0" />
+    
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Utility functions" href="utils.html" />
+    <link rel="prev" title="Pre-processing EEG &amp; identify slow waves" href="pre_processing.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="mat-modindex.html" title="MATLAB Module Index"
+             >matlab index</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="Utility functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pre_processing.html" title="Pre-processing EEG &amp; identify slow waves"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Slow waves surrounding smartphone behaviors 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Joint probability interval distribution (JID-state)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="joint-probability-interval-distribution-jid-state">
+<h1>Joint probability interval distribution (JID-state)<a class="headerlink" href="#joint-probability-interval-distribution-jid-state" title="Link to this heading">¶</a></h1>
+<p>NNMF JID amplitude</p>
+<ol class="arabic simple">
+<li><p>Assign each touchscreen interaction to nearest ‘bin/pixel’.</p></li>
+</ol>
+<dl class="mat function" id="module-sw_jid_nnmf">
+<dt class="sig sig-object mat" id="sw_jid_nnmf.calculate_p2p_amplitude">
+<span class="sig-prename descclassname"><span class="pre">sw_jid_nnmf.</span></span><span class="sig-name descname"><span class="pre">calculate_p2p_amplitude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">twa</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sw_jid_nnmf.calculate_p2p_amplitude" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the (median) peak to peak (p2p) amplitude per  per channel</p>
+<dl class="simple">
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>[amp] = calculate_p2p_amplitude(twa)</dt><dd><ul>
+<li><p>calculate_p2p_amplitude(…,’sel_field_pos’, “maxampwn”)</p></li>
+<li><p>calculate_p2p_amplitude(…,’sel_field_neg’, “minampwn”)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>twa = slow waves struct results (twa_results.channels)</p>
+</dd>
+<dt>Optional input parameter(s):</dt><dd><dl class="simple">
+<dt>sel_field_pos (default: “maxpospkamp”) = The amplitude of the largest</dt><dd><p>positive peak</p>
+</dd>
+<dt>sel_field_neg (default: “maxnegpkamp”) =  The amplitude of the largest</dt><dd><p>negative peak</p>
+</dd>
+</dl>
+</dd>
+<dt>Output(s):</dt><dd><p>amp = The median peak to peak density</p>
+</dd>
+</dl>
+<p>Ruchella Kock, Leiden University, 17/01/2024</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="sw_jid_nnmf.calculate_density_per_dur">
+<span class="sig-prename descclassname"><span class="pre">sw_jid_nnmf.</span></span><span class="sig-name descname"><span class="pre">calculate_density_per_dur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">twa</span></em>, <em class="sig-param"><span class="pre">max_time</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sw_jid_nnmf.calculate_density_per_dur" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the density (number of slow waves) per min/ per electrode</p>
+<dl class="simple">
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>[densities] = density_per_min(twa,max_time)</dt><dd><ul>
+<li><p>density_per_min(…,’dur’, 1000)</p></li>
+<li><p>density_per_min(…,’n_electrodes’, 62)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>twa = slow waves struct results (twa_results.channels)
+max_time = duration of the EEG recording (length(EEG.times))</p>
+</dd>
+<dt>Optional input parameter(s):</dt><dd><p>dur (default: 60000) = Time duration over which to calculate the density (in ms)
+n_electrodes (default: 64) = Number of electrodes (in twa)</p>
+</dd>
+<dt>Output(s):</dt><dd><dl class="simple">
+<dt>densities struct = </dt><dd><p>all (field) = The densities for all the minutes of recording
+med (field) = Median density across all the minutes</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Ruchella Kock, Leiden University, 17/01/2024</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="sw_jid_nnmf.calculate_slope">
+<span class="sig-prename descclassname"><span class="pre">sw_jid_nnmf.</span></span><span class="sig-name descname"><span class="pre">calculate_slope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">twa</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sw_jid_nnmf.calculate_slope" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the median upwards or downwards slope over the whole recording per electrode</p>
+<dl class="simple">
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>[slope] = calculate_slope(twa)</dt><dd><ul>
+<li><p>calculate_slope(…,’sel_field’, “mxdnslp”)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>twa = slow waves struct results (twa_results.channels)</p>
+</dd>
+<dt>Optional input parameter(s):</dt><dd><dl class="simple">
+<dt>sel_field (default: “mxdnslp”) = field in twa to calculate the length of</dt><dd><p>note default is downwards slope, cal the function with 
+sel_field = ‘mxupslp’ for upwards slope</p>
+</dd>
+</dl>
+</dd>
+<dt>Output(s):</dt><dd><p>slope = The upwards or downwards slope</p>
+</dd>
+</dl>
+<p>Ruchella Kock, Leiden University, 17/01/2024</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="sw_jid_nnmf.sw_per_triad">
+<span class="sig-prename descclassname"><span class="pre">sw_jid_nnmf.</span></span><span class="sig-name descname"><span class="pre">sw_per_triad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">taps</span></em>, <em class="sig-param"><span class="pre">refilter</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sw_jid_nnmf.sw_per_triad" title="Link to this definition">¶</a></dt>
+<dd><p>Select the slow wave per electrode and triad</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><blockquote>
+<div><ul class="simple">
+<li><p>sw_per_triad(taps,refilter)</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>taps = tap indexes</p></li>
+<li><p>refilter = Slow waves</p></li>
+</ul>
+</dd>
+</dl>
+<p>Optional Input(s):</p>
+<dl class="simple">
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>selected_waves = cell channels x triads, inside each cell an array of</dt><dd><p>logical values 1 if sw was present and 0 otherwise</p>
+</dd>
+</dl>
+</li>
+<li><p>triad_lengths = total duration of the traids</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University, 2024</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="sw_jid_nnmf.calculate_density">
+<span class="sig-prename descclassname"><span class="pre">sw_jid_nnmf.</span></span><span class="sig-name descname"><span class="pre">calculate_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">twa</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sw_jid_nnmf.calculate_density" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the density (number of slow waves) over the whole recording per electrode</p>
+<dl class="simple">
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>[density] = calculate_density(twa)</dt><dd><ul>
+<li><p>calculate_density(…,’sel_field’, “poszx”)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>twa = slow waves struct results (twa_results.channels)</p>
+</dd>
+<dt>Optional input parameter(s):</dt><dd><p>sel_field (default: “negzx”) = field in twa to calculate the length of</p>
+</dd>
+<dt>Output(s):</dt><dd><p>densities = The total density for the whole recording</p>
+</dd>
+</dl>
+<p>Ruchella Kock, Leiden University, 17/01/2024</p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="pre_processing.html"
+                          title="previous chapter">Pre-processing EEG &amp; identify slow waves</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="utils.html"
+                          title="next chapter">Utility functions</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/jid_slow_waves.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="mat-modindex.html" title="MATLAB Module Index"
+             >matlab index</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="Utility functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pre_processing.html" title="Pre-processing EEG &amp; identify slow waves"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Slow waves surrounding smartphone behaviors 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Joint probability interval distribution (JID-state)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright .
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+    </div>
+  </body>
+</html>
