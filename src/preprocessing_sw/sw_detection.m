@@ -3,14 +3,14 @@ function [data,EEG] = sw_detection(EEG, participant, options)
 %
 % **Usage:** [data] = process_EEG(EEG, participant)
 %        - sw_detection(EEG, participant)
-%        - sw_detection(..., 'epoch_window_ms', [-2000 2000])
+%        - sw_detection(..., 'pt', 1)
 %
 %  Input(s):
 %   - EEG = EEG struct
 %   - participant = string with participant ID/name
 %
 %  Optional Input(s):
-%   - pt logical = 1 select and run analysis on only behavioral data
+%   - pt (Default : 1) = 1 select and run analysis on only behavioral data
 %           0 run analysis on full dataset including resting state and movie
 %
 %  Output(s):
@@ -30,7 +30,7 @@ function [data,EEG] = sw_detection(EEG, participant, options)
 %   -filter_results.m
 %
 % Author: R.M.D. Kock, Leiden University
-% select the smartphone events 
+%% select the smartphone events 
 if isfield(EEG, 'Aligned.BS_to_tap') && ~options.pt
     % epoch around aligned tap
     num_taps = size(find(EEG.Aligned.BS_to_tap.Phone == 1),2);
@@ -51,7 +51,9 @@ end
 refilter = filter_results(twa_results);
 
 %% data to save
-EEG.data = [];
+if options.remove_EEG
+    EEG.data = [];
+end
 data{1} = participant;
 % EEG.data removed due to save time
 data{2} = EEG;

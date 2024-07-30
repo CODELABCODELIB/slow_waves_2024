@@ -1,4 +1,4 @@
-save_path = '/home/ruchella/slow_waves_2023/data/figures';
+save_path = '/home/ruchella/slow_waves_2023/figures';
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% plot res %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -92,6 +92,25 @@ for k=1:best_k_overall
     colorbar;
     set(gca, 'fontsize', 18)
 end
+%% plot nnmf results all subjects
+for pp=1:41
+    h = figure;
+    best_k_overall = size(r(pp).reconstruct_amp,2);
+    tiledlayout(best_k_overall,2)
+    for k=1:best_k_overall
+        nexttile;
+        plot_jid(reshape(r(pp).reconstruct_amp(:,k),50,50))
+        clim([0 2])
+        colorbar;
+        set(gca, 'fontsize', 18)
+        nexttile;
+        topoplot(r(pp).stable_basis_amp(1:62,k),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+        clim([0 1.5])
+        colorbar;
+        set(gca, 'fontsize', 18)
+    end
+    saveas(h,sprintf('%s/jid_nnmf/jid_amp_nnmf_%s.svg',save_path,pp))
+end
 %% plot nnmf results delay
 h = figure; 
 best_k_overall = size(reconstruct,2);
@@ -105,6 +124,14 @@ for k=1:best_k_overall
     plot([-5:5],stable_basis(:,k))
     axis square;
     set(gca, 'fontsize', 18)
+end
+%% plot nnmf clusters
+figure; 
+tiledlayout(1,size(prototypes,2))
+for n_map=1:size(prototypes,2)
+    nexttile;
+    topoplot(prototypes(1:62,n_map),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+    clim([-0.3 0.3])
 end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%% plot basic sw features %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
