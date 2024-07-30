@@ -31,18 +31,19 @@ Install the following toolboxes:
 
 Folder structure
 ----------------
-```
-. 
-+-- docs --> documentation of the project
-¦   +-- _build
-¦       +-- doctrees
-¦       +-- html
-+-- local_sleep
-+-- src  --> code of the project
-    +-- microstates_functions  --> functions to calculate JIDs reused from microstates https://doi.org/10.1101/2024.07.22.604605 
-    +-- playground --> functions for exploratory anslysis
-    +-- plot --> plot functions
-    +-- preprocessing_sw --> preprocessing EEG data and functions to identify slow waves
-    +-- sw_jid_nnmf --> functions to map the relationship between slow waves and jid
-    +-- utils --> utility functions
- ```
+
+::
+   
+	+-- docs --> documentation of the project
+	¦   +-- _build
+	¦       +-- doctrees
+	¦       +-- html
+	+-- local_sleep
+	+-- src  --> code of the project
+	    +-- microstates_functions  --> functions to calculate JIDs reused from microstates https://doi.org/10.1101/2024.07.22.604605 
+	    +-- playground --> functions for exploratory anslysis
+	    +-- plot --> plot functions
+	    +-- preprocessing_sw --> preprocessing EEG data and functions to identify slow waves
+	    +-- sw_jid_nnmf --> functions to map the relationship between slow waves and jid
+	    +-- utils --> utility functions
+    
