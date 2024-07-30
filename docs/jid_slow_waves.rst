@@ -1,0 +1,12 @@
+
+Joint probability interval distribution (JID-state)
+
+==================================================
+
+NNMF JID amplitude
+
+1. Assign each touchscreen interaction to nearest 'bin/pixel'. 
+
+.. mat:automodule:: sw_jid_nnmf
+   :members:
+

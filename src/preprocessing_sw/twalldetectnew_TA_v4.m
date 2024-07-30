@@ -1,4 +1,4 @@
-    function [twa_results]=twalldetectnew_TA_v4(datainput,orig_fs,thramp)
+function [twa_results]=twalldetectnew_TA_v4(datainput,orig_fs,thramp)
 %% Delta/Theta Wave Detection
 % 
 % Code by Thomas Andrillon --> presumably used in Andrillon et al. (2021)

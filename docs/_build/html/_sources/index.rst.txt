@@ -11,8 +11,7 @@ Home
    :titlesonly:
 
    Getting started <getting-started>
-   Pre-processing <pre_processing>
-   Analysis <jid_slow_waves>
+   Analysis <analysis>
    Utility functions <utils>
 
 

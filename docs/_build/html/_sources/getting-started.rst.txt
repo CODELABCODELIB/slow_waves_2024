@@ -22,9 +22,8 @@ Install the following toolboxes:
 
 **Additional Matlab toolboxes**
 
+- `Deep Learning Toolbox <https://nl.mathworks.com/products/deep-learning.html>`__
 - `Statistics Toolbox <https://nl.mathworks.com/products/statistics.html>`__
 - `Curve Fitting Toolbox <https://nl.mathworks.com/products/curvefitting.html>`__
 - `Signal Processing Toolbox <https://www.mathworks.com/products/signal.html>`__
 
-Folder structure
-----------------

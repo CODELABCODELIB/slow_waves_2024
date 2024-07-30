@@ -11,6 +11,7 @@ function [EEG] = preprocess_EEG(EEG)
 %   EEG = processed EEG struct
 %
 % David Hoff, Leiden University
+%
 %% Band-pass filtering (0.5–48 Hz)
 % Apply the filter
 EEG = pop_eegfiltnew(EEG, 'locutoff', 0.5, 'hicutoff', 48);
