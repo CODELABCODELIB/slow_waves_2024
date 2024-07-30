@@ -125,13 +125,39 @@ for k=1:best_k_overall
     axis square;
     set(gca, 'fontsize', 18)
 end
-%% plot nnmf clusters
-figure; 
+%% plot nnmf population clusters
+h= figure; 
 tiledlayout(1,size(prototypes,2))
 for n_map=1:size(prototypes,2)
     nexttile;
     topoplot(prototypes(1:62,n_map),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
-    clim([-0.3 0.3])
+    clim([-0.2 0.2])
+end
+colormap('jet')
+colorbar;
+saveas(h,sprintf('%s/jid_nnmf/prototypes.svg',save_path))
+% plot the clustered JIDs
+all_jids = cat(2,res.reconstruct_amp);
+for n_map=1:size(prototypes,2)
+    tmp = all_jids(:,labels==n_map);
+    h = figure;
+    tiledlayout(2,ceil(size(tmp,2)/2))
+    for i=1:size(tmp,2)
+        nexttile;
+        plot_jid(reshape(tmp(:,i),[50,50]))
+        clim([0,2])
+    end
+    saveas(h,sprintf('%s/jid_nnmf/jid_amp_nnmf_clus_%d.svg',save_path,n_map))
+    % plot the maps
+    tmp = all_maps(:,labels==n_map);
+    h = figure;
+    tiledlayout(2,ceil(size(tmp,2)/2))
+    for i=1:size(tmp,2)
+        nexttile;
+        topoplot(tmp(1:62,i),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+        clim([0,2])
+    end
+    saveas(h,sprintf('%s/jid_nnmf/topoplots_nnmf_clus_%d.svg',save_path,n_map))
 end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%% plot basic sw features %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

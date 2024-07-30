@@ -39,6 +39,7 @@ for chan=1:length(refilter)
         pooled(isnan(pooled)) = 0;
     else
         tmp_param = [param{chan}];
+        % select the parameter for all the sw happening in each triad
         param_per_triad{chan} = cellfun(@(tap) median(tmp_param(tap)),tmp_taps);
         % param_per_triad{chan}(isnan([param_per_triad{chan}])) = 0;
         if options.pool_duplicates

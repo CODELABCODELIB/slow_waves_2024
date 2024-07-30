@@ -1,4 +1,7 @@
 %%
+taps = res(pp).taps;
+refilter = res(pp).refilter;
+%%
 n_timelags = 5;
 time_to_next_sw = cell(64,length(taps)-2,n_timelags);
 time_to_prior_sw = cell(64,length(taps)-2,n_timelags);
@@ -65,21 +68,24 @@ end
 %% plot delays in JID form
 figure;
 tiledlayout(2,5)
-log_time_to_next_sw = cellfun(@(x) log10(x),time_to_next_sw_jid,'UniformOutput',false);
-log_time_to_prior_sw = cellfun(@(x) log10(x),time_to_prior_sw_jid,'UniformOutput',false);
+% log_time_to_next_sw = cellfun(@(x) log10(x),time_to_next_sw_jid,'UniformOutput',false);
+% log_time_to_prior_sw = cellfun(@(x) log10(x),time_to_prior_sw_jid,'UniformOutput',false);
+log_time_to_next_sw = cellfun(@(x) cellfun(@(y) median(y),x,'UniformOutput',false),time_to_next_sw_jid,'UniformOutput',false);
+log_time_to_prior_sw = cellfun(@(x) cellfun(@(y) median(y),x,'UniformOutput',false),time_to_prior_sw_jid,'UniformOutput',false);
+
 x = [log_time_to_next_sw{:}]; 
 p = [log_time_to_prior_sw{:}]; 
 for mins=flip([1:5])
     nexttile;
-    plot_jid(log_time_to_prior_sw{chan,mins})
-    clim(quantile(p(isfinite(p)),[0.1 0.95],'all'))
+    plot_jid([log_time_to_prior_sw{chan,mins}])
+    % clim(quantile(p(isfinite(p)),[0.1 0.95],'all'))
     colorbar;
     title(sprintf('%d',mins))
 end
 for mins=1:n_timelags
     nexttile;
-    plot_jid(log_time_to_next_sw{chan,mins})
-    clim(quantile(x(isfinite(x)),[0.1 0.95],'all'))
+    plot_jid([log_time_to_next_sw{chan,mins}])
+    % clim(quantile(x(isfinite(x)),[0.1 0.95],'all'))
     colorbar;
     title(sprintf('%d',mins))
 end

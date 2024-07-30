@@ -2,11 +2,14 @@
 refilter = A{1,2}{1,4};
 [dt_dt_r,~] = calculate_ITI_K_ITI_K1(taps, 'shuffle', 0); 
 [dt_dt,gridx,xi] = assign_tap2bin(dt_dt_r);
+f=@calculate_p2p_amplitude;
 %%
-n_timelags = 5;
-jid_delays_before = cell(64,n_timelags);
-jid_delays_after = cell(64,n_timelags);
-for mins=1:n_timelags
+n_timelags = [0:0.5:5];
+jid_delays_before = cell(64,length(n_timelags));
+jid_delays_after = cell(64,length(n_timelags));
+count = 1;
+% for mins=1:n_timelags
+for mins=n_timelags
     time_bin = mins*60*1000;
     selected_waves = cell(64,length(taps)-2);
     selected_waves_before = cell(64,length(taps)-2);
@@ -25,8 +28,9 @@ for mins=1:n_timelags
             triad_lengths(triad_idx,1) = triad(end)-triad(1);
         end
     end
-    [jid_delays_before(:,mins),amp_per_triad_before,not_occupied_bins] = jid_per_param(refilter.channels,selected_waves_before,dt_dt_r, f, 'sel_field',"maxpospkamp", 'pool_duplicates', 0);
-    [jid_delays_after(:,mins),amp_per_triad_after,not_occupied_bins] = jid_per_param(refilter.channels,selected_waves_after,dt_dt_r, f, 'sel_field',"maxpospkamp", 'pool_duplicates', 0);
+    [jid_delays_before(:,count),amp_per_triad_before,not_occupied_bins] = jid_per_param(refilter.channels,selected_waves_before,dt_dt_r, f, 'sel_field',"maxpospkamp", 'pool_duplicates', 0);
+    [jid_delays_after(:,count),amp_per_triad_after,not_occupied_bins] = jid_per_param(refilter.channels,selected_waves_after,dt_dt_r, f, 'sel_field',"maxpospkamp", 'pool_duplicates', 0);
+    count=count+1;
 end
 [jid_amp,amp_per_triad,not_occupied_bins] = jid_per_param(refilter.channels,selected_waves,dt_dt_r, f, 'sel_field',"maxpospkamp");
 jid_delays = cat(2,jid_delays_before,jid_amp,jid_delays_after);

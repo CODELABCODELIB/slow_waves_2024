@@ -29,6 +29,7 @@ gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%% Figure 4:JID-waves NNMF %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% JID-amplitudes
 save_path = sprintf('%s/jid_amp',save_path_upper); 
 data_path = sprintf('%s/erp_sw2_1_4',save_path_upper);
 load_str='sw2'; data_name='A';
@@ -38,30 +39,21 @@ end
 f = @jid_waves_main;
 run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 1);
 %% cluster the nnmf maps across the population
-% load(sprintf('/EEG_res.mat',data_path))
+load(sprintf('%s/EEG_res.mat',data_path))
 % remove the empty structs and concat all the participants
 res = res(cellfun(@(x) isfield(x,'stable_basis_amp'),res));
 res = cat(2,res{:});
 % select the spatial maps
 all_maps = cat(2,res.stable_basis_amp);
 [prototypes,labels,cluster_prototypes,cluster_labels] = cluster(all_maps);
-%% plot the clustered JIDs
-all_jids = cat(2,res.reconstruct_amp);
-for n_map=1:size(prototypes,2)
-    tmp = all_jids(:,labels==n_map);
-    figure;
-    tiledlayout(2,ceil(size(tmp,2)/2))
-    for i=1:size(tmp,2)
-        nexttile;
-        plot_jid(reshape(tmp(:,i),[50,50]))
-        clim([0,2])
-    end
-    tmp = all_maps(:,labels==n_map);
-    figure;
-    tiledlayout(2,ceil(size(tmp,2)/2))
-    for i=1:size(tmp,2)
-        nexttile;
-        topoplot(tmp(1:62,i),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
-        clim([0,2])
-    end
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%% Figure 3:JID-waves NNMF with delays %%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% load(sprintf('%s/EEG_res.mat',data_path))
+f=@calculate_p2p_amplitude;
+n_timelags = [0:0.5:10];
+save_path = sprintf('%s/jid_amp_delay_nnmf_%d_to_%d',save_path_upper,min(n_timelags),max(n_timelags));
+if ~exist(save_path, 'dir')
+       mkdir(save_path); addpath(genpath(save_path))
 end
+jid_delay_nnmf_main(res,f, 'save_path',save_path,'n_timelags',n_timelags)
