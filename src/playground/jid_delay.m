@@ -1,6 +1,6 @@
 %%
 refilter = A{1,2}{1,4};
-[dt_dt_r,~] = calculate_ITI_K_ITI_K1(taps, 'shuffle', 0); 
+[dt_dt_r,taps] = calculate_ITI_K_ITI_K1(taps, 'shuffle', 0); 
 [dt_dt,gridx,xi] = assign_tap2bin(dt_dt_r);
 f=@calculate_p2p_amplitude;
 %%
@@ -59,10 +59,12 @@ end
 EEG = gettechnicallycleanEEG_sw(EEG, [],[]); 
 options.remove_EEG = 0;
 [data,EEG_ds] = sw_detection(EEG, 'AT08',options);
+refilter = data{1,4};
 %%
 selected_EEG = cell(64,length(taps)-2);
 selected_waves = cell(64,length(taps)-2);
-time_bin = mins*60*1000;
+% mins = 3;
+% time_bin = mins*60*1000;
 triad_lengths = nan(length(taps)-2,1);
 for chan=1:length(refilter.channels)
     slow_waves = [refilter.channels(chan).maxnegpk{:}];
@@ -71,7 +73,6 @@ for chan=1:length(refilter.channels)
         tmp = EEG_ds.times >= triad(1) & EEG_ds.times <= triad(end);
         selected_EEG{chan,triad_idx} = EEG_ds.data(chan,tmp);
         
-
         tmp_sw_all = slow_waves(slow_waves >= triad(1) & slow_waves <= triad(end));
         sel_times = EEG_ds.times(EEG_ds.times >= triad(1) & EEG_ds.times <= triad(end));
         tmp_sw_idxs = nan(length(tmp_sw_all),1);
@@ -87,6 +88,30 @@ end
 % [dt_dt,gridx,xi] = assign_tap2bin(dt_dt_r);
 jid_eeg = assign_input_to_bin(taps,selected_EEG,selected_waves);
 jid_sw = assign_input_to_bin(taps,selected_waves);
+%% transform cell to hdf format
+for chan=1:64
+    tmp = nan(2500,max(cellfun(@(x) length(x) ,jid_sw{chan}),[],'all'));
+    reshape_tmp = reshape(jid_sw{chan}, 2500,1);
+    for bin=1:2500
+        tmp(bin,1:length(reshape_tmp{bin})) = reshape_tmp{bin};
+    end
+    h5create('jid_sw.h5',sprintf('/jid_sw/chan%d',chan),size(tmp))
+    h5write('jid_sw.h5',sprintf('/jid_sw/chan%d',chan),tmp)
+end
+h5disp('jid_sw.h5')
+%%
+for bin=1:2500
+    x = nan(64,max(cell2mat(cellfun(@(x) length(x) ,[jid_eeg{:}],'UniformOutput',0)),[], 'all'));
+    for chan=1:64
+        % tmp = nan(2500,max(cellfun(@(x) length(x) ,jid_eeg{chan}),[],'all'));
+        reshape_tmp = reshape(jid_eeg{chan}, 2500,1);
+        % tmp(bin,1:length(reshape_tmp{bin})) = reshape_tmp{bin};
+        x(chan,1:length(reshape_tmp{bin})) = reshape_tmp{bin};
+    end
+    h5create('jid_eeg.h5',sprintf('/bin%d',bin),size(x))
+    h5write('jid_eeg.h5',sprintf('/bin%d',bin),x)
+end
+h5disp('jid_eeg.h5')
 %%
     % [jid_delays_before(:,mins),amp_per_triad_before,not_occupied_bins] = jid_per_param(refilter.channels,selected_waves_before,dt_dt_r, f, 'sel_field',"maxpospkamp", 'pool_duplicates', 0);
     % [jid_delays_after(:,mins),amp_per_triad_after,not_occupied_bins] = jid_per_param(refilter.channels,selected_waves_after,dt_dt_r, f, 'sel_field',"maxpospkamp", 'pool_duplicates', 0);
