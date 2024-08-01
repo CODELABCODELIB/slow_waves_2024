@@ -22,6 +22,8 @@ Install the following toolboxes:
 - `EEGLAB 2020 <https://sccn.ucsd.edu/eeglab/ressources.php>`__
 - `icablinkmetrics <https://github.com/mattpontifex/icablinkmetrics>`__
 - `LIMO EEG <https://github.com/LIMO-EEG-Toolbox/limo_tools>`__
+- `Spams-matlab <https://github.com/daming-lu/spams-matlab-v2.6-2>`__
+- `NNMF pipeline <https://github.com/CODELABCODELIB/CODELAB_Master/tree/main/nnmf_pipeline/nnmf_pipeline_spams>`__
 
 **Additional Matlab toolboxes**
 
@@ -39,6 +41,8 @@ Folder structure
 	¦       +-- doctrees
 	¦       +-- html
 	+-- local_sleep
+	+-- data --> Project preprocessed datasets
+	+-- figures --> Project figures 
 	+-- src  --> code of the project
 	    +-- microstates_functions  --> functions to calculate JIDs reused from microstates https://doi.org/10.1101/2024.07.22.604605 
 	    +-- playground --> functions for exploratory anslysis

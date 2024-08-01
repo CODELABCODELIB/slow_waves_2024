@@ -56,6 +56,22 @@ Pre-processing EEG & identify slow waves
  - Now filter each parameter in the channel to keep only the top 10% waves
 
 
+Folder structure
+----------------
+
+::
+
+	+-- preprocessing_sw
+	¦   +-- sw_detection.m --> main function to perform all steps for slow waves detection and save results (Step 1 to 9)
+	¦   +-- call_f_all_p_parallel_sw.m --> run a function for every participant and save in checkpoint files (step 1)
+	¦   +-- gettechnicallycleanEEG_sw.m --> pre-procsses the EEG data by removing blinks and interpolating missing channels (step 2)
+	¦   +-- preprocess_EEG.m --> prepare data for slow wave detection (Step 3 to 7)
+	¦   +-- twalldetectnew_TA_v4.m --> identify slow waves (step 8)
+	¦   +-- filter_results.m --> filter the slow waves (step 9)
+	¦   +-- run_f_checkpoints.m --> run a function for every checkpoint file
+	¦   +-- seperate_movie_phone.m --> get the indexes of the phone and movie events
+
+
 Code
 ----
 

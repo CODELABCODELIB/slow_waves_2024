@@ -45,10 +45,95 @@
             
   <section id="joint-probability-interval-distribution-jid-state">
 <h1>Joint probability interval distribution (JID-state)<a class="headerlink" href="#joint-probability-interval-distribution-jid-state" title="Link to this heading">¶</a></h1>
-<p>NNMF JID amplitude</p>
-<ol class="arabic simple">
+<section id="a-create-jid-parameters-e-g-jid-amplitudes">
+<h2>A. Create JID-parameters (e.g. JID-amplitudes)<a class="headerlink" href="#a-create-jid-parameters-e-g-jid-amplitudes" title="Link to this heading">¶</a></h2>
+<ol class="arabic">
+<li><p>Select the slow waves co-ocurring with the phone data. The slow waves detection was performed on all the data which includes movie watching and phone use which is why it needs to be seperated.</p></li>
 <li><p>Assign each touchscreen interaction to nearest ‘bin/pixel’.</p></li>
+<li><p>For each triad select the co-occurring slow waves.</p></li>
+<li><p>Calculate the slow wave parameter for the slow waves per triad. This can be the slow wave density, amplitude or slopes.</p></li>
+<li><p>Assign the slow wave parameter (from step 4) to the bin where the triad was assigned (step 2). This creates a JID per parameter.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Multiple events in one bin are pooled by calculating the median among the events.</p></li>
+</ul>
+</div></blockquote>
+</li>
 </ol>
+</section>
+<section id="b-prepare-data-for-non-negative-matrix-factorization-nnmf">
+<h2>B. Prepare data for Non-negative matrix factorization (NNMF)<a class="headerlink" href="#b-prepare-data-for-non-negative-matrix-factorization-nnmf" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Reshape the bins (50x50xelectrodes) to 2500 bins x electrodes</p></li>
+<li><p>Remove empty bins</p></li>
+<li><p>Shift the data if necessary to make it non-negative but adding the absolute minimum value</p></li>
+<li><p>If a value in the data is 0 then pad it with 0.0000000000001.</p></li>
+<li><p>The bins with less than 25 percentile of events are removed. NNMF is sensitive to high variance and will simply seperate these events out if not removed.</p></li>
+<li><p>The parameters may be z-score normalized this may be relevant for the amplitudes</p></li>
+<li><p>The parameters may be log normalized, if the distributions are skewed</p></li>
+</ol>
+</section>
+<section id="c-cross-validation-for-non-negative-matrix-factorization-nnmf">
+<h2>C. Cross-validation for Non-negative matrix factorization (NNMF)<a class="headerlink" href="#c-cross-validation-for-non-negative-matrix-factorization-nnmf" title="Link to this heading">¶</a></h2>
+<p>To select the best number of ranks per participant cross-validation was used. The following steps were performed for each participant:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Randomly remove 20% of the data points (masking)</p></li>
+</ol>
+<ol class="arabic simple" start="3">
+<li><p>Perform NNMF 50 times with randomly initialized values. Every repetition results in 2 matrices. The first matrix summarizes the jid-parameter (meta-jid-parameter, Shape: [bins x rank]). The second matrix (meta-location) summarizes the likelihood that the jid-parameter is represented in that location (Shape: [rank x electrodes]).</p></li>
+<li><p>Z normalized each meta-trial and meta-ERP</p></li>
+<li><p>Reconstructed the data and calculated the training and testing error for each repetition</p></li>
+<li><p>Repeated steps 2 to 6 for rank [2 to 10]</p></li>
+<li><p>Selected the best rank by averaging the test error across all the repetitions for each rank and selecting the rank with the smallest error.</p></li>
+</ol>
+</div></blockquote>
+</section>
+<section id="d-reproducible-non-negative-matrix-factorization-nnmf">
+<h2>D. Reproducible Non-negative matrix factorization (NNMF)<a class="headerlink" href="#d-reproducible-non-negative-matrix-factorization-nnmf" title="Link to this heading">¶</a></h2>
+<p>Since NNMF is a non-convex problem, the solution is dependent on the initialization. Therefore we employed the reproducible NNMF technique as explained in (<span class="xref std std-ref">https://doi.org/10.1101/2022.08.25.505261</span>). We repeated the above mentioned steps 1 to 4, with the exception that NNMF was performed for 100 repetitions with the selected rank. Followed by the reproducible NNMF technique selecting the most stable and reproducible decompositions per participant.</p>
+</section>
+<section id="e-clustering-nnmf-decompositions">
+<h2>E. Clustering NNMF decompositions<a class="headerlink" href="#e-clustering-nnmf-decompositions" title="Link to this heading">¶</a></h2>
+<p>To identify population wide relationships we clustered the meta-locations using modified k-means. Then compared to JID-parameters per cluster.</p>
+<section id="e-1-selecting-the-optimal-number-of-clusters">
+<h3>E.1 Selecting the optimal number of clusters<a class="headerlink" href="#e-1-selecting-the-optimal-number-of-clusters" title="Link to this heading">¶</a></h3>
+<p>To select the optimal number of clusters for k-means the</p>
+</section>
+<section id="e-2-stable-k-means">
+<h3>E.2 Stable k-means<a class="headerlink" href="#e-2-stable-k-means" title="Link to this heading">¶</a></h3>
+<p>As the solution for k-means is not unique we want to select the most stable clusters. Towards this, we repeated k-means, with the optimal number of clusters, 1000 times. For each repetition, the sum of squared distance was calculated. Finally, the repetition with the smallest sum of squared distance was selected.</p>
+</section>
+</section>
+<section id="folder-structure">
+<h2>Folder structure<a class="headerlink" href="#folder-structure" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-- sw_jid_nnmf
+¦   +-- jid_waves_main.m  --&gt; main function perform nnmf for jid-parameters calls all subfunctions and saves the data (A to D)
+¦   +-- sw_per_triad.m --&gt; get the slow waves per triad (A step 3)
+¦   +-- jid_per_param.m --&gt; Get the slow wave parameter per triad and map them to the JID (A step 4 - 5)
+¦   +-- calculate_density.m --&gt; calculates the slow wave density (A step 4)
+¦   +-- calculate_density_per_dur.m --&gt; calculates the slow wave density (A step 4)
+¦   +-- calculate_p2p_amplitude.m --&gt; calculates the slow wave peak to peak amplitudes (A step 4)
+¦   +-- calculate_slope.m --&gt; calculates the slow wave upwards or downward slopes (A step 4)
+¦   +-- prepare_sw_data_for_nnmf.m --&gt; prepare slow wave data for nnmf (B)
+¦   +-- perform_sw_param_nnmf.m  --&gt; perform the nnmf on the slow waves data (C to D)
+¦   +-- jid_delay_nnmf_main.m  --&gt; main function perform nnmf for time-lagged jid-parameters
+¦   +-- jid_param_before_during_after.m --&gt; get time-lagged jid-parameters
++-- microstates_functions
+¦   +-- find_gaps_in_taps.m --&gt; find indexes in the phone data where there is activity and seperate these from areas with no activity (gaps) (A step 1)
+¦   +-- find_taps.m --&gt; find tap indexes (A step 1)
+¦   +-- assign_tap2bin.m --&gt; Assign triads to nearest JID bins (A step 2)
+¦   +-- calculate_ITI_K_ITI_K1.m --&gt; calculate the inter-touch-intervals K and K+1 for the taps  (A step 2)
+¦   +-- cluster.m --&gt; Cluster the NNMF results (E)
+¦   +-- assign_input_to_bin.m
+¦   +-- find_duplicates.m --&gt; find triads that are in the same bin
+¦   +-- pool_duplicates.m --&gt; pool duplicate events in bin using various central tendencies
+¦   +-- prepare_EEG_w_taps_only.m --&gt; select only the phone data portion from the EEG
+</pre></div>
+</div>
+</section>
+<section id="code">
+<h2>Code<a class="headerlink" href="#code" title="Link to this heading">¶</a></h2>
 <dl class="mat function" id="module-sw_jid_nnmf">
 <dt class="sig sig-object mat" id="sw_jid_nnmf.calculate_p2p_amplitude">
 <span class="sig-prename descclassname"><span class="pre">sw_jid_nnmf.</span></span><span class="sig-name descname"><span class="pre">calculate_p2p_amplitude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">twa</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sw_jid_nnmf.calculate_p2p_amplitude" title="Link to this definition">¶</a></dt>
@@ -200,6 +285,187 @@ sel_field = ‘mxupslp’ for upwards slope</p>
 <p>Ruchella Kock, Leiden University, 17/01/2024</p>
 </dd></dl>
 
+<dl class="mat function" id="module-microstates_functions">
+<dt class="sig sig-object mat" id="microstates_functions.pool_duplicates">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">pool_duplicates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">dt_dt</span></em>, <em class="sig-param"><span class="pre">microstates</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.pool_duplicates" title="Link to this definition">¶</a></dt>
+<dd><p>find multiple triads in each bin</p>
+<dl class="simple">
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>pool_duplicates(dt_dt,pool_duplicates)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>dt_dt = array of triads with ITI of index K and ITI of index k+1 
+microstates = all the microstates fitted on the EEG data</p>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>pooled: pooled data in each bin</p></li>
+</ul>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="microstates_functions.prepare_EEG_w_taps_only">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">prepare_EEG_w_taps_only</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">EEG</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.prepare_EEG_w_taps_only" title="Link to this definition">¶</a></dt>
+<dd><dl>
+<dt>Prepare EEG with tap sequences only </dt><dd><p>(remove resting state movie or smartphone box/forcesensor data)</p>
+</dd>
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>prepare_EEG_w_taps_only(EEG)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>EEG = EEG struct</p>
+</dd>
+<dt>Output(s):</dt><dd><p>EEG = truncated EEG struct
+indexes cell = latencies where tap sequences take place, if there are</p>
+<blockquote>
+<div><p>multiple gaps then the cell is of size (1 x number of gaps)</p>
+</div></blockquote>
+</dd>
+</dl>
+<p>Ruchella Kock, Leiden University, 22/08/2023</p>
+<p>find indexes/latencies of the ALIGNED smartphone taps</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="microstates_functions.find_gaps_in_taps">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">find_gaps_in_taps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">taps</span></em>, <em class="sig-param"><span class="pre">gap_length</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.find_gaps_in_taps" title="Link to this definition">¶</a></dt>
+<dd><p>Indexes of smartphone tap data, remove any sequences/gaps with no touches</p>
+<dl class="simple">
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>find_gaps_in_taps(taps)</p></li>
+<li><p>find_gaps_in_taps(…, break_time, 100000)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>taps = latencies a smartphone touchscreen interaction/tap took place (in ms)</p>
+</dd>
+<dt>Optional input parameter(s):</dt><dd><p>gap_length (default = 600000/ 10 minutes) - length of the gap with no touches(in ms)</p>
+</dd>
+<dt>Output(s):</dt><dd><dl class="simple">
+<dt>indexes cell = latencies where tap sequences take place, if there are</dt><dd><p>multiple gaps then the cell is of size (1 x number of gaps)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Ruchella Kock, Leiden University, 22/08/2023</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="microstates_functions.find_duplicates">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">find_duplicates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">dt_dt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.find_duplicates" title="Link to this definition">¶</a></dt>
+<dd><p>find multiple triads in each bin</p>
+<dl class="simple">
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>find_duplicates(dt_dt)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>dt_dt = array of triads with ITI of index K and ITI of index k+1 
+microstates = all the microstates fitted on the EEG data</p>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>duplicates: logical array indicating whether a triad is a duplicate</p></li>
+</ul>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University</p>
+<p>initiate an empty array of length equal to number of triads</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="microstates_functions.assign_tap2bin">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">assign_tap2bin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">dt_dt</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.assign_tap2bin" title="Link to this definition">¶</a></dt>
+<dd><p>Assign triads of taps to belong to specific bins</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>assign_tap2bin(dt_dt)</p></li>
+<li><p>assign_tap2bin(… , ‘Bins’, 10)</p></li>
+<li><p>assign_tap2bin(… , ‘MinH’, 1.5)</p></li>
+<li><p>assign_tap2bin(… , ‘MaxH’, 5)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>dt_dt = array of triads with ITI of index K and ITI of index k+1</p>
+<p>Optional input parameters:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>‘Bins’           Number of bins (per side) in the JID. Basically the </dt><dd><p>length of the side of the JID matrix.</p>
+</dd>
+<dt>‘MinH’           The minimum delta(t) value to consider in the JID </dt><dd><p>space expressed in log10(ms) space. Default 1.5 ~ 30 ms 
+10 ^ 1.5 = 31.6.</p>
+</dd>
+<dt>‘MaxH’           The maximum delta(t) value to consider in the JID </dt><dd><p>space expressed in log10 space. Default 5 ~  100 s 
+10 ^ 5 = 100000.</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>dt_dt: with 2 more columns where each triad has been assigned to</p></li>
+</ul>
+<p>nearest bin
+- gridx: the linearly spaced bin edges
+- xi: X and Y coordinates for each bin</p>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="microstates_functions.cluster">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">cluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">all_prototypes</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.cluster" title="Link to this definition">¶</a></dt>
+<dd><p>perform kmeans clustering</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>cluster(all_clusters)</p></li>
+<li><p>cluster(…[3:20])</p></li>
+<li><p>cluster(…,…, 100)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>all_prototypes = all the prototypes</p>
+</dd>
+<dt>Optional input parameter(s):</dt><dd><dl class="simple">
+<dt>n_clus (default<span class="classifier">[2:15]) = array with the number of possible clusters </span></dt><dd><p>to form ‘k’ for modkmeans</p>
+</dd>
+</dl>
+<p>numreps (default : 1000) = number of times to repeat modkmeans</p>
+</dd>
+<dt>Output(s):</dt><dd><p>prototypes = prototypes of best cluster
+labels = clustering labels
+cluster_prototypes = prototypes for all repetitions
+cluster_labels = labels for all repetitions</p>
+</dd>
+<dt>Requires:</dt><dd><p>modkmeans</p>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University, 04/12/2023</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="microstates_functions.find_taps">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">find_taps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">EEG</span></em>, <em class="sig-param"><span class="pre">indexes</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.find_taps" title="Link to this definition">¶</a></dt>
+<dd><p>find tap indexes</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>find_taps(taps)</p></li>
+<li><p>find_taps(…, indexes, {400 450 600})</p></li>
+<li><p>find_taps(…, ‘tap_only’, 0)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>EEG = EEG struct</p>
+</dd>
+<dt>Optional input parameter(s):</dt><dd><dl class="simple">
+<dt>indexes cell = latencies where tap sequences take place, if there are</dt><dd><p>multiple gaps then the cell is of size (1 x number of gaps)</p>
+</dd>
+</dl>
+<p>tap_only (default : 1) = if the EEG data has been truncated to fit</p>
+</dd>
+<dt>Output(s):</dt><dd><p>taps = latencies a smartphone touchscreen interaction/tap took place (in ms)</p>
+</dd>
+</dl>
+<p>Ruchella Kock, Leiden University, 22/08/2023</p>
+</dd></dl>
+
+</section>
 </section>
 
 
@@ -209,6 +475,26 @@ sel_field = ‘mxupslp’ for upwards slope</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Joint probability interval distribution (JID-state)</a><ul>
+<li><a class="reference internal" href="#a-create-jid-parameters-e-g-jid-amplitudes">A. Create JID-parameters (e.g. JID-amplitudes)</a></li>
+<li><a class="reference internal" href="#b-prepare-data-for-non-negative-matrix-factorization-nnmf">B. Prepare data for Non-negative matrix factorization (NNMF)</a></li>
+<li><a class="reference internal" href="#c-cross-validation-for-non-negative-matrix-factorization-nnmf">C. Cross-validation for Non-negative matrix factorization (NNMF)</a></li>
+<li><a class="reference internal" href="#d-reproducible-non-negative-matrix-factorization-nnmf">D. Reproducible Non-negative matrix factorization (NNMF)</a></li>
+<li><a class="reference internal" href="#e-clustering-nnmf-decompositions">E. Clustering NNMF decompositions</a><ul>
+<li><a class="reference internal" href="#e-1-selecting-the-optimal-number-of-clusters">E.1 Selecting the optimal number of clusters</a></li>
+<li><a class="reference internal" href="#e-2-stable-k-means">E.2 Stable k-means</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#folder-structure">Folder structure</a></li>
+<li><a class="reference internal" href="#code">Code</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
   <div>
     <h4>Previous topic</h4>
     <p class="topless"><a href="pre_processing.html"
