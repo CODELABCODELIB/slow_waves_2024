@@ -100,16 +100,19 @@ for chan=1:64
 end
 h5disp('jid_sw.h5')
 %%
+reshaped_jid_eeg = cellfun(@(chan_eeg) reshape(chan_eeg, 2500,1), jid_eeg, 'UniformOutput', false);
+reshaped_jid_sw = cellfun(@(chan_eeg) reshape(chan_eeg, 2500,1), jid_sw, 'UniformOutput', false);
 for bin=1:2500
-    x = nan(64,max(cell2mat(cellfun(@(x) length(x) ,[jid_eeg{:}],'UniformOutput',0)),[], 'all'));
+    tmp = nan(64,max(cell2mat(cellfun(@(x) length(x) ,[jid_eeg{:}],'UniformOutput',0)),[], 'all'));
+    tmp2 = nan(64,max(cell2mat(cellfun(@(x) length(x) ,[jid_sw{:}],'UniformOutput',0)),[], 'all'));
     for chan=1:64
-        % tmp = nan(2500,max(cellfun(@(x) length(x) ,jid_eeg{chan}),[],'all'));
-        reshape_tmp = reshape(jid_eeg{chan}, 2500,1);
-        % tmp(bin,1:length(reshape_tmp{bin})) = reshape_tmp{bin};
-        x(chan,1:length(reshape_tmp{bin})) = reshape_tmp{bin};
+        tmp(chan,1:length(reshaped_jid_eeg{chan}{bin})) = reshaped_jid_eeg{chan}{bin};
+        tmp2(chan,1:length(reshaped_jid_eeg{chan}{bin})) = reshaped_jid_sw{chan}{bin};
     end
-    h5create('jid_eeg.h5',sprintf('/bin%d',bin),size(x))
-    h5write('jid_eeg.h5',sprintf('/bin%d',bin),x)
+    h5create('jid_eeg.h5',sprintf('/eeg/bin%d',bin),size(tmp))
+    h5write('jid_eeg.h5',sprintf('/eeg/bin%d',bin),tmp)
+    h5create('jid_eeg.h5',sprintf('/sw/bin%d',bin),size(tmp2))
+    h5write('jid_eeg.h5',sprintf('/sw/bin%d',bin),tmp2)
 end
 h5disp('jid_eeg.h5')
 %%
