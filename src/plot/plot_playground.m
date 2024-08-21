@@ -56,11 +56,11 @@ for chan=1:64
 end
 %% median JID per channel
 med_amp_per_e = cellfun(@(jid) median(jid,'all', 'omitnan'),jid_amp,'UniformOutput',false);
-figure; 
+figure;
 topoplot([med_amp_per_e{1:62}],EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
 
 %% plot distribution of jid params
-figure; 
+figure;
 tiledlayout(1,2)
 nexttile;
 histogram([reshaped_jid(:)])
@@ -77,7 +77,7 @@ set(gca, 'fontsize',18)
 xlabel('Electrodes')
 ylabel('Bins')
 %% plot nnmf results
-h = figure; 
+h = figure;
 best_k_overall = size(reconstruct,2);
 tiledlayout(best_k_overall,2)
 for k=1:best_k_overall
@@ -95,24 +95,24 @@ end
 %% plot nnmf results all subjects
 for pp=1:41
     h = figure;
-    best_k_overall = size(r(pp).reconstruct_amp,2);
+    best_k_overall = size(res(pp).reconstruct_amp,2);
     tiledlayout(best_k_overall,2)
     for k=1:best_k_overall
         nexttile;
-        plot_jid(reshape(r(pp).reconstruct_amp(:,k),50,50))
+        plot_jid(reshape(res(pp).reconstruct_amp(:,k),50,50))
         clim([0 2])
         colorbar;
         set(gca, 'fontsize', 18)
         nexttile;
-        topoplot(r(pp).stable_basis_amp(1:62,k),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+        topoplot(res(pp).stable_basis_amp(1:62,k),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
         clim([0 1.5])
         colorbar;
         set(gca, 'fontsize', 18)
     end
-    saveas(h,sprintf('%s/jid_nnmf/jid_amp_nnmf_%s.svg',save_path,pp))
+    % saveas(h,sprintf('%s/jid_nnmf/jid_amp_nnmf_%s.svg',save_path,pp))
 end
 %% plot nnmf results delay
-h = figure; 
+h = figure;
 best_k_overall = size(reconstruct,2);
 tiledlayout(best_k_overall,2)
 for k=1:best_k_overall
@@ -121,12 +121,33 @@ for k=1:best_k_overall
     colorbar;
     set(gca, 'fontsize', 18)
     nexttile;
-    plot([-5:5],stable_basis(:,k))
+    plot([-11:11],stable_basis(:,k))
     axis square;
     set(gca, 'fontsize', 18)
 end
+%% plot nnmf results delay all participants
+chan = 16;
+for pp=1:41
+    load(sprintf('/mnt/ZETA18/User_Specific_Data_Storage/ruchella/slow_waves/jid_amp_delay_nnmf_0_to_10/reconstruct_%d.mat',pp))
+    load(sprintf('/mnt/ZETA18/User_Specific_Data_Storage/ruchella/slow_waves/jid_amp_delay_nnmf_0_to_10/stable_basis_%d.mat',pp))
+    stable_basis = stable_basis_all_chans{chan};
+    reconstruct = reconstruct_all_chans{chan};
+    h = figure;
+    best_k_overall = size(reconstruct,2);
+    tiledlayout(best_k_overall,2)
+    for k=1:best_k_overall
+        nexttile;
+        plot_jid(reshape(reconstruct(:,k),50,50))
+        colorbar;
+        set(gca, 'fontsize', 18)
+        nexttile;
+        plot([-11:11],stable_basis(:,k))
+        axis square;
+        set(gca, 'fontsize', 18)
+    end
+end
 %% plot nnmf population clusters
-h= figure; 
+h= figure;
 tiledlayout(1,size(prototypes,2))
 for n_map=1:size(prototypes,2)
     nexttile;
@@ -135,8 +156,8 @@ for n_map=1:size(prototypes,2)
 end
 colormap('jet')
 colorbar;
-saveas(h,sprintf('%s/jid_nnmf/prototypes.svg',save_path))
-% plot the clustered JIDs
+% saveas(h,sprintf('%s/jid_nnmf/prototypes.svg',save_path))
+%% plot the clustered JIDs
 all_jids = cat(2,res.reconstruct_amp);
 for n_map=1:size(prototypes,2)
     tmp = all_jids(:,labels==n_map);
@@ -147,7 +168,7 @@ for n_map=1:size(prototypes,2)
         plot_jid(reshape(tmp(:,i),[50,50]))
         clim([0,2])
     end
-    saveas(h,sprintf('%s/jid_nnmf/jid_amp_nnmf_clus_%d.svg',save_path,n_map))
+    % saveas(h,sprintf('%s/jid_nnmf/jid_amp_nnmf_clus_%d.svg',save_path,n_map))
     % plot the maps
     tmp = all_maps(:,labels==n_map);
     h = figure;
@@ -157,20 +178,20 @@ for n_map=1:size(prototypes,2)
         topoplot(tmp(1:62,i),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
         clim([0,2])
     end
-    saveas(h,sprintf('%s/jid_nnmf/topoplots_nnmf_clus_%d.svg',save_path,n_map))
+    % saveas(h,sprintf('%s/jid_nnmf/topoplots_nnmf_clus_%d.svg',save_path,n_map))
 end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%% plot basic sw features %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% plot single trials
-chan=1; 
+chan=1;
 for wave = 1:10;
     figure;
-    plot(twa_results.channels(chan).negzx{wave}:twa_results.channels(chan).wvend{wave},EEG_refilter.data(chan,twa_results.channels(chan).negzx{wave}:twa_results.channels(chan).wvend{wave})); 
+    plot(twa_results.channels(chan).negzx{wave}:twa_results.channels(chan).wvend{wave},EEG_refilter.data(chan,twa_results.channels(chan).negzx{wave}:twa_results.channels(chan).wvend{wave}));
     xline(twa_results.channels(chan).maxnegpk{wave}, 'r'); yline(twa_results.channels(chan).maxnegpkamp{wave}, 'r')
     xline(twa_results.channels(chan).maxpospk{wave}); yline(twa_results.channels(chan).maxpospkamp{wave})
 end
-%% plot erp 
+%% plot erp
 % maxnegpk = cell2mat(twa_results.channels(1).maxnegpk);
 % [EEG_taps_ch1] = add_events(EEG_taps,maxnegpk,length(maxnegpk),'maxnegpk');
 % [EEG_epoched_ch1, indices] = pop_epoch(EEG_taps_ch1, {'maxnegpk'},[-2 2]);
@@ -181,12 +202,12 @@ title(sprintf('E %d',chan))
 %% plot density
 density = calculate_density(refilter.channels);
 h= figure; topoplot(density(1:62),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
-title('Density') 
+title('Density')
 clim([round(min(density)),round(max(density))])
 colormap parula; colorbar;
 saveas(h,sprintf('%s/density_total_%s.svg',save_path,subject))
 % %% plot density per min;
-% [densities] = calculate_density_per_dur(twa_results.channels,length(EEG.times)); 
+% [densities] = calculate_density_per_dur(twa_results.channels,length(EEG.times));
 % density_min = [densities.med];
 % h = figure; topoplot(density_min(1:62),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
 % title('Density per min')
@@ -223,3 +244,55 @@ recording_times(start_times) = 1;
 figure;
 imagesc(recording_times);
 colorbar parula;
+%% plot SW rate per channel
+for chan=1:62
+    tmp = zeros(1,max([refilter.channels(chan).negzx{:}]));
+    tmp([refilter.channels(chan).negzx{:}]) = 1;
+    figure;
+    plot(tmp)
+end
+%% plot SW ITIs
+for chan=1:4
+    figure;
+    histogram(diff([refilter.channels(chan).negzx{:}]))
+end
+%% plot SW Jids
+for chan=1:4
+    jid = taps2JID([refilter.channels(chan).negzx{:}]);
+    figure;
+    plot_jid(jid);
+end
+%% plot SW rate all channels
+max_all = max(cell2mat(cellfun(@(x) max(cell2mat(x)),{refilter.channels.negzx},'UniformOutput',false)));
+tmp = zeros(max_all,64);
+for chan=1:63
+    tmp([refilter.channels(chan).negzx{:}],chan) = 1;
+end
+figure;
+imagesc(tmp)
+%% plot behavior during SWtriad
+for bin = 1:1136
+    % bin = randi(size(selected_waves,2));
+    tmp = selected_waves{chan,bin};
+    if ~isempty(tmp) && length(tmp) > 3
+        jid_behavior = taps2JID(tmp);
+        
+        h= figure; 
+        tiledlayout(1,2)
+        nexttile;
+        plot_jid(jid_behavior);
+        axis square;
+        title(sprintf('%d triad - size : %d',bin, length(tmp)))
+
+        nexttile;
+        input1 = num2cell(nan(1,length([refilter.channels(chan).maxnegpk{:}])));
+        input1{1,bin} = 1;
+        JID = assign_input_to_bin([refilter.channels(chan).maxnegpk{:}],input1);
+        JID = cell2mat(cellfun(@(x) sum(~isempty(x) & ~isnan(x)) ,JID{chan} ,'UniformOutput' ,false));
+        plot_jid(JID);
+
+        set(gca, 'FontSize',18)
+        colormap('parula')
+        saveas(h, sprintf('%s/chan_%d_triad_%d.svg',save_path,chan,bin))
+    end
+end
