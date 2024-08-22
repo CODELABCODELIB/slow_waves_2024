@@ -69,7 +69,7 @@ end
 f = @sw_to_behavior_all_pps;
 run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 1);
 %% prepare the data
-load(sprintf('%s/sw_to_behavior/EEG_res.mat',save_path_upper); )
+load(sprintf('%s/sw_to_behavior/EEG_res.mat',save_path_upper));
 res = res(cellfun(@(x) isfield(x,'taps'),res));
 res = cat(2,res{:});
 %% plot SW jids

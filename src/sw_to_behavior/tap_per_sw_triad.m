@@ -50,6 +50,8 @@ for chan=1:length(refilter.channels)
             tmp = taps(taps > triad(end));
             if ~isempty(tmp)
                 selected_waves{chan,triad_idx} = tmp(1)-triad(end);
+            else
+                selected_waves{chan,triad_idx} = NaN;
             end
         end
     end
