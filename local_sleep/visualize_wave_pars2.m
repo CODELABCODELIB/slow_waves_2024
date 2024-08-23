@@ -8,7 +8,7 @@ end
 % Iterate through each segment
 for seg = 1:length(wave_pars.segments)
 
-    seg_dir = sprintf('Topoplots/Segment_%s', seg);
+    seg_dir = sprintf('Topoplots/Segment_%d', seg);
     if ~exist(seg_dir, 'dir')
         mkdir(seg_dir);
     end

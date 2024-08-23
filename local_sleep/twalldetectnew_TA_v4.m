@@ -2,7 +2,7 @@
 %% Delta/Theta Wave Detection
 % 
 % Code by Thomas Andrillon --> presumably used in Andrillon et al. (2021)
-% Code modified by David Hof (last edit on 15-04-2024)
+% Code modified by David Hof (last edit on 26-05-2024)
 %
 % Script modified on 2016.03.31 for Visual Deprivation Project (CIRS)
 %
