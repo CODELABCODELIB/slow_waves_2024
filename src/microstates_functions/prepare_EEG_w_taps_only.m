@@ -36,4 +36,5 @@ end
 % reassign the time of the EEG data note that urevent struct now is not usable anymore!
 EEG.data = eeg_dat;
 EEG.times = eeg_times; 
+EEG.pnts = length(EEG.data);
 end

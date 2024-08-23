@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Pre-processing EEG &amp; identify slow waves &#8212; Slow waves surrounding smartphone behaviors 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=def86cc0" />
+    
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Joint probability interval distribution (JID-state)" href="jid_slow_waves.html" />
+    <link rel="prev" title="Startup guide" href="getting-started.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="mat-modindex.html" title="MATLAB Module Index"
+             >matlab index</a> |</li>
+        <li class="right" >
+          <a href="jid_slow_waves.html" title="Joint probability interval distribution (JID-state)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="getting-started.html" title="Startup guide"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Slow waves surrounding smartphone behaviors 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Pre-processing EEG &amp; identify slow waves</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="pre-processing-eeg-identify-slow-waves">
+<h1>Pre-processing EEG &amp; identify slow waves<a class="headerlink" href="#pre-processing-eeg-identify-slow-waves" title="Link to this heading">¶</a></h1>
+<ol class="arabic simple">
+<li><p>Loaded the EEG struct and included participants that met the following criterias:</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>Had EEG data</p></li>
+<li><p>Contains smartphone data OR movie data</p></li>
+<li><p>Has been Aligned to Smartphone data</p></li>
+<li><p>If the participant was a curfew participant, we only included the first measurement file</p></li>
+<li><p>Attys is false</p></li>
+<li><p>Measurement did not contain a saving error</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>Cleaned the EEG data by running gettechnicallcleanEEG</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>Removed blinks according to ICA</p></li>
+<li><p>Interpolated missing channels</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p>Band-pass filtering (0.5-48 Hz, zero-phase, FIR, ‘pop_eegfiltnew’, autom. filter order) [Similar to Fattinger et al. (2017), Petit et al. (2019), and Quercia et al. (2018)]</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>&gt; 0.5 Hz: to filter out very low frequencies (e.g., channel drifts)</p></li>
+<li><p>&lt; 48 Hz: to filter out line noise and other higher frequencies</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li><p>Down-sampling to 128 Hz (to lower computational load)</p></li>
+<li><p>Re-referencing to the average of all channels [Bernardi et al. (2015), Fattinger et al. (2017), Hung et al. (2013), Petit et al. (2019), Quercia et al. (2018)]</p></li>
+<li><p>Re-referencing to average of left and right mastoid electrodes [Andrillon et al. (2021), Bernardi et al. (2015), Hung et al. (2013), Mensen et al. (2016), Quercia et al. (2018)]</p></li>
+<li><p>Low-pass filtering (&lt; 4 Hz, zero-phase, FIR, ‘pop_eegfiltnew’, autom. filter order) [Similar to Quercia et al. (2018)]</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>&lt; 4 Hz: to filter out all frequencies except those within the delta band</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="8">
+<li><p>Slow-Wave Detection [Mensen et al. (2016) / Riedner et al. (2007)]</p></li>
+<li><p>Filter detected slow waves</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>Filter 1: Check for positive peak &gt; 75 microvolts</p></li>
+<li><p>Filter 2: Check for large-amplitude events (&gt; 150 microvolts) in extended time window</p></li>
+<li><p>Now filter each parameter in the channel to keep only the top 10% waves</p></li>
+</ul>
+</div></blockquote>
+<section id="folder-structure">
+<h2>Folder structure<a class="headerlink" href="#folder-structure" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-- preprocessing_sw
+¦   +-- sw_detection.m --&gt; main function to perform all steps for slow waves detection and save results (Step 1 to 9)
+¦   +-- call_f_all_p_parallel_sw.m --&gt; run a function for every participant and save in checkpoint files (step 1)
+¦   +-- gettechnicallycleanEEG_sw.m --&gt; pre-procsses the EEG data by removing blinks and interpolating missing channels (step 2)
+¦   +-- preprocess_EEG.m --&gt; prepare data for slow wave detection (Step 3 to 7)
+¦   +-- twalldetectnew_TA_v4.m --&gt; identify slow waves (step 8)
+¦   +-- filter_results.m --&gt; filter the slow waves (step 9)
+¦   +-- run_f_checkpoints.m --&gt; run a function for every checkpoint file
+¦   +-- seperate_movie_phone.m --&gt; get the indexes of the phone and movie events
+</pre></div>
+</div>
+</section>
+<section id="code">
+<h2>Code<a class="headerlink" href="#code" title="Link to this heading">¶</a></h2>
+<dl class="mat function" id="module-preprocessing_sw">
+<dt class="sig sig-object mat" id="preprocessing_sw.gettechnicallycleanEEG_sw">
+<span class="sig-prename descclassname"><span class="pre">preprocessing_sw.</span></span><span class="sig-name descname"><span class="pre">gettechnicallycleanEEG_sw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">INEEG</span></em>, <em class="sig-param"><span class="pre">bandpass_upper_range</span></em>, <em class="sig-param"><span class="pre">bandpass_lower_range</span></em><span class="sig-paren">)</span><a class="headerlink" href="#preprocessing_sw.gettechnicallycleanEEG_sw" title="Link to this definition">¶</a></dt>
+<dd><p>OUTEEG = gettechnincallycleanEEG(INEEG,bandpass_upper_range)</p>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>INEEG: EEG struct to process</p></li>
+<li><p>bandpass_upper_range: Upper range for bandpass filtering of EEG data</p></li>
+</ul>
+</dd>
+</dl>
+<p>Assume 1.ICA performed, 2. Bad channels have been marked, 3. channel locations already placed 4. Electrode locations present 
+Performs the following steps</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Remove blinks according to ICA</p></li>
+<li><p>Interpolate missing channels</p></li>
+<li><p>Re-reference data to average channel</p></li>
+</ol>
+</div></blockquote>
+<p>pop_jointprob( EEG, 1, [1:62],5, 5, [0], 1, 0);
+Remove non_EEG data</p>
+<p>Arko Ghosh, Leiden University
+Added at line 43 – [INEEG] = pop_eegfiltnew(INEEG, 0.5, []);</p>
+<p>Note sw edit! removed Re-reference to average channel and no bandpass filter</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="preprocessing_sw.seperate_movie_phone">
+<span class="sig-prename descclassname"><span class="pre">preprocessing_sw.</span></span><span class="sig-name descname"><span class="pre">seperate_movie_phone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">load_data</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#preprocessing_sw.seperate_movie_phone" title="Link to this definition">¶</a></dt>
+<dd><p>seperate movie and phone data for each participant</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><blockquote>
+<div><ul class="simple">
+<li><p>[movie_indexes,phone_indexes,sw_movie,sw_behavior] = seperate_movie_phone(load_data)</p></li>
+<li><p>= seperate_movie_phone(…,’sel_sw’,’negzx’)</p></li>
+</ul>
+</div></blockquote>
+<dl>
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>load_data = pre-processed struct with sw results from &#64;sw_detection</p></li>
+<li><p>data_name = saved variable name e.g. ‘A’</p></li>
+<li><p>f = function handle to run with loaded data</p></li>
+</ul>
+</dd>
+<dt>Optional Input(s):</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>sel_sw (Default<span class="classifier">‘’) = select sw indexes occuring during movie or phone use</span></dt><dd><p>sw signal. Options include: ‘negzx’,’poszx’,’maxpospkamp’,’maxnegpk’,’mxdnslp’,’mxupslp’
+If empty no selection is made.</p>
+</dd>
+</dl>
+</li>
+<li><p>start_range (Default : 1) = Checkpoint to start with</p></li>
+<li><p>end_range (Default : length files) = Checkpoint to end with.</p></li>
+<li><p>get_movie_idxs (Default : 1) = 1 yes select movie indexes, 0 otherwise</p></li>
+<li><p>get_phone_idxs (Default : 1) = 1 yes select phone indexes, 0 otherwise</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>movie_indexes = movie indexes</p></li>
+<li><p>phone_indexes = phone indexes (If empty there was no aligned phone data)</p></li>
+<li><dl class="simple">
+<dt>sw_movie = sw indexes during movie watching (the selected index is</dt><dd><p>based on the ‘sel_sw’ For example if ‘sel_sw’ = ‘negzx’ then the
+negzx indexes are selected.</p>
+</dd>
+</dl>
+</li>
+<li><p>sw_phone = sw indexes during phone use</p></li>
+</ul>
+<p>Note to run the function for only one file either only give it the
+load_data for one file or specify start_range and end_range to be
+equal. For instance if load_data has 3 files and you want the results
+for file 2 then do load_data(2,:) or set ‘start_range’ = 2, ‘end_range’ = 2</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University, 2024</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="preprocessing_sw.filter_results">
+<span class="sig-prename descclassname"><span class="pre">preprocessing_sw.</span></span><span class="sig-name descname"><span class="pre">filter_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">results</span></em><span class="sig-paren">)</span><a class="headerlink" href="#preprocessing_sw.filter_results" title="Link to this definition">¶</a></dt>
+<dd><p>Filtering steps adopted from Andrillon et al. (2021)</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="preprocessing_sw.preprocess_EEG">
+<span class="sig-prename descclassname"><span class="pre">preprocessing_sw.</span></span><span class="sig-name descname"><span class="pre">preprocess_EEG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">EEG</span></em><span class="sig-paren">)</span><a class="headerlink" href="#preprocessing_sw.preprocess_EEG" title="Link to this definition">¶</a></dt>
+<dd><p>Preprocess EEG for slow waves identification</p>
+<dl class="simple">
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>[EEG] = preprocess_EEG(EEG)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>EEG = EEGlab EEG struct format</p>
+</dd>
+<dt>Output(s):</dt><dd><p>EEG = processed EEG struct</p>
+</dd>
+</dl>
+<p>David Hoff, Leiden University</p>
+<p>Band-pass filtering (0.5–48 Hz)
+Apply the filter</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="preprocessing_sw.run_f_checkpoints">
+<span class="sig-prename descclassname"><span class="pre">preprocessing_sw.</span></span><span class="sig-name descname"><span class="pre">run_f_checkpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">data_path</span></em>, <em class="sig-param"><span class="pre">load_str</span></em>, <em class="sig-param"><span class="pre">data_name</span></em>, <em class="sig-param"><span class="pre">f</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#preprocessing_sw.run_f_checkpoints" title="Link to this definition">¶</a></dt>
+<dd><p>load data checkpoints and concatonate</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><blockquote>
+<div><ul class="simple">
+<li><p>[load_data,res,all_files] = run_f_checkpoints(data_path, load_str, data_name,f)</p></li>
+<li><p>[load_data,res,all_files] = run_f_checkpoints(…, ‘end_range’, 10)</p></li>
+<li><p>[load_data,res,all_files] = run_f_checkpoints(…, ‘save_results’, 0)</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>data_path = path to checkpoint files with EEG data</p></li>
+<li><p>load_str = unique string in checkpoint name</p></li>
+<li><p>data_name = saved variable name e.g. ‘A’</p></li>
+<li><p>f = function to run for all loaded data</p></li>
+</ul>
+</dd>
+<dt>Optional Input(s):</dt><dd><ul class="simple">
+<li><p>start_range (Default : 1) = Checkpoint to start with</p></li>
+<li><dl class="simple">
+<dt>end_range (Default<span class="classifier">length files) = Checkpoint to end with</span></dt><dd><p>note that the order of the checkpoints are given by the Dir() function
+and does not necessarily mean the first checkpoint is also the
+first subject (see dir output to know which files were loaded)</p>
+</dd>
+</dl>
+</li>
+<li><p>save_results (Default : 1) = save function results</p></li>
+<li><dl class="simple">
+<dt>save_path (Default<span class="classifier">current folder) = path for saved datasets </span></dt><dd><p>files are saved as save_path/checkpoint_&lt;load_str&gt;_&lt;range&gt;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>aggregate_res (Default<span class="classifier">1) = Aggregate the results of f from all the</span></dt><dd><p>checkpoints</p>
+</dd>
+</dl>
+</li>
+<li><p>parameter (Default : 1) = Argument that f can use</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>load_data = EEG data from all checkpoints</p></li>
+<li><p>res = results of function for all loaded files of all participants</p></li>
+<li><p>all_files = list of checkpoint files in datapath</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="preprocessing_sw.call_f_all_p_parallel_sw">
+<span class="sig-prename descclassname"><span class="pre">preprocessing_sw.</span></span><span class="sig-name descname"><span class="pre">call_f_all_p_parallel_sw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">path</span></em>, <em class="sig-param"><span class="pre">f</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#preprocessing_sw.call_f_all_p_parallel_sw" title="Link to this definition">¶</a></dt>
+<dd><p>General function that calls a function for all the participants in parallel</p>
+<dl>
+<dt><strong>Usage:</strong> [files_grouped,A,parfor_time] = call_f_all_p_parallel(path,f)</dt><dd><blockquote>
+<div><ul class="simple">
+<li><p>call_f_all_p_parallel(…, ‘cycles’, [1 0.7])</p></li>
+<li><p>call_f_all_p_parallel(…, ‘erp_data’, 1)</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>path = path to raw data</p></li>
+<li><p>f = function handle of function to be called</p></li>
+<li><p>options.start_idx <strong>optional</strong> double = start index of the loop</p></li>
+<li><p>options.end_idx <strong>optional</strong> double = end index of the loop</p></li>
+<li><p>options.epoch_window_ms <strong>optional</strong> cell (1,2) = epoch window in ms (e.g. [-1000 500])</p></li>
+<li><p>options.epoch_window_baseline <strong>optional</strong> cell (1,2) = baseline window in MS (e.g. [-1000 -800])</p></li>
+<li><p>options.erp_data = load erp data (1) or ersp data (0)</p></li>
+<li><p>options.cycles <strong>optional</strong> double = [1 0.5] 0 for FFT or array for wavelet transform (See newtimef cycles)</p></li>
+<li><p>options.bandpass_upper <strong>optional</strong> = upper range bandpass filter</p></li>
+<li><p>options.bandpass_lower <strong>optional</strong> = lower range bandpass filter</p></li>
+<li><p>options.aligned  <strong>optional</strong> logical = Load aligned (1) or unaligned (0) data</p></li>
+<li><p>option.delay  <strong>optional</strong> = Known delay for participant (used for alignment correction, assumed aligned is 0)</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>files_grouped = names of files to read</p></li>
+<li><p>A = cell with generated data</p></li>
+<li><p>parfor_time = duration of function</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Requires:</dt><dd><ul class="simple">
+<li><p>gen_set_file_names</p></li>
+<li><p>select_from_status_1.m</p></li>
+<li><p>find_movie_passive_event.m</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="preprocessing_sw.twalldetectnew_TA_v4">
+<span class="sig-prename descclassname"><span class="pre">preprocessing_sw.</span></span><span class="sig-name descname"><span class="pre">twalldetectnew_TA_v4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">datainput</span></em>, <em class="sig-param"><span class="pre">orig_fs</span></em>, <em class="sig-param"><span class="pre">thramp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#preprocessing_sw.twalldetectnew_TA_v4" title="Link to this definition">¶</a></dt>
+<dd><p>Delta/Theta Wave Detection</p>
+<p>Code by Thomas Andrillon –&gt; presumably used in Andrillon et al. (2021)
+Code modified by David Hof (last edit on 15-04-2024)</p>
+<p>Script modified on 2016.03.31 for Visual Deprivation Project (CIRS)</p>
+<p>Half-waves with duration 0.1-1.0s are used. A negative amplitude
+threshold may be defined by the user (however, a zero threshold is
+advised for most analyses).</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="preprocessing_sw.sw_detection">
+<span class="sig-prename descclassname"><span class="pre">preprocessing_sw.</span></span><span class="sig-name descname"><span class="pre">sw_detection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">EEG</span></em>, <em class="sig-param"><span class="pre">participant</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#preprocessing_sw.sw_detection" title="Link to this definition">¶</a></dt>
+<dd><p>Preprocess EEG data and generate ERP or ERSP</p>
+<dl>
+<dt><strong>Usage:</strong> [data] = process_EEG(EEG, participant)</dt><dd><blockquote>
+<div><ul class="simple">
+<li><p>sw_detection(EEG, participant)</p></li>
+<li><p>sw_detection(…, ‘pt’, 1)</p></li>
+</ul>
+</div></blockquote>
+<dl>
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>EEG = EEG struct</p></li>
+<li><p>participant = string with participant ID/name</p></li>
+</ul>
+</dd>
+<dt>Optional Input(s):</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>pt (Default<span class="classifier">1) = 1 select and run analysis on only behavioral data</span></dt><dd><p>0 run analysis on full dataset including resting state and movie</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul>
+<li><dl>
+<dt>data = cell with generated erp or ersp </dt><dd><p>data{1} = Participant folder name
+data{2} = EEG struct without EEG.data</p>
+<blockquote>
+<div><p>EEG.phone_indexes = the timeperiods including phone touches
+EEG.taps = timestamps of the taps 
+EEG.movie_indexes = the timeperiods including movie</p>
+</div></blockquote>
+<p>data{3} = twa_results set with SWs (outcome of twalldetectnew_TA_v4)
+data{4} = refilter sw after thresholding (outcome of filter_results);</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Requires:</dt><dd><p>-add_events.m
+-preprocess_EEG.m
+-twalldetectnew_TA_v4.m
+-filter_results.m</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University
+select the smartphone events</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Pre-processing EEG &amp; identify slow waves</a><ul>
+<li><a class="reference internal" href="#folder-structure">Folder structure</a></li>
+<li><a class="reference internal" href="#code">Code</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="getting-started.html"
+                          title="previous chapter">Startup guide</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="jid_slow_waves.html"
+                          title="next chapter">Joint probability interval distribution (JID-state)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pre_processing.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="mat-modindex.html" title="MATLAB Module Index"
+             >matlab index</a> |</li>
+        <li class="right" >
+          <a href="jid_slow_waves.html" title="Joint probability interval distribution (JID-state)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="getting-started.html" title="Startup guide"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Slow waves surrounding smartphone behaviors 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Pre-processing EEG &amp; identify slow waves</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright .
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+    </div>
+  </body>
+</html>

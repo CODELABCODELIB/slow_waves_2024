@@ -1,0 +1,82 @@
+Pre-processing EEG & identify slow waves
+========================================
+
+1. Loaded the EEG struct and included participants that met the following criterias:
+
+
+
+ - Had EEG data
+
+ - Contains smartphone data OR movie data
+
+ - Has been Aligned to Smartphone data
+
+ - If the participant was a curfew participant, we only included the first measurement file
+
+ - Attys is false
+
+ - Measurement did not contain a saving error
+
+
+
+2. Cleaned the EEG data by running gettechnicallcleanEEG
+
+
+ - Removed blinks according to ICA
+
+ - Interpolated missing channels
+
+
+
+3. Band-pass filtering (0.5-48 Hz, zero-phase, FIR, 'pop_eegfiltnew', autom. filter order) [Similar to Fattinger et al. (2017), Petit et al. (2019), and Quercia et al. (2018)]
+
+ - > 0.5 Hz: to filter out very low frequencies (e.g., channel drifts)
+
+ - < 48 Hz: to filter out line noise and other higher frequencies
+
+
+4. Down-sampling to 128 Hz (to lower computational load)
+
+5. Re-referencing to the average of all channels [Bernardi et al. (2015), Fattinger et al. (2017), Hung et al. (2013), Petit et al. (2019), Quercia et al. (2018)]
+
+6. Re-referencing to average of left and right mastoid electrodes [Andrillon et al. (2021), Bernardi et al. (2015), Hung et al. (2013), Mensen et al. (2016), Quercia et al. (2018)]
+
+7. Low-pass filtering (< 4 Hz, zero-phase, FIR, 'pop_eegfiltnew', autom. filter order) [Similar to Quercia et al. (2018)]
+
+ - < 4 Hz: to filter out all frequencies except those within the delta band
+
+8. Slow-Wave Detection [Mensen et al. (2016) / Riedner et al. (2007)]
+
+9. Filter detected slow waves
+
+ - Filter 1: Check for positive peak > 75 microvolts 
+
+ - Filter 2: Check for large-amplitude events (> 150 microvolts) in extended time window
+
+ - Now filter each parameter in the channel to keep only the top 10% waves
+
+
+Folder structure
+----------------
+
+::
+
+	+-- preprocessing_sw
+	¦   +-- sw_detection.m --> main function to perform all steps for slow waves detection and save results (Step 1 to 9)
+	¦   +-- call_f_all_p_parallel_sw.m --> run a function for every participant and save in checkpoint files (step 1)
+	¦   +-- gettechnicallycleanEEG_sw.m --> pre-procsses the EEG data by removing blinks and interpolating missing channels (step 2)
+	¦   +-- preprocess_EEG.m --> prepare data for slow wave detection (Step 3 to 7)
+	¦   +-- twalldetectnew_TA_v4.m --> identify slow waves (step 8)
+	¦   +-- filter_results.m --> filter the slow waves (step 9)
+	¦   +-- run_f_checkpoints.m --> run a function for every checkpoint file
+	¦   +-- seperate_movie_phone.m --> get the indexes of the phone and movie events
+
+
+Code
+----
+
+.. mat:automodule:: preprocessing_sw
+   :members:
+
+
+
