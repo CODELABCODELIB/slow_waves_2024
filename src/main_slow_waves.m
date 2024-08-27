@@ -8,6 +8,7 @@ save_path_upper = '/mnt/ZETA18/User_Specific_Data_Storage/ruchella/slow_waves/';
 %% add folders to paths
 addpath(genpath('/home/ruchella/slow_waves_2023'))
 addpath(genpath('/home/ruchella/imports'))
+addpath(genpath('/home/ruchella/TapDataAnalysis'))
 addpath(genpath('/home/ruchella/NNMF/nnmf_pipeline_spams'))
 addpath(genpath('/mnt/ZETA18/User_Specific_Data_Storage/ruchella/EEGsynclib_Mar_2022'))
 addpath(genpath(processed_data_path), '-end')
@@ -72,63 +73,9 @@ run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggre
 load(sprintf('%s/sw_to_behavior/EEG_res.mat',save_path_upper));
 res = res(cellfun(@(x) isfield(x,'taps'),res));
 res = cat(2,res{:});
-%% plot SW jids
-for pp=1:size(res,2)
-    h = figure;
-    tiledlayout(8,8, 'TileSpacing','none')
-    for chan=1:62
-        jid = taps2JID([res(pp).refilter.channels(chan).negzx{:}]);
-        res(pp).jid = jid;
-        nexttile;
-        plot_jid(jid);
-        clim([0,0.6])
-        set(gca, 'visible','off')
-    end
-    saveas(h, sprintf('%s/sw_to_behavior/jid_sw_pp_%d.svg',figures_save_path,pp))
+%% run NNMF SW JID
+save_path = sprintf('%s/sw_jid',save_path_upper);
+if ~exist(save_path, 'dir')
+       mkdir(save_path); addpath(genpath(save_path))
 end
-% plot SW rate
-for pp=1:size(res,2)
-    h = figure;
-    tiledlayout(5,5, 'TileSpacing','none')
-    for chan =1:25
-        nexttile;
-        taps_on_sw = assign_input_to_bin([res(pp).refilter.channels(chan).negzx{:}],res(pp).rate);
-        triad_lengths_on_sw = assign_input_to_bin([res(pp).refilter.channels(chan).negzx{:}],res(pp).triad_lengths);
-        rate_jid = cellfun(@(x,y) sum(x)/sum(y),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
-        rate_jid(reshape([rate_jid{:}] == 0, 50,50)) = {NaN};
-        plot_jid(log10(reshape([rate_jid{:}],50,50)+ 0.00000000001)); 
-        clim([-5 -3])
-        set(gca, 'FontSize',18) 
-    end
-    saveas(h, sprintf('%s/sw_to_behavior/rate_pp_%d.svg',figures_save_path,pp))
-end
-% plot SW latency
-for pp=1:41
-    h = figure;
-    tiledlayout(5,5, 'TileSpacing','none')
-    for chan =1:25
-        nexttile;
-        sw_to_behavior_latency = assign_input_to_bin([res(pp).refilter.channels(chan).negzx{:}],res(pp).latency);
-        pooled = cellfun(@(x) median(x),sw_to_behavior_latency{chan},'UniformOutput', 0);
-        plot_jid(log10(reshape([pooled{:}],50,50)+ 0.00000001));
-        clim([quantile(log10([pooled{:}]),[0.10, 0.90])])
-        set(gca, 'FontSize',18)
-    end
-    saveas(h, sprintf('%s/sw_to_behavior/latency_pp_%d.svg',figures_save_path,pp))
-end
-% plot SW latency
-for pp=1:41
-    h = figure;
-    tiledlayout(5,5, 'TileSpacing','none')
-    for chan =1:25
-        nexttile;
-        taps_on_sw = assign_input_to_bin([res(pp).refilter.channels(chan).negzx{:}],res(pp).post_rate);
-        triad_lengths_on_sw = assign_input_to_bin([res(pp).refilter.channels(chan).negzx{:}],res(pp).triad_lengths);
-        rate_jid = cellfun(@(x,y) sum(x)/sum(y),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
-        rate_jid(reshape([rate_jid{:}] == 0, 50,50)) = {NaN};
-        plot_jid(log10(reshape([rate_jid{:}],50,50)+ 0.00000000001)); 
-        % clim([quantile(log10([pooled{:}]),[0.50, 0.90])])
-        set(gca, 'FontSize',18)
-    end
-    saveas(h, sprintf('%s/sw_to_behavior/post_rate_pp_%d.svg',figures_save_path,pp))
-end
+sw_jid_nnmf_main(res,'save_path',save_path)
