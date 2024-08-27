@@ -48,6 +48,6 @@ Folder structure
 	    +-- playground --> functions for exploratory anslysis
 	    +-- plot --> plot functions
 	    +-- preprocessing_sw --> preprocessing EEG data and functions to identify slow waves
-	    +-- sw_jid_nnmf --> functions to map the relationship between slow waves and jid
+	    +-- behavior_to_sw --> functions to map the relationship between slow waves features and behavioral jid
 	    +-- utils --> utility functions
     

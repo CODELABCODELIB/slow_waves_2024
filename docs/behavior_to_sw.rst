@@ -1,5 +1,5 @@
-Joint probability interval distribution (JID-state)
-===================================================
+Slow waves parameters across behavioral joint-interval distributions (JIDs) (Deprecated)
+========================================================================================
 
 A. Create JID-parameters (e.g. JID-amplitudes)
 ----------------------------------------------
@@ -103,7 +103,7 @@ Code
 ----
 
 
-.. mat:automodule:: sw_jid_nnmf
+.. mat:automodule:: behavior_to_sw
    :members:
    
 .. mat:automodule:: microstates_functions
