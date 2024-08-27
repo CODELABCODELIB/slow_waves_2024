@@ -1,5 +1,4 @@
 #!/bin/bash
-# This script performs all processing steps (using the newly developed preprocessing pipeline) + visualization of the extracted wave parameters on the complete EEG data of participant AT08.
 
 #SBATCH --job-name=test_LS
 #SBATCH --output=test_LS.out

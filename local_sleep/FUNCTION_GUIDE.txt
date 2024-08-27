@@ -3,7 +3,7 @@ Short Description of the Functions/Scripts on the Directory 'local_sleep'
 #########################################################################
 
 ############################################
-Author: David Hof (last updated: 26-05-2024)
+Author: David Hof (last updated: 23-08-2024)
 ############################################
 
 
@@ -84,6 +84,13 @@ Other Scripts:
 
 – JID_SW: Creating JID plots for taps within / outside of slow waves and for slow waves themselves
           (in the movie / phone part of the recording).
+
+– time_lagged_corr: Calculating time-lagged correlations between taps / blinks / slow waves and
+                    creating corresponding topographical plots (if applicable).
+– autocorrelations: Same as above but for auto-correlations in taps / blinks / slow waves.
+
+– avg_waveform: Creating an ERP-like plot for the average slow-wave waveform (for the entire
+                recording or split by condition).
 
 – test_LS_3(.slurm): Batch script for full data pipeline on complete EEG data.
 – test_LS_4(.slurm): Batch script for full data pipeline on movie EEG data.
