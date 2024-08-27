@@ -53,6 +53,7 @@ for pp=1:size(res,2)
     saveas(h, sprintf('%s/sw_to_behavior/latency_pp_%d.svg',figures_save_path,pp))
 end
 %% plot SW rate
+fontsize = 10;
 for pp=1:size(res,2)
     h = figure;
     tiledlayout(5,5, 'TileSpacing','none')
@@ -106,7 +107,7 @@ for pp=1:size(res,2)
         rate_jid = cellfun(@(x) sum(x)/(mins*60*1000),taps_on_sw{chan}, 'UniformOutput',0);
         rate_jid(reshape([rate_jid{:}] == 0, 50,50)) = {NaN};
         plot_jid(log10(reshape([rate_jid{:}],50,50)+ 0.00000000001)); 
-        clim([quantile(log10([rate_jid{:}]),[0.50, 0.90])])
+        % clim([quantile(log10([rate_jid{:}]),[0.50, 0.90])])
         colorbar
         % clim([quantile(log10([pooled{:}]),[0.50, 0.90])])
         xlabel('K (log10[ms])')
@@ -234,4 +235,30 @@ for pp=1:size(res,2)
         sgtitle(t, sprintf('Chan:%d Subject:%d',chan,pp))
         saveas(h, sprintf('%s/rates/rates_pp_%d_chan_%d.svg',figures_save_path,pp,chan))
     end
+end
+%% plot JID-SW amplitudes 
+for pp=1:41
+    max_all = max(cell2mat(cellfun(@(x) length(x),{res(pp).refilter.channels.negzx},'UniformOutput',false)));
+    selected_waves = cell(64,length(max_all)-2);
+    for chan=1:size(res(pp).refilter.channels,2)
+        slow_waves = [res(pp).refilter.channels(chan).negzx{:}];
+        amplitudes = [res(pp).refilter.channels(chan).maxnegpkamp{:}];
+        for slow_waves_triad_idx = 1:length(slow_waves)-2
+            triad = amplitudes(slow_waves_triad_idx:slow_waves_triad_idx+2);
+            selected_waves{chan,slow_waves_triad_idx} = triad;
+        end
+    end
+    h = figure;
+    tiledlayout(8,8, 'TileSpacing','none')
+    % estimate the SW jid per channel
+    for chan=1:64
+        nexttile;
+        taps_on_sw = assign_input_to_bin([res(pp).refilter.channels(chan).negzx{:}],selected_waves);
+        sw_jid_amplitude = cellfun(@(x) median(x),taps_on_sw{chan}, 'UniformOutput',0);
+        plot_jid(reshape([sw_jid_amplitude{:}],50,50))
+        colorbar;
+        title(sprintf('chan %d',chan))
+    end
+    sgtitle(sprintf('SW-JID amplitudes (no log transformation) - Sub:%d',pp))
+    saveas(h, sprintf('%s/sw_to_behavior/sw_jid_amplitudes_pp_%d.svg',figures_save_path,pp))
 end
