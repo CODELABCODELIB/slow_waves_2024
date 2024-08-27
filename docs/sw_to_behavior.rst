@@ -1,0 +1,89 @@
+Smartphone interactions across Slow Waves (SW) joint-interval distributions (JIDs)
+==================================================================================
+
+A. Slow waves dynamics (SW JID)
+-------------------------------
+
+1. Slow waves are happening sequentially in every electrode. Three sequential slow waves is considered a triad. 
+These triads are calculated based on the timing of the first SW's negative zero crossing (negzx) to the end of the third SW () 
+
+
+B. Prepare data for Non-negative matrix factorization (NNMF) 
+------------------------------------------------------------
+
+1. Reshape the bins (50x50xelectrodes) to 2500 bins x electrodes
+
+2. Remove empty bins
+
+3. Shift the data if necessary to make it non-negative but adding the absolute minimum value 
+	
+4. If a value in the data is 0 then pad it with 0.0000000000001. 
+
+5. The data may be log normalized, if the distributions are skewed
+	
+	
+C. Cross-validation for Non-negative matrix factorization (NNMF)
+----------------------------------------------------------------
+To select the best number of ranks per participant cross-validation was used. The following steps were performed for each participant:
+
+ 1. Randomly remove 20% of the data points (masking)
+ 
+ 2. Perform NNMF 50 times with randomly initialized values. Every repetition results in 2 matrices. The first matrix summarizes the jid-sw (meta-sw, Shape: [bins x rank]). The second matrix (meta-location) summarizes the likelihood that the jid-sw is represented in that location (Shape: [rank x electrodes]).
+ 
+ 3. Reconstructed the data and calculated the training and testing error for each repetition
+ 
+ 4. Repeated steps 2 to 6 for rank [2 to 10]
+ 
+ 5. Selected the best rank by averaging the test error across all the repetitions for each rank and selecting the rank with the smallest error.
+
+D. Reproducible Non-negative matrix factorization (NNMF)
+--------------------------------------------------------
+Since NNMF is a non-convex problem, the solution is dependent on the initialization. Therefore we employed the reproducible NNMF technique as explained in (:ref:`https://doi.org/10.1101/2022.08.25.505261`). We repeated the above mentioned steps 1 to 4, with the exception that NNMF was performed for 100 repetitions with the selected rank. Followed by the reproducible NNMF technique selecting the most stable and reproducible decompositions per participant.
+
+
+D. Slow waves rate (SW-JID rate)
+--------------------------------
+To understand the relationship between the slow wave dynamics and behaviors we can calculate the rate of smartphone interactons across the slow wave dynamics (SW-JID). 
+For instance, in sparse SW sequences there may be more touchscreen interactions occurring compared to frequent SW sequences. 
+
+1. For each triad sum the number of taps occurring 
+2. Divide the number of taps per triad by the duration of the triad
+3. If there are multiple triad in the same SW bin then sum the total number of taps across all the triads and divide it by the total duration of all the triads. 
+
+E. Slow waves pre/post rate (SW-JID pre/post rate)
+--------------------------------------------------
+We can address the rate of smartphone interactons following slow wave dynamics
+
+1. For each triad sum the number of taps occurring within a time interval (x minutes) following (post rate) or before (pre rate) the triad. 
+2. Divide the sum by a x minutes
+
+E. Slow waves latency (SW-JID latency)
+------------------------------------
+We can address the how far the next touchscreen interaction occurred following different SW dynamics
+
+1. For each find the distance to next tap 
+2. If there is no next tap then a NAN is assigned
+
+Folder structure
+----------------
+
+::
+
+	+-- sw_to_behavior
+	¦   +-- sw_jid_nnmf_main.m  --> main function perform nnmf (A to C)
+	¦   +-- sw_to_behavior_all_pps.m --> main function to calculate slow waves to behavior features for all participants
+	¦   +-- tap_per_sw_triad.m --> calculate slow waves to behavior features (rate, latency, post and pre rate)
+    +-- plots
+    ¦   +-- sw_to_behavior_plots.m -> plot the latency, post and pre rate for each participant  
+
+
+Code
+----
+
+
+.. mat:automodule:: sw_to_behavior
+   :members:
+   
+.. mat:automodule:: microstates_functions
+   :members:
+

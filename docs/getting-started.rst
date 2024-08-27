@@ -48,6 +48,7 @@ Folder structure
 	    +-- playground --> functions for exploratory anslysis
 	    +-- plot --> plot functions
 	    +-- preprocessing_sw --> preprocessing EEG data and functions to identify slow waves
-	    +-- behavior_to_sw --> functions to map the relationship between slow waves features and behavioral jid
+	    +-- behavior_to_sw --> functions to map the relationship between slow waves features and behavioral dynamics (jid)
+	    +-- sw_to_behavior --> functions to map the relationship between behaviors and slow waves dynamics (jid)
 	    +-- utils --> utility functions
     
