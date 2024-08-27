@@ -59,7 +59,7 @@ if ~exist(save_path, 'dir')
 end
 jid_delay_nnmf_main(res,f, 'save_path',save_path,'n_timelags',n_timelags)
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%% Slow waves to behavior %%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Slow waves to behavior %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 save_path = sprintf('%s/sw_to_behavior',save_path_upper); 
 data_path = sprintf('%s/erp_sw2_1_4',save_path_upper);
@@ -76,6 +76,31 @@ res = cat(2,res{:});
 %% run NNMF SW JID
 save_path = sprintf('%s/sw_jid',save_path_upper);
 if ~exist(save_path, 'dir')
-       mkdir(save_path); addpath(genpath(save_path))
+    mkdir(save_path); addpath(genpath(save_path))
 end
 sw_jid_nnmf_main(res,'save_path',save_path)
+%% plot NNMF
+for pp=1:41
+    load(sprintf('%s/sw_jid/stable_basis_%d',save_path_upper,pp))
+    load(sprintf('%s/sw_jid/reconstruct_%d',save_path_upper,pp))
+    h = figure;
+    best_k_overall = size(reconstruct_all_chans,2);
+    tiledlayout(best_k_overall,2)
+    for k=1:best_k_overall
+        nexttile;
+        plot_jid(reshape(reconstruct_all_chans(:,k),50,50))
+        xlabel('K (log10[ms])')
+        ylabel('K+1 (log10[ms])')
+        title(sprintf('Meta SW JID - Rank :%d',k))
+        colorbar;
+        set(gca, 'fontsize', 18)
+        nexttile;
+        topoplot(stable_basis_all_chans(1:62,k),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+        clim([0 1])
+        colorbar;
+        title(sprintf('Meta location - Rank :%d',k))
+        set(gca, 'fontsize', 18)
+    end
+    sgtitle(sprintf('SW-JID NNMF Sub:%d',pp), 'fontsize', 18)
+    saveas(h, sprintf('%s/nnmf/jid_sw_nnmf_pp_%d.svg',figures_save_path,pp))
+end
