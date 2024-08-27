@@ -1,6 +1,6 @@
 max_all = max(cell2mat(cellfun(@(x) length(x),{refilter.channels.negzx},'UniformOutput',false)));
 selected_waves = cell(64,length(max_all)-2);
-triad_lengths = cell(64,length(max_all)-2); 
+triad_lengths = cell(64,length(max_all)-2);
 % selected_waves = cellfun(@(x) NaN, num2cell(ones(64,max_all-2)), 'UniformOutput', false);
 for chan=1:size(refilter.channels,2)
     slow_waves = [refilter.channels(chan).negzx{:}];
@@ -13,7 +13,7 @@ for chan=1:size(refilter.channels,2)
 end
 % [jid_delays_before(:,count),amp_per_triad_before,not_occupied_bins] = jid_per_param(refilter.channels,selected_waves_before,dt_dt_r, f, 'sel_field',"maxpospkamp", 'pool_duplicates', 0);
 % count=count+1;
-%% calculate rate 
+%% calculate rate
 for chan =1:64
     h = figure;
     taps_on_sw = assign_input_to_bin([refilter.channels(chan).negzx{:}],selected_waves);
@@ -68,14 +68,14 @@ for chan=1:length(refilter.channels)
         end
     end
 end
-%% plot latencies 
+%% plot latencies
 for chan =1:64
     h = figure;
     sw_to_behavior_latency = assign_input_to_bin([refilter.channels(chan).negzx{:}],next_tap);
     pooled = cellfun(@(x) median(x),sw_to_behavior_latency{chan},'UniformOutput', 0);
     plot_jid(log10(reshape([pooled{:}],50,50)+ 0.00000001)); colorbar;
     clim([quantile(log10([pooled{:}]),[0.10, 0.90])])
-     title(sprintf('Chan %d',chan))
+    title(sprintf('Chan %d',chan))
     set(gca, 'FontSize',18)
     saveas(h,sprintf('%s/latency_sw_to_next_tap_chan_%d.svg',save_path,chan))
 end
@@ -87,8 +87,8 @@ for bin = 1:1136
     tmp = selected_waves{chan,bin};
     if ~isempty(tmp) && length(tmp) > 3
         jid_behavior = taps2JID(tmp);
-        
-        h= figure; 
+
+        h= figure;
         tiledlayout(1,2)
         nexttile;
         plot_jid(jid_behavior);
@@ -108,62 +108,70 @@ for bin = 1:1136
     end
 end
 %% plot movie sequence of behavioral JID and corresponding SW triad(assigned to a bin)
-max_all = max(cell2mat(cellfun(@(x) length(x),{refilter.channels.negzx},'UniformOutput',false)));
-selected_waves = cell(64,length(max_all)-2);
-triad_lengths = cell(64,length(max_all)-2); 
-% selected_waves = cellfun(@(x) NaN, num2cell(ones(64,max_all-2)), 'UniformOutput', false);
-for chan=1:size(refilter.channels,2)
-    slow_waves = [refilter.channels(chan).negzx{:}];
-    for slow_waves_triad_idx = 1:length(slow_waves)-2
-        triad = slow_waves(slow_waves_triad_idx:slow_waves_triad_idx+2);
-        tmp = taps(taps >= triad(1) & taps <= triad(end));
-        selected_waves{chan,slow_waves_triad_idx} = tmp;
-        triad_lengths{chan,slow_waves_triad_idx} = triad(end)-triad(1);
-    end
-end
-%%
-figure;
-v = VideoWriter(sprintf('%s/sw_to_behavior.avi',save_path,chan,bin) );
-v.FrameRate = 5;
-open(v)
-[~,idx] = sortrows(dt_dt(:,3:4), [1 2]);
-for bin = 1:length(idx)
-    tmp = selected_waves{chan,idx(bin)};
-    if ~isempty(tmp) && length(tmp) > 3
-         tiledlayout(1,2);
-         ax1 = nexttile;
-         jid_behavior = taps2JID(tmp);
-         plot_jid(jid_behavior);
-         freezeColors;
-         colorbar(ax1, 'Location', 'eastoutside');
-         axis square;
-         title(sprintf('%d triad - size : %d',bin, length(tmp)));
+for pp=1
+    refilter = res(pp).refilter;
+    taps = res(pp).taps;
+    [dt_dt,~] = calculate_ITI_K_ITI_K1([refilter.channels(chan).negzx{:}]);
+    [dt_dt,gridx] = assign_tap2bin(dt_dt);
 
-         hold off;
-         ax2 = nexttile;
-         input1 = num2cell(nan(1,length([refilter.channels(chan).negzx{:}])));
-         input1{1,idx(bin)} = 1;
-         JID = assign_input_to_bin([refilter.channels(chan).negzx{:}],input1);
-         JID = cell2mat(cellfun(@(x) sum(~isempty(x) & ~isnan(x)) ,JID{1} ,'UniformOutput' ,false));
-         plot_jid(JID);
+    max_all = max(cell2mat(cellfun(@(x) length(x),{refilter.channels.negzx},'UniformOutput',false)));
+    selected_waves = cell(64,length(max_all)-2);
+    triad_lengths = cell(64,length(max_all)-2);
 
-        colorbar;
-        
-        shg; 
-        %supertitle(strcat(num2str(i-5000),{' '},'ms'), 'FontSize', 40);
-        set(gcf,'color','w');
-        M =getframe(gcf);
-        writeVideo(v,M);
-        %    namef = strcat(num2str(i), '_t_',num2str(i-4000), '.png') ;
-        %saveas(gcf, namef);
-        clf;
+    % selected_waves = cellfun(@(x) NaN, num2cell(ones(64,max_all-2)), 'UniformOutput', false);
+    for chan=1:size(refilter.channels,2)
+        slow_waves = [refilter.channels(chan).negzx{:}];
+        for slow_waves_triad_idx = 1:length(slow_waves)-2
+            triad = slow_waves(slow_waves_triad_idx:slow_waves_triad_idx+2);
+            tmp = taps(taps >= triad(1) & taps <= triad(end));
+            selected_waves{chan,slow_waves_triad_idx} = tmp;
+            triad_lengths{chan,slow_waves_triad_idx} = triad(end)-triad(1);
+        end
     end
+    %
+    figure;
+    v = VideoWriter(sprintf('%s/sw_to_behavior/movie_chan_%d_pp_%d.avi',figures_save_path,chan,pp));
+    v.FrameRate = 5;
+    open(v)
+    [x,idx] = sortrows(dt_dt(:,3:4), [1 2]);
+    for bin = 1:length(idx)
+        tmp = selected_waves{chan,idx(bin)};
+        if ~isempty(tmp) && length(tmp) > 3
+            tiledlayout(1,2);
+            ax1 = nexttile;
+            jid_behavior = taps2JID(tmp);
+            plot_jid(jid_behavior);
+            freezeColors;
+            colorbar(ax1, 'Location', 'eastoutside');
+            axis square;
+            title(sprintf('%d triad - size : %d',bin, length(tmp)));
+
+            hold off;
+            ax2 = nexttile;
+            input1 = num2cell(nan(1,length([refilter.channels(chan).negzx{:}])));
+            input1{1,idx(bin)} = 1;
+            JID = assign_input_to_bin([refilter.channels(chan).negzx{:}],input1);
+            JID = cell2mat(cellfun(@(x) sum(~isempty(x) & ~isnan(x)) ,JID{1} ,'UniformOutput' ,false));
+            plot_jid(JID);
+
+            colorbar;
+
+            shg;
+            %supertitle(strcat(num2str(i-5000),{' '},'ms'), 'FontSize', 40);
+            set(gcf,'color','w');
+            M =getframe(gcf);
+            writeVideo(v,M);
+            %    namef = strcat(num2str(i), '_t_',num2str(i-4000), '.png') ;
+            %saveas(gcf, namef);
+            clf;
+        end
+    end
+    close(v);
 end
-close(v);
 %% plot adjacent SW's and behavior
 max_all = max(cell2mat(cellfun(@(x) length(x),{refilter.channels.negzx},'UniformOutput',false)));
 selected_waves = cell(64,length(max_all)-2);
-triad_lengths = cell(64,length(max_all)-2); 
+triad_lengths = cell(64,length(max_all)-2);
 % selected_waves = cellfun(@(x) NaN, num2cell(ones(64,max_all-2)), 'UniformOutput', false);
 for chan=1:size(refilter.channels,2)
     slow_waves = [refilter.channels(chan).negzx{:}];
@@ -184,11 +192,11 @@ for bin=1:2500
     bins_behavior = ~logical(cellfun(@(x) isempty(x), tmp));
     bins_neighbors = logical(ADJ(bin,:))';
     bins_of_interest = bins_neighbors & bins_behavior;
-    selected = find(bins_of_interest); 
+    selected = find(bins_of_interest);
     selected_bins = cellfun(@(x) cellfun(@(y) length(y) > 3,x) ,tmp(selected) ,'UniformOutput' ,false);
     all_bins_plotted = [];
     if sum([selected_bins{:}])
-        h = figure; 
+        h = figure;
         tiledlayout(1,sum([selected_bins{:}])+1)
         for i=1:length(selected)
             s = find(selected_bins{i});

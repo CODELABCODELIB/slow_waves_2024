@@ -1,4 +1,4 @@
-function [res] = sw_to_behavior(load_data,options)
+function [res] = sw_to_behavior_all_pps(load_data,options)
 arguments
     load_data;
     options.save_results logical = 1;
