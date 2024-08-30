@@ -152,7 +152,7 @@ tiledlayout(1,size(prototypes,2))
 for n_map=1:size(prototypes,2)
     nexttile;
     topoplot(prototypes(1:62,n_map),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
-    clim([-0.2 0.2])
+    clim(quantile(prototypes(1:62,n_map),[0.25 0.75]))
 end
 colormap('jet')
 colorbar;

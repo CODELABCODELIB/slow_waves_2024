@@ -73,16 +73,18 @@ run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggre
 load(sprintf('%s/sw_to_behavior/EEG_res.mat',save_path_upper));
 res = res(cellfun(@(x) isfield(x,'taps'),res));
 res = cat(2,res{:});
-%% run NNMF SW JID
+%% %%%%%%%%%%%%%%%%%%%%%%%%% run NNMF SW JID %%%%%%%%%%%%%%%%%%%%%%%%%%%
 save_path = sprintf('%s/sw_jid',save_path_upper);
 if ~exist(save_path, 'dir')
     mkdir(save_path); addpath(genpath(save_path))
 end
 sw_jid_nnmf_main(res,'save_path',save_path)
-%% plot NNMF
+%% plot NNMF results
+stable_basis_all_pps = {};
 for pp=1:41
     load(sprintf('%s/sw_jid/stable_basis_%d',save_path_upper,pp))
     load(sprintf('%s/sw_jid/reconstruct_%d',save_path_upper,pp))
+    stable_basis_all_pps = cat(1, stable_basis_all_pps{:})
     h = figure;
     best_k_overall = size(reconstruct_all_chans,2);
     tiledlayout(best_k_overall,2)
@@ -104,3 +106,20 @@ for pp=1:41
     sgtitle(sprintf('SW-JID NNMF Sub:%d',pp), 'fontsize', 18)
     saveas(h, sprintf('%s/nnmf/jid_sw_nnmf_pp_%d.svg',figures_save_path,pp))
 end
+%% cluster the nnmf maps across the population
+stable_basis_all_pps = {};
+for pp=1:41
+    load(sprintf('%s/sw_jid/stable_basis_%d',save_path_upper,pp))
+    load(sprintf('%s/sw_jid/reconstruct_%d',save_path_upper,pp))
+    res(pp).stable_basis = stable_basis_all_chans;
+    res(pp).reconstruct = reconstruct_all_chans;
+end
+% select the spatial maps
+all_maps = cat(2,res.stable_basis);
+[prototypes,labels,cluster_prototypes,cluster_labels] = cluster(all_maps);
+%% %%%%%%%%%%%%%%%%%%%%%%%%% run NNMF SW rate %%%%%%%%%%%%%%%%%%%%%%%%%%
+save_path = sprintf('%s/sw_rate_nnmf',save_path_upper);
+if ~exist(save_path, 'dir')
+    mkdir(save_path); addpath(genpath(save_path))
+end
+sw_jid_nnmf_main(res,'save_path',save_path, 'parameter', 'sw_rate', 'log_transform',1)

@@ -237,14 +237,17 @@ for pp=1:size(res,2)
     end
 end
 %% plot JID-SW amplitudes 
-for pp=1:41
+for pp=1:size(res,2)
     max_all = max(cell2mat(cellfun(@(x) length(x),{res(pp).refilter.channels.negzx},'UniformOutput',false)));
     selected_waves = cell(64,length(max_all)-2);
     for chan=1:size(res(pp).refilter.channels,2)
         slow_waves = [res(pp).refilter.channels(chan).negzx{:}];
-        amplitudes = [res(pp).refilter.channels(chan).maxnegpkamp{:}];
+        neg_amplitudes = [res(pp).refilter.channels(chan).maxnegpkamp{:}];
+        pos_amplitudes = [res(pp).refilter.channels(chan).maxpospkamp{:}];
         for slow_waves_triad_idx = 1:length(slow_waves)-2
-            triad = amplitudes(slow_waves_triad_idx:slow_waves_triad_idx+2);
+            triad_neg = neg_amplitudes(slow_waves_triad_idx:slow_waves_triad_idx+2);
+            triad_pos = pos_amplitudes(slow_waves_triad_idx:slow_waves_triad_idx+2);
+            triad = abs(triad_pos-triad_neg);
             selected_waves{chan,slow_waves_triad_idx} = triad;
         end
     end
@@ -258,6 +261,7 @@ for pp=1:41
         plot_jid(reshape([sw_jid_amplitude{:}],50,50))
         colorbar;
         title(sprintf('chan %d',chan))
+        clim(quantile([sw_jid_amplitude{:}], [0.25, 0.75]))
     end
     sgtitle(sprintf('SW-JID amplitudes (no log transformation) - Sub:%d',pp))
     saveas(h, sprintf('%s/sw_to_behavior/sw_jid_amplitudes_pp_%d.svg',figures_save_path,pp))
