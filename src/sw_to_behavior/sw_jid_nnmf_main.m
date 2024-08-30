@@ -26,7 +26,7 @@ arguments
     options.save_results logical = 1;
     options.save_path char = '.';
     options.file = '';
-    options.parameter = '';
+    options.parameter = 'sw_jid';
     options.repetitions_cv = 50;
     options.z_score = 0;
     options.threshold = 0;
@@ -37,8 +37,17 @@ for pp=1:length(res)
     jid_all_chans = cell(64,1); 
     % prepare sw jid per channel
     for chan=1:64
-        jid_all_chans{chan} = taps2JID([res(pp).refilter.channels(chan).negzx{:}]);
+        if strcmp(options.parameter, 'sw_jid')
+            jid_all_chans{chan} = taps2JID([res(pp).refilter.channels(chan).negzx{:}]);
+        elseif strcmp(options.parameter, 'sw_rate')
+            taps_on_sw = assign_input_to_bin([res(pp).refilter.channels(chan).negzx{:}],res(pp).rate);
+            triad_lengths_on_sw = assign_input_to_bin([res(pp).refilter.channels(chan).negzx{:}],res(pp).triad_lengths);
+            rate_jid = cellfun(@(x,y) sum(x)/sum(y),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
+            %rate_jid(reshape([rate_jid{:}] == 0, 50,50)) = {NaN};
+            jid_all_chans{chan} = reshape([rate_jid{:}],50,50);
+        end
     end
+
     % prepare data for nnmf
     [reshaped_jid_all_chans,kept_bins] = prepare_sw_data_for_nnmf(jid_all_chans,'zscore', options.z_score, 'threshold',options.threshold, 'log_transform',options.log_transform);
     % perform NNMF
