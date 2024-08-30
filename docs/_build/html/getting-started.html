@@ -74,6 +74,17 @@
 <li><p><a class="reference external" href="https://www.mathworks.com/products/signal.html">Signal Processing Toolbox</a></p></li>
 </ul>
 </section>
+<section id="analysis">
+<h3>Analysis<a class="headerlink" href="#analysis" title="Link to this heading">¶</a></h3>
+<p>The analysis is structured in a series of figures to recreate these figures:</p>
+<ol class="arabic simple">
+<li><p>Pre-process and identify slow waves in the data (check out the page &lt;pre_processing&gt;)</p></li>
+<li><p>Identify slow waves characteristics during rest and how do these relate to sleep (check out the page &lt;TODO&gt;)</p></li>
+<li><p>Next identify slow waves characteristics across time while participants were engaged in smartphone behavior (check out the page &lt;TODO&gt;)</p></li>
+<li><p>Adress the dynamics of slow waves and their link to behavior (check out the page &lt;sw_to_behavior&gt;)</p></li>
+</ol>
+<p>All these steps are run from one main file: ‘src/main_slow_waves.m’</p>
+</section>
 </section>
 <section id="folder-structure">
 <h2>Folder structure<a class="headerlink" href="#folder-structure" title="Link to this heading">¶</a></h2>
@@ -89,7 +100,8 @@
     +-- playground --&gt; functions for exploratory anslysis
     +-- plot --&gt; plot functions
     +-- preprocessing_sw --&gt; preprocessing EEG data and functions to identify slow waves
-    +-- sw_jid_nnmf --&gt; functions to map the relationship between slow waves and jid
+    +-- behavior_to_sw --&gt; functions to map the relationship between slow waves features and behavioral dynamics (jid)
+    +-- sw_to_behavior --&gt; functions to map the relationship between behaviors and slow waves dynamics (jid)
     +-- utils --&gt; utility functions
 </pre></div>
 </div>
@@ -109,6 +121,7 @@
 <li><a class="reference internal" href="#">Startup guide</a><ul>
 <li><a class="reference internal" href="#installation">Installation</a><ul>
 <li><a class="reference internal" href="#matlab-startup">Matlab startup</a></li>
+<li><a class="reference internal" href="#analysis">Analysis</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#folder-structure">Folder structure</a></li>

@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Smartphone interactions across Slow Waves (SW) joint-interval distributions (JIDs) &#8212; Slow waves surrounding smartphone behaviors 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=def86cc0" />
+    
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Utility functions" href="utils.html" />
+    <link rel="prev" title="Pre-processing EEG &amp; identify slow waves" href="pre_processing.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="mat-modindex.html" title="MATLAB Module Index"
+             >matlab index</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="Utility functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pre_processing.html" title="Pre-processing EEG &amp; identify slow waves"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Slow waves surrounding smartphone behaviors 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Smartphone interactions across Slow Waves (SW) joint-interval distributions (JIDs)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="smartphone-interactions-across-slow-waves-sw-joint-interval-distributions-jids">
+<h1>Smartphone interactions across Slow Waves (SW) joint-interval distributions (JIDs)<a class="headerlink" href="#smartphone-interactions-across-slow-waves-sw-joint-interval-distributions-jids" title="Link to this heading">¶</a></h1>
+<section id="a-slow-waves-dynamics-sw-jid">
+<h2>A. Slow waves dynamics (SW JID)<a class="headerlink" href="#a-slow-waves-dynamics-sw-jid" title="Link to this heading">¶</a></h2>
+<p>1. Slow waves are happening sequentially in every electrode. Three sequential slow waves is considered a triad.
+These triads are calculated based on the timing of the first SW’s negative zero crossing (negzx) to the end of the third SW ()</p>
+</section>
+<section id="b-prepare-data-for-non-negative-matrix-factorization-nnmf">
+<h2>B. Prepare data for Non-negative matrix factorization (NNMF)<a class="headerlink" href="#b-prepare-data-for-non-negative-matrix-factorization-nnmf" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Reshape the bins (50x50xelectrodes) to 2500 bins x electrodes</p></li>
+<li><p>Remove empty bins</p></li>
+<li><p>Shift the data if necessary to make it non-negative but adding the absolute minimum value</p></li>
+<li><p>If a value in the data is 0 then pad it with 0.0000000000001.</p></li>
+<li><p>The data may be log normalized, if the distributions are skewed</p></li>
+</ol>
+</section>
+<section id="c-cross-validation-for-non-negative-matrix-factorization-nnmf">
+<h2>C. Cross-validation for Non-negative matrix factorization (NNMF)<a class="headerlink" href="#c-cross-validation-for-non-negative-matrix-factorization-nnmf" title="Link to this heading">¶</a></h2>
+<p>To select the best number of ranks per participant cross-validation was used. The following steps were performed for each participant:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Randomly remove 20% of the data points (masking)</p></li>
+<li><p>Perform NNMF 50 times with randomly initialized values. Every repetition results in 2 matrices. The first matrix summarizes the jid-sw (meta-sw, Shape: [bins x rank]). The second matrix (meta-location) summarizes the likelihood that the jid-sw is represented in that location (Shape: [rank x electrodes]).</p></li>
+<li><p>Reconstructed the data and calculated the training and testing error for each repetition</p></li>
+<li><p>Repeated steps 2 to 6 for rank [2 to 10]</p></li>
+<li><p>Selected the best rank by averaging the test error across all the repetitions for each rank and selecting the rank with the smallest error.</p></li>
+</ol>
+</div></blockquote>
+</section>
+<section id="d-reproducible-non-negative-matrix-factorization-nnmf">
+<h2>D. Reproducible Non-negative matrix factorization (NNMF)<a class="headerlink" href="#d-reproducible-non-negative-matrix-factorization-nnmf" title="Link to this heading">¶</a></h2>
+<p>Since NNMF is a non-convex problem, the solution is dependent on the initialization. Therefore we employed the reproducible NNMF technique as explained in (<span class="xref std std-ref">https://doi.org/10.1101/2022.08.25.505261</span>). We repeated the above mentioned steps 1 to 4, with the exception that NNMF was performed for 100 repetitions with the selected rank. Followed by the reproducible NNMF technique selecting the most stable and reproducible decompositions per participant.</p>
+</section>
+<section id="d-slow-waves-rate-sw-jid-rate">
+<h2>D. Slow waves rate (SW-JID rate)<a class="headerlink" href="#d-slow-waves-rate-sw-jid-rate" title="Link to this heading">¶</a></h2>
+<p>To understand the relationship between the slow wave dynamics and behaviors we can calculate the rate of smartphone interactons across the slow wave dynamics (SW-JID).
+For instance, in sparse SW sequences there may be more touchscreen interactions occurring compared to frequent SW sequences.</p>
+<ol class="arabic simple">
+<li><p>For each triad sum the number of taps occurring</p></li>
+<li><p>Divide the number of taps per triad by the duration of the triad</p></li>
+<li><p>If there are multiple triad in the same SW bin then sum the total number of taps across all the triads and divide it by the total duration of all the triads.</p></li>
+</ol>
+</section>
+<section id="e-slow-waves-pre-post-rate-sw-jid-pre-post-rate">
+<h2>E. Slow waves pre/post rate (SW-JID pre/post rate)<a class="headerlink" href="#e-slow-waves-pre-post-rate-sw-jid-pre-post-rate" title="Link to this heading">¶</a></h2>
+<p>We can address the rate of smartphone interactons following slow wave dynamics</p>
+<ol class="arabic simple">
+<li><p>For each triad sum the number of taps occurring within a time interval (x minutes) following (post rate) or before (pre rate) the triad.</p></li>
+<li><p>Divide the sum by a x minutes</p></li>
+</ol>
+</section>
+<section id="e-slow-waves-latency-sw-jid-latency">
+<h2>E. Slow waves latency (SW-JID latency)<a class="headerlink" href="#e-slow-waves-latency-sw-jid-latency" title="Link to this heading">¶</a></h2>
+<p>We can address the how far the next touchscreen interaction occurred following different SW dynamics</p>
+<ol class="arabic simple">
+<li><p>For each find the distance to next tap</p></li>
+<li><p>If there is no next tap then a NAN is assigned</p></li>
+</ol>
+</section>
+<section id="folder-structure">
+<h2>Folder structure<a class="headerlink" href="#folder-structure" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    +-- sw_to_behavior
+    ¦   +-- sw_jid_nnmf_main.m  --&gt; main function perform nnmf (A to C)
+    ¦   +-- sw_to_behavior_all_pps.m --&gt; main function to calculate slow waves to behavior features for all participants
+    ¦   +-- tap_per_sw_triad.m --&gt; calculate slow waves to behavior features (rate, latency, post and pre rate)
++-- plots
+¦   +-- sw_to_behavior_plots.m -&gt; plot the latency, post and pre rate for each participant
+</pre></div>
+</div>
+</section>
+<section id="code">
+<h2>Code<a class="headerlink" href="#code" title="Link to this heading">¶</a></h2>
+<dl class="mat function" id="module-sw_to_behavior">
+<dt class="sig sig-object mat" id="sw_to_behavior.sw_jid_nnmf_main">
+<span class="sig-prename descclassname"><span class="pre">sw_to_behavior.</span></span><span class="sig-name descname"><span class="pre">sw_jid_nnmf_main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">res</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sw_to_behavior.sw_jid_nnmf_main" title="Link to this definition">¶</a></dt>
+<dd><p>perform NNMF on for each participant</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><blockquote>
+<div><ul class="simple">
+<li><p>sw_jid_nnmf_main(res)</p></li>
+<li><p>sw_jid_nnmf_main(…,’mins’,2)</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>res = struct array with the sw to behavior features containing fields: res.refilter</p></li>
+</ul>
+</dd>
+<dt>Optional Input(s):</dt><dd><ul class="simple">
+<li><p>save_results (Default : 1) = 1 save results, 0 otherwise</p></li>
+<li><p>save_path (Default : current directory) = string path to save results</p></li>
+<li><p>file (Default: empty) = Unique checkpoint file name to save results</p></li>
+<li><p>parameter (Default : 1) = number of minutes to select after a triad for post_rate and pre_rate</p></li>
+<li><p>repetitions_cv (Default : 50) = number of repitions for cross validation</p></li>
+<li><p>z_score (Default : 0) = 1 zscore normalize data before NNMF, 0 otherwise</p></li>
+<li><p>threshold(Default : 0) = 1 threshold empty bins before NNMF, 0 otherwise</p></li>
+<li><p>log_transform(Default : 0) = 1 log_transform data before NNMF, 0 otherwise</p></li>
+</ul>
+</dd>
+</dl>
+<p>Output(s):</p>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University, 2024</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="sw_to_behavior.sw_to_behavior_all_pps">
+<span class="sig-prename descclassname"><span class="pre">sw_to_behavior.</span></span><span class="sig-name descname"><span class="pre">sw_to_behavior_all_pps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">load_data</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sw_to_behavior.sw_to_behavior_all_pps" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate SW to behavior features for all participants</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><blockquote>
+<div><ul class="simple">
+<li><p>sw_to_behavior_all_pps(load_data)</p></li>
+<li><p>sw_to_behavior_all_pps(…,’save_results’, 1, ‘save_path’,’mydir’, ‘file’, ‘subject_2’)</p></li>
+<li><p>sw_to_behavior_all_pps(…,’parameter’,2)</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>taps = tap indexes</p></li>
+<li><p>refilter = Slow waves</p></li>
+<li><dl class="simple">
+<dt>type = </dt><dd><p>‘rate’ select the number of taps during a SW triad 
+‘post_rate’ select the number of taps options.min minutes after a SW triad 
+‘pre_rate’ select the number of taps options.min minutes before a SW triad 
+‘latency’ select the latency to next tap following a SW triad</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Optional Input(s):</dt><dd><ul class="simple">
+<li><p>save_results (Default : 1) = 1 save results, 0 otherwise</p></li>
+<li><p>save_path (Default : current directory) = string path to save results</p></li>
+<li><p>file (Default: empty) = Unique checkpoint file name to save results</p></li>
+<li><p>parameter (Default : 1) = number of minutes to select after a triad for post_rate and pre_rate</p></li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>res = struct array with the sw to behavior features containing the following fields:</dt><dd><p>taps = indexes of phone taps
+refilter = slow waves for all channels
+rate = the number of taps during a SW triad 
+post_rate = the number of taps x min minutes after a SW triad 
+pre_rate = the number of taps x min minutes before a SW triad 
+latency = the latency to next tap following a SW triad</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University, 2024</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="sw_to_behavior.tap_per_sw_triad">
+<span class="sig-prename descclassname"><span class="pre">sw_to_behavior.</span></span><span class="sig-name descname"><span class="pre">tap_per_sw_triad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">taps</span></em>, <em class="sig-param"><span class="pre">refilter</span></em>, <em class="sig-param"><span class="pre">type</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sw_to_behavior.tap_per_sw_triad" title="Link to this definition">¶</a></dt>
+<dd><p>Select the slow wave per electrode and triad</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><blockquote>
+<div><ul class="simple">
+<li><p>tap_per_sw_triad(taps,refilter,type)</p></li>
+<li><p>tap_per_sw_triad(…,’mins’,2)</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Input(s):</dt><dd><ul class="simple">
+<li><p>taps = tap indexes</p></li>
+<li><p>refilter = Slow waves</p></li>
+<li><dl class="simple">
+<dt>type = </dt><dd><p>‘rate’ select the number of taps during a SW triad 
+‘post_rate’ select the number of taps options.min minutes after a SW triad 
+‘pre_rate’ select the number of taps options.min minutes before a SW triad 
+‘latency’ select the latency to next tap following a SW triad</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Optional Input(s):</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>mins (Default<span class="classifier">1) = number of minutes to select after a triad for</span></dt><dd><p>post_rate and pre_rate</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>selected_waves = cell channels x triads, inside each cell an array of</dt><dd><p>logical values 1 if sw was present and 0 otherwise</p>
+</dd>
+</dl>
+</li>
+<li><p>triad_lengths = total duration of the traids</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University, 2024</p>
+</dd></dl>
+
+<dl class="mat function" id="module-microstates_functions">
+<dt class="sig sig-object mat" id="microstates_functions.pool_duplicates">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">pool_duplicates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">dt_dt</span></em>, <em class="sig-param"><span class="pre">microstates</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.pool_duplicates" title="Link to this definition">¶</a></dt>
+<dd><p>find multiple triads in each bin</p>
+<dl class="simple">
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>pool_duplicates(dt_dt,pool_duplicates)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>dt_dt = array of triads with ITI of index K and ITI of index k+1 
+microstates = all the microstates fitted on the EEG data</p>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>pooled: pooled data in each bin</p></li>
+</ul>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="microstates_functions.prepare_EEG_w_taps_only">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">prepare_EEG_w_taps_only</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">EEG</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.prepare_EEG_w_taps_only" title="Link to this definition">¶</a></dt>
+<dd><dl>
+<dt>Prepare EEG with tap sequences only</dt><dd><p>(remove resting state movie or smartphone box/forcesensor data)</p>
+</dd>
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>prepare_EEG_w_taps_only(EEG)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>EEG = EEG struct</p>
+</dd>
+<dt>Output(s):</dt><dd><p>EEG = truncated EEG struct
+indexes cell = latencies where tap sequences take place, if there are</p>
+<blockquote>
+<div><p>multiple gaps then the cell is of size (1 x number of gaps)</p>
+</div></blockquote>
+</dd>
+</dl>
+<p>Ruchella Kock, Leiden University, 22/08/2023</p>
+<p>find indexes/latencies of the ALIGNED smartphone taps</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="microstates_functions.find_gaps_in_taps">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">find_gaps_in_taps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">taps</span></em>, <em class="sig-param"><span class="pre">gap_length</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.find_gaps_in_taps" title="Link to this definition">¶</a></dt>
+<dd><p>Indexes of smartphone tap data, remove any sequences/gaps with no touches</p>
+<dl class="simple">
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>find_gaps_in_taps(taps)</p></li>
+<li><p>find_gaps_in_taps(…, break_time, 100000)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>taps = latencies a smartphone touchscreen interaction/tap took place (in ms)</p>
+</dd>
+<dt>Optional input parameter(s):</dt><dd><p>gap_length (default = 600000/ 10 minutes) - length of the gap with no touches(in ms)</p>
+</dd>
+<dt>Output(s):</dt><dd><dl class="simple">
+<dt>indexes cell = latencies where tap sequences take place, if there are</dt><dd><p>multiple gaps then the cell is of size (1 x number of gaps)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Ruchella Kock, Leiden University, 22/08/2023</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="microstates_functions.find_duplicates">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">find_duplicates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">dt_dt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.find_duplicates" title="Link to this definition">¶</a></dt>
+<dd><p>find multiple triads in each bin</p>
+<dl class="simple">
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>find_duplicates(dt_dt)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>dt_dt = array of triads with ITI of index K and ITI of index k+1 
+microstates = all the microstates fitted on the EEG data</p>
+</dd>
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>duplicates: logical array indicating whether a triad is a duplicate</p></li>
+</ul>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University</p>
+<p>initiate an empty array of length equal to number of triads</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="microstates_functions.assign_tap2bin">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">assign_tap2bin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">dt_dt</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.assign_tap2bin" title="Link to this definition">¶</a></dt>
+<dd><p>Assign triads of taps to belong to specific bins</p>
+<dl class="simple">
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>assign_tap2bin(dt_dt)</p></li>
+<li><p>assign_tap2bin(… , ‘Bins’, 10)</p></li>
+<li><p>assign_tap2bin(… , ‘MinH’, 1.5)</p></li>
+<li><p>assign_tap2bin(… , ‘MaxH’, 5)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>dt_dt = array of triads with ITI of index K and ITI of index k+1</p>
+</dd>
+</dl>
+<p>Optional input parameter(s):</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>Bins (Default<span class="classifier">50) = Number of bins (per side) in the JID. Basically the </span></dt><dd><p>length of the side of the JID matrix.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>MinH (Default 1.5 ~ 30 ms 10 ^ 1.5 = 31.6) = The minimum delta(t) value to consider in the JID </dt><dd><p>space expressed in log10(ms) space.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>MaxH (Default: 5 ~ 100s to 10 ^ 5 = 100000ms) = The maximum delta(t) value to consider in the JID </dt><dd><p>space expressed in log10 space. Default</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><p>dt_dt = with 2 more columns where each triad has been assigned to nearest bin</p></li>
+<li><p>gridx = the linearly spaced bin edges</p></li>
+<li><p>xi = X and Y coordinates for each bin</p></li>
+</ul>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="microstates_functions.cluster">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">cluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">all_prototypes</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.cluster" title="Link to this definition">¶</a></dt>
+<dd><p>perform kmeans clustering</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>cluster(all_clusters)</p></li>
+<li><p>cluster(…[3:20])</p></li>
+<li><p>cluster(…,…, 100)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>all_prototypes = all the prototypes</p>
+</dd>
+<dt>Optional input parameter(s):</dt><dd><dl class="simple">
+<dt>n_clus (default<span class="classifier">[2:15]) = array with the number of possible clusters </span></dt><dd><p>to form ‘k’ for modkmeans</p>
+</dd>
+</dl>
+<p>numreps (default : 1000) = number of times to repeat modkmeans</p>
+</dd>
+<dt>Output(s):</dt><dd><p>prototypes = prototypes of best cluster
+labels = clustering labels
+cluster_prototypes = prototypes for all repetitions
+cluster_labels = labels for all repetitions</p>
+</dd>
+<dt>Requires:</dt><dd><p>modkmeans</p>
+</dd>
+</dl>
+<p>Author: R.M.D. Kock, Leiden University, 04/12/2023</p>
+</dd></dl>
+
+<dl class="mat function">
+<dt class="sig sig-object mat" id="microstates_functions.find_taps">
+<span class="sig-prename descclassname"><span class="pre">microstates_functions.</span></span><span class="sig-name descname"><span class="pre">find_taps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">EEG</span></em>, <em class="sig-param"><span class="pre">indexes</span></em>, <em class="sig-param"><span class="pre">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#microstates_functions.find_taps" title="Link to this definition">¶</a></dt>
+<dd><p>find tap indexes</p>
+<dl>
+<dt><strong>Usage:</strong></dt><dd><ul class="simple">
+<li><p>find_taps(taps)</p></li>
+<li><p>find_taps(…, indexes, {400 450 600})</p></li>
+<li><p>find_taps(…, ‘tap_only’, 0)</p></li>
+</ul>
+</dd>
+<dt>Input(s):</dt><dd><p>EEG = EEG struct</p>
+</dd>
+<dt>Optional input parameter(s):</dt><dd><dl class="simple">
+<dt>indexes cell = latencies where tap sequences take place, if there are</dt><dd><p>multiple gaps then the cell is of size (1 x number of gaps)</p>
+</dd>
+</dl>
+<p>tap_only (default : 1) = if the EEG data has been truncated to fit</p>
+</dd>
+<dt>Output(s):</dt><dd><p>taps = latencies a smartphone touchscreen interaction/tap took place (in ms)</p>
+</dd>
+</dl>
+<p>Ruchella Kock, Leiden University, 22/08/2023</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Smartphone interactions across Slow Waves (SW) joint-interval distributions (JIDs)</a><ul>
+<li><a class="reference internal" href="#a-slow-waves-dynamics-sw-jid">A. Slow waves dynamics (SW JID)</a></li>
+<li><a class="reference internal" href="#b-prepare-data-for-non-negative-matrix-factorization-nnmf">B. Prepare data for Non-negative matrix factorization (NNMF)</a></li>
+<li><a class="reference internal" href="#c-cross-validation-for-non-negative-matrix-factorization-nnmf">C. Cross-validation for Non-negative matrix factorization (NNMF)</a></li>
+<li><a class="reference internal" href="#d-reproducible-non-negative-matrix-factorization-nnmf">D. Reproducible Non-negative matrix factorization (NNMF)</a></li>
+<li><a class="reference internal" href="#d-slow-waves-rate-sw-jid-rate">D. Slow waves rate (SW-JID rate)</a></li>
+<li><a class="reference internal" href="#e-slow-waves-pre-post-rate-sw-jid-pre-post-rate">E. Slow waves pre/post rate (SW-JID pre/post rate)</a></li>
+<li><a class="reference internal" href="#e-slow-waves-latency-sw-jid-latency">E. Slow waves latency (SW-JID latency)</a></li>
+<li><a class="reference internal" href="#folder-structure">Folder structure</a></li>
+<li><a class="reference internal" href="#code">Code</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="pre_processing.html"
+                          title="previous chapter">Pre-processing EEG &amp; identify slow waves</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="utils.html"
+                          title="next chapter">Utility functions</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/sw_to_behavior.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="mat-modindex.html" title="MATLAB Module Index"
+             >matlab index</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="Utility functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pre_processing.html" title="Pre-processing EEG &amp; identify slow waves"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Slow waves surrounding smartphone behaviors 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Smartphone interactions across Slow Waves (SW) joint-interval distributions (JIDs)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright .
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+    </div>
+  </body>
+</html>

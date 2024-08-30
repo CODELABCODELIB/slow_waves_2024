@@ -15,7 +15,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Joint probability interval distribution (JID-state)" href="jid_slow_waves.html" />
+    <link rel="next" title="Smartphone interactions across Slow Waves (SW) joint-interval distributions (JIDs)" href="sw_to_behavior.html" />
     <link rel="prev" title="Startup guide" href="getting-started.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="Related">
@@ -28,7 +28,7 @@
           <a href="mat-modindex.html" title="MATLAB Module Index"
              >matlab index</a> |</li>
         <li class="right" >
-          <a href="jid_slow_waves.html" title="Joint probability interval distribution (JID-state)"
+          <a href="sw_to_behavior.html" title="Smartphone interactions across Slow Waves (SW) joint-interval distributions (JIDs)"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="getting-started.html" title="Startup guide"
@@ -149,7 +149,7 @@ Added at line 43 – [INEEG] = pop_eegfiltnew(INEEG, 0.5, []);</p>
 <dt><strong>Usage:</strong></dt><dd><blockquote>
 <div><ul class="simple">
 <li><p>[movie_indexes,phone_indexes,sw_movie,sw_behavior] = seperate_movie_phone(load_data)</p></li>
-<li><p>= seperate_movie_phone(…,’sel_sw’,’negzx’)</p></li>
+<li><p>seperate_movie_phone(…,’sel_sw’,’negzx’)</p></li>
 </ul>
 </div></blockquote>
 <dl>
@@ -316,6 +316,7 @@ first subject (see dir output to know which files were loaded)</p>
 </ul>
 </dd>
 </dl>
+<p>Author: R.M.D. Kock, Leiden University</p>
 </dd></dl>
 
 <dl class="mat function">
@@ -341,7 +342,7 @@ advised for most analyses).</p>
 <li><p>sw_detection(…, ‘pt’, 1)</p></li>
 </ul>
 </div></blockquote>
-<dl>
+<dl class="simple">
 <dt>Input(s):</dt><dd><ul class="simple">
 <li><p>EEG = EEG struct</p></li>
 <li><p>participant = string with participant ID/name</p></li>
@@ -355,23 +356,26 @@ advised for most analyses).</p>
 </li>
 </ul>
 </dd>
-<dt>Output(s):</dt><dd><ul>
-<li><dl>
-<dt>data = cell with generated erp or ersp </dt><dd><p>data{1} = Participant folder name
-data{2} = EEG struct without EEG.data</p>
-<blockquote>
-<div><p>EEG.phone_indexes = the timeperiods including phone touches
+<dt>Output(s):</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>data = cell with generated sw data</dt><dd><ul>
+<li><p>data{1} = Participant folder name</p></li>
+<li><dl class="simple">
+<dt>data{2} = EEG struct without EEG.data</dt><dd><p>EEG.phone_indexes = the timeperiods including phone touches
 EEG.taps = timestamps of the taps 
 EEG.movie_indexes = the timeperiods including movie</p>
-</div></blockquote>
-<p>data{3} = twa_results set with SWs (outcome of twalldetectnew_TA_v4)
-data{4} = refilter sw after thresholding (outcome of filter_results);</p>
+</dd>
+</dl>
+</li>
+<li><p>data{3} = twa_results set with SWs (outcome of twalldetectnew_TA_v4)</p></li>
+<li><p>data{4} = refilter sw after thresholding (outcome of filter_results);</p></li>
+</ul>
 </dd>
 </dl>
 </li>
 </ul>
 </dd>
-<dt>Requires:</dt><dd><p>-add_events.m
+<dt>Requires:</dt><dd><p>-add_events.m 
 -preprocess_EEG.m
 -twalldetectnew_TA_v4.m
 -filter_results.m</p>
@@ -379,8 +383,7 @@ data{4} = refilter sw after thresholding (outcome of filter_results);</p>
 </dl>
 </dd>
 </dl>
-<p>Author: R.M.D. Kock, Leiden University
-select the smartphone events</p>
+<p>Author: R.M.D. Kock, Leiden University</p>
 </dd></dl>
 
 </section>
@@ -411,8 +414,8 @@ select the smartphone events</p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="jid_slow_waves.html"
-                          title="next chapter">Joint probability interval distribution (JID-state)</a></p>
+    <p class="topless"><a href="sw_to_behavior.html"
+                          title="next chapter">Smartphone interactions across Slow Waves (SW) joint-interval distributions (JIDs)</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -445,7 +448,7 @@ select the smartphone events</p>
           <a href="mat-modindex.html" title="MATLAB Module Index"
              >matlab index</a> |</li>
         <li class="right" >
-          <a href="jid_slow_waves.html" title="Joint probability interval distribution (JID-state)"
+          <a href="sw_to_behavior.html" title="Smartphone interactions across Slow Waves (SW) joint-interval distributions (JIDs)"
              >next</a> |</li>
         <li class="right" >
           <a href="getting-started.html" title="Startup guide"

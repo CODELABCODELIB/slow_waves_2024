@@ -12,7 +12,7 @@ Home
 
    Getting started <getting-started>
    Pre-processing <pre_processing>
-   Analysis <jid_slow_waves>
+   Analysis <sw_to_behavior>
    Utility functions <utils>
 
 

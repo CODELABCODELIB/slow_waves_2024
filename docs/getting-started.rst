@@ -31,6 +31,20 @@ Install the following toolboxes:
 - `Curve Fitting Toolbox <https://nl.mathworks.com/products/curvefitting.html>`__
 - `Signal Processing Toolbox <https://www.mathworks.com/products/signal.html>`__
 
+Analysis
+^^^^^^^^
+The analysis is structured in a series of figures to recreate these figures:
+
+1. Pre-process and identify slow waves in the data (check out the page <pre_processing>)
+ 
+2. Identify slow waves characteristics during rest and how do these relate to sleep (check out the page <TODO>) 
+
+3. Next identify slow waves characteristics across time while participants were engaged in smartphone behavior (check out the page <TODO>) 
+
+4. Adress the dynamics of slow waves and their link to behavior (check out the page <sw_to_behavior>) 
+
+All these steps are run from one main file: 'src/main_slow_waves.m'
+
 Folder structure
 ----------------
 
