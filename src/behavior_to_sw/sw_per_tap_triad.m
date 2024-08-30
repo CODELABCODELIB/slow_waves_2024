@@ -1,4 +1,4 @@
-function [selected_waves,triad_lengths] = sw_per_triad(taps,refilter)
+function [selected_waves,triad_lengths] = sw_per_tap_triad(taps,refilter)
 %% Select the slow wave per electrode and triad  
 %
 % **Usage:**

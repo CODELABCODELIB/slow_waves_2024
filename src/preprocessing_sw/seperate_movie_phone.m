@@ -2,8 +2,8 @@ function [movie_indexes,phone_indexes,sw_movie,sw_phone,taps] = seperate_movie_p
 %% seperate movie and phone data for each participant
 %
 % **Usage:**
-%   -  [movie_indexes,phone_indexes,sw_movie,sw_behavior] = seperate_movie_phone(load_data)
-%   -                   = seperate_movie_phone(...,'sel_sw','negzx')
+%   - [movie_indexes,phone_indexes,sw_movie,sw_behavior] = seperate_movie_phone(load_data)
+%   - seperate_movie_phone(...,'sel_sw','negzx')
 %
 %  Input(s):
 %   - load_data = pre-processed struct with sw results from @sw_detection

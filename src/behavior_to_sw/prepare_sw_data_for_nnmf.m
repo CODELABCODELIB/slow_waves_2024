@@ -38,6 +38,11 @@ if ~isempty(reshaped_jid)
         reshaped_jid(reshaped_jid == 0) = NaN;
         reshaped_jid(isnan(reshaped_jid)) = 0.000000000000000001;
         reshaped_jid = log10(reshaped_jid) + abs(min(log10(reshaped_jid), [],'all'));
+        % if  abs(min(log10(reshaped_jid)))
+        %     reshaped_jid = log10(reshaped_jid) + abs(min(log10(reshaped_jid), [],'all'));
+        % else
+            % reshaped_jid = log10(reshaped_jid) + abs(min(log10(reshaped_jid))) + 0.000000000000000001;
+        % end
     end
 end
 end

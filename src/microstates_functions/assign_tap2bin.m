@@ -10,25 +10,23 @@ function [dt_dt,gridx,xi] = assign_tap2bin(dt_dt, options)
 % Input(s):
 %    dt_dt = array of triads with ITI of index K and ITI of index k+1 
 %
-%    Optional input parameters:  
+% Optional input parameter(s):  
 % 
-%      'Bins'           Number of bins (per side) in the JID. Basically the 
-%                       length of the side of the JID matrix. 
-%      'MinH'           The minimum delta(t) value to consider in the JID 
-%                       space expressed in log10(ms) space. Default 1.5 ~ 30 ms 
-%                       10 ^ 1.5 = 31.6.
-%      'MaxH'           The maximum delta(t) value to consider in the JID 
-%                       space expressed in log10 space. Default 5 ~  100 s 
-%                       10 ^ 5 = 100000.
+%    - Bins (Default : 50) = Number of bins (per side) in the JID. Basically the 
+%              length of the side of the JID matrix. 
+%    - MinH (Default 1.5 ~ 30 ms 10 ^ 1.5 = 31.6) = The minimum delta(t) value to consider in the JID 
+%              space expressed in log10(ms) space.
+%    - MaxH (Default: 5 ~ 100s to 10 ^ 5 = 100000ms) = The maximum delta(t) value to consider in the JID 
+%             space expressed in log10 space. Default 
 %
 % Output(s):
-%   - dt_dt: with 2 more columns where each triad has been assigned to
-%   nearest bin
-%   - gridx: the linearly spaced bin edges
-%   - xi: X and Y coordinates for each bin
+%   - dt_dt = with 2 more columns where each triad has been assigned to nearest bin
+%   - gridx = the linearly spaced bin edges
+%   - xi = X and Y coordinates for each bin
+%
 %
 % Author: R.M.D. Kock, Leiden University
-
+%
 arguments
     dt_dt;
     options.MIN_H = 1.5;

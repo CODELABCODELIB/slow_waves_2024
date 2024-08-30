@@ -1,4 +1,4 @@
-function [load_data] = load_checkpoints(data_path, load_str,data_name, options)
+function [load_data] = load_checkpoints_fs(data_path, load_str,data_name, options)
 %% load erp and or ersp checkpoints
 %
 % **Usage:**

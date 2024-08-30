@@ -24,7 +24,7 @@ function [prototypes,labels,cluster_prototypes,cluster_labels] = cluster(all_pro
 %   modkmeans
 %
 % Author: R.M.D. Kock, Leiden University, 04/12/2023
-
+%
 arguments
     all_prototypes;
     options.n_clus = [2:15];

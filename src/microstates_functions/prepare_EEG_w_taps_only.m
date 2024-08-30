@@ -1,5 +1,5 @@
 function [EEG,indexes] = prepare_EEG_w_taps_only(EEG)
-%% Prepare EEG with tap sequences only 
+%% Prepare EEG with tap sequences only
 %  (remove resting state movie or smartphone box/forcesensor data)
 %
 % **Usage:**
@@ -13,11 +13,10 @@ function [EEG,indexes] = prepare_EEG_w_taps_only(EEG)
 %    indexes cell = latencies where tap sequences take place, if there are
 %                   multiple gaps then the cell is of size (1 x number of gaps)
 %
-% Ruchella Kock, Leiden University, 22/08/2023 
-%
+% Ruchella Kock, Leiden University, 22/08/2023
 %%
 % find indexes/latencies of the ALIGNED smartphone taps
-latencies = [EEG.event.latency]; 
+latencies = [EEG.event.latency];
 taps = latencies(strcmp({EEG.event.type}, 'pt'));
 EEG.Aligned.BS_to_tap.Phone = zeros(size(EEG.data(1,:)));
 EEG.Aligned.BS_to_tap.Phone(taps) = 1;
@@ -35,6 +34,6 @@ for gap=1:length(indexes)
 end
 % reassign the time of the EEG data note that urevent struct now is not usable anymore!
 EEG.data = eeg_dat;
-EEG.times = eeg_times; 
+EEG.times = eeg_times;
 EEG.pnts = length(EEG.data);
 end

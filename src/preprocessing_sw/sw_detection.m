@@ -14,22 +14,23 @@ function [data,EEG] = sw_detection(EEG, participant, options)
 %           0 run analysis on full dataset including resting state and movie
 %
 %  Output(s):
-%   - data = cell with generated erp or ersp 
-%       data{1} = Participant folder name
-%       data{2} = EEG struct without EEG.data
+%   - data = cell with generated sw data
+%       - data{1} = Participant folder name
+%       - data{2} = EEG struct without EEG.data
 %           EEG.phone_indexes = the timeperiods including phone touches
 %           EEG.taps = timestamps of the taps 
 %           EEG.movie_indexes = the timeperiods including movie 
-%       data{3} = twa_results set with SWs (outcome of twalldetectnew_TA_v4)
-%       data{4} = refilter sw after thresholding (outcome of filter_results);
+%       - data{3} = twa_results set with SWs (outcome of twalldetectnew_TA_v4)
+%       - data{4} = refilter sw after thresholding (outcome of filter_results);
 %
 %  Requires:
-%   -add_events.m
+%   -add_events.m 
 %   -preprocess_EEG.m
 %   -twalldetectnew_TA_v4.m
 %   -filter_results.m
 %
 % Author: R.M.D. Kock, Leiden University
+
 %% select the smartphone events 
 if isfield(EEG, 'Aligned.BS_to_tap') && ~options.pt
     % epoch around aligned tap

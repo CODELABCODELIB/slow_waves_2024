@@ -28,8 +28,8 @@ function [files_grouped,A,parfor_time] = call_f_all_p_parallel_sw(path,f, option
 %   - gen_set_file_names
 %   - select_from_status_1.m
 %   - find_movie_passive_event.m
-
-% Author: R.M.D. Kock
+%
+% Author: R.M.D. Kock, Leiden University
 
 arguments
     path char;
