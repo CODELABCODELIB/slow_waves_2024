@@ -148,37 +148,84 @@ for pp=1:41
 end
 %% plot nnmf population clusters
 h= figure;
-tiledlayout(1,size(prototypes,2))
+tiledlayout(4,size(prototypes,2))
 for n_map=1:size(prototypes,2)
     nexttile;
     topoplot(prototypes(1:62,n_map),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
-    clim(quantile(prototypes(1:62,n_map),[0.25 0.75]))
+    clim([0, 0.2])
 end
-colormap('jet')
+for n_map=1:size(prototypes,2)
+    tmp = all_jids(:,labels==n_map);
+    nexttile;
+    plot_jid(reshape(tmp(:,1),[50,50]))
+    clim([0, 0.7])
+    axis square
+end
+for n_map=1:size(prototypes,2)
+    tmp = all_jids(:,labels==n_map);
+    nexttile;
+    plot_jid(reshape(tmp(:,2),[50,50]))
+    clim([0, 0.7])
+    axis square
+end
+for n_map=1:size(prototypes,2)
+    tmp = all_jids(:,labels==n_map);
+    nexttile;
+    plot_jid(reshape(tmp(:,3),[50,50]))
+    clim([0, 0.7])
+    axis square
+end
 colorbar;
+colormap('jet')
 % saveas(h,sprintf('%s/jid_nnmf/prototypes.svg',save_path))
 %% plot the clustered JIDs
-all_jids = cat(2,res.reconstruct_amp);
+all_jids = cat(2,res.reconstruct);
 for n_map=1:size(prototypes,2)
     tmp = all_jids(:,labels==n_map);
     h = figure;
-    tiledlayout(2,ceil(size(tmp,2)/2))
+    tiledlayout(3,ceil(size(tmp,2)/3), 'TileSpacing','none')
     for i=1:size(tmp,2)
         nexttile;
         plot_jid(reshape(tmp(:,i),[50,50]))
-        clim([0,2])
+        clim([0,0.7])
+        axis square;
     end
     % saveas(h,sprintf('%s/jid_nnmf/jid_amp_nnmf_clus_%d.svg',save_path,n_map))
     % plot the maps
     tmp = all_maps(:,labels==n_map);
     h = figure;
-    tiledlayout(2,ceil(size(tmp,2)/2))
+    tiledlayout(3,ceil(size(tmp,2)/3))
     for i=1:size(tmp,2)
         nexttile;
         topoplot(tmp(1:62,i),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
-        clim([0,2])
+        clim([0,1])
     end
     % saveas(h,sprintf('%s/jid_nnmf/topoplots_nnmf_clus_%d.svg',save_path,n_map))
+end
+%% cluster behavior and explore the relevant maps
+for n_clus=2:5
+    [prototypes,labels] = cluster(all_jids', 'modkmeans', 0, 'n_clus',n_clus);
+    figure;
+    tiledlayout(1,size(prototypes,1));
+    for clus=1:size(prototypes,1)
+        nexttile;
+        plot_jid(reshape(prototypes(clus,:),50,50));
+        axis square;
+    end
+
+    for clus=1:size(prototypes,1)
+        tmp = all_maps(:, labels==clus);
+        figure;
+        tiledlayout(5,ceil(size(tmp,2)/5)+1, 'TileSpacing','none');
+        nexttile;
+        plot_jid(reshape(prototypes(clus,:),50,50));
+        axis square;
+        for pp=1:size(tmp,2)
+            nexttile;
+            topoplot(tmp(1:62,pp),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+            clim([0,1])
+        end
+    end
 end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%% plot basic sw features %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -276,8 +323,8 @@ for bin = 1:1136
     tmp = selected_waves{chan,bin};
     if ~isempty(tmp) && length(tmp) > 3
         jid_behavior = taps2JID(tmp);
-        
-        h= figure; 
+
+        h= figure;
         tiledlayout(1,2)
         nexttile;
         plot_jid(jid_behavior);

@@ -24,11 +24,12 @@ function [prototypes,labels,cluster_prototypes,cluster_labels] = cluster(all_pro
 %   modkmeans
 %
 % Author: R.M.D. Kock, Leiden University, 04/12/2023
-%
+
 arguments
     all_prototypes;
     options.n_clus = [2:15];
     options.numreps = 1000;
+    options.modkmeans logical = 1;
 end
 %% cluster 
 % idx = kmeans(all_clusters', n_clus);
@@ -39,13 +40,16 @@ cluster_prototypes = {};
 cluster_labels = {};
 ssqs = zeros(options.numreps,1);
 for rep=1:options.numreps
-    [prototypes, labels, Res] = modkmeans(all_prototypes,options.n_clus, opts);
-    % for n_clus=options.n_clus
-    %     [prototypes, labels] = kmeans(all_prototypes,options.n_clus);
-    % end
+    if options.modkmeans
+        [prototypes, labels, Res] = modkmeans(all_prototypes,options.n_clus, opts);
+        ssqs(rep) = sum(Res.MSE);
+    else
+        [labels,prototypes, Res] = kmeans(all_prototypes,options.n_clus);
+        ssqs(rep) = sum(Res);
+    end
     cluster_prototypes{rep} = prototypes;
     cluster_labels{rep} = labels;
-    ssqs(rep) = sum(Res.MSE);
+    
 end
 [~,idx] = min(ssqs);
 prototypes = cluster_prototypes{idx};
