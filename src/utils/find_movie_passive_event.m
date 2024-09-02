@@ -11,7 +11,7 @@ function [EEG,indexes,passive_RT_present,latencies] = find_movie_passive_event(E
 %   - indexes = struct with indexes of movie left and right passive stimulations
 %           - indexes.right : right thumb stimulation
 %           - indexes.left : left thumb stimulation
-%           - indexes_movie_latencies : latency of all movie events (left and right)
+%           - indexes.movie_latencies : latency of all movie events (left and right)
 %   - passive_RT_present (logical) = Movie data present (1) or not (0)
 %   - latencies = latencies of all events after preprocessing urevent
 %

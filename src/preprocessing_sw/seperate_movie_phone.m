@@ -62,9 +62,9 @@ for pp=options.start_range:options.end_range
     if options.get_movie_idxs
         EEG.data = zeros(64,length(EEG.times));
         % upsampled to orginal freq for the right urevent and event indexes
-        [OUTEEG] = pop_resample(EEG, 1000);
+        [EEG] = pop_resample(EEG, 1000);
         % find the movie indexes in upsampled data
-        [~,movie_indexes{pp}] = find_movie_passive_event(OUTEEG);
+        [~,movie_indexes{pp}] = find_movie_passive_event(EEG);
 
         % select the SW during movie watching (start index of the wave)
         if ~isempty(options.sel_sw)
