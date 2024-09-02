@@ -69,6 +69,15 @@ if ~exist(save_path, 'dir')
 end
 f = @sw_to_behavior_all_pps;
 run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 1);
+%%
+save_path = sprintf('%s/test',save_path_upper); 
+data_path = sprintf('%s/erp_sw2_1_4',save_path_upper);
+load_str='sw2'; data_name='A';
+if ~exist(save_path, 'dir')
+       mkdir(save_path); addpath(genpath(save_path))
+end
+f = @seperate_movie_phone;
+run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 1);
 %% prepare the data
 load(sprintf('%s/sw_to_behavior/EEG_res.mat',save_path_upper));
 res = res(cellfun(@(x) isfield(x,'taps'),res));
@@ -80,11 +89,9 @@ if ~exist(save_path, 'dir')
 end
 sw_jid_nnmf_main(res,'save_path',save_path)
 %% plot NNMF results
-stable_basis_all_pps = {};
 for pp=1:41
     load(sprintf('%s/sw_jid/stable_basis_%d',save_path_upper,pp))
     load(sprintf('%s/sw_jid/reconstruct_%d',save_path_upper,pp))
-    stable_basis_all_pps = cat(1, stable_basis_all_pps{:})
     h = figure;
     best_k_overall = size(reconstruct_all_chans,2);
     tiledlayout(best_k_overall,2)
@@ -122,4 +129,36 @@ save_path = sprintf('%s/sw_rate_nnmf',save_path_upper);
 if ~exist(save_path, 'dir')
     mkdir(save_path); addpath(genpath(save_path))
 end
-sw_jid_nnmf_main(res,'save_path',save_path, 'parameter', 'sw_rate', 'log_transform',1)
+sw_jid_nnmf_main(res,'save_path',save_path, 'parameter', 'sw_rate', 'log_transform',1, 'n_bins',sqrt(5000))
+%%
+save_path = sprintf('%s/sw_rate_2d_nnmf',save_path_upper);
+if ~exist(save_path, 'dir')
+    mkdir(save_path); addpath(genpath(save_path))
+end
+sw_jid_nnmf_main(res,'save_path',save_path, 'parameter', 'sw_rate', 'log_transform',1, 'n_bins',sqrt(5000))
+%% 
+for pp=1:31
+    load(sprintf('%s/sw_rate_nnmf/stable_basis_%d',save_path_upper,pp))
+    load(sprintf('%s/sw_rate_nnmf/reconstruct_%d',save_path_upper,pp))
+    h = figure;
+    best_k_overall = size(reconstruct_all_chans,2);
+    tiledlayout(best_k_overall,2)
+    for k=1:best_k_overall
+        nexttile;
+        plot_jid(reshape(reconstruct_all_chans(:,k),50,50))
+        axis square;
+        xlabel('K (log10[ms])')
+        ylabel('K+1 (log10[ms])')
+        title(sprintf('Meta behavioral rates - Rank :%d',k))
+        colorbar;
+        set(gca, 'fontsize', 18)
+        nexttile;
+        topoplot(stable_basis_all_chans(1:62,k),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+        clim([0 1])
+        colorbar;
+        title(sprintf('Meta location - Rank :%d',k))
+        set(gca, 'fontsize', 18)
+    end
+    sgtitle(sprintf('SW-rates NNMF Sub:%d',pp), 'fontsize', 18)
+    saveas(h, sprintf('%s/nnmf/sw_rate_nnmf_pp_%d.svg',figures_save_path,pp))
+end

@@ -4,6 +4,7 @@ arguments
     kept_bins
     options.repetitions_cv = 50;
     options.repetitions = 100;
+    options.n_bins = 50;
 end
 basis_all = cell(options.repetitions,1);
 loadings_all = cell(options.repetitions,1);
@@ -18,7 +19,7 @@ end
 [stable_basis, stable_loading] = stable_nnmf(basis_all,loadings_all, 1);
 stable_loading = full(stable_loading);
 % reconstruct the jid bins
-reconstruct = nan(50*50,best_k_overall);
+reconstruct = nan(options.n_bins*options.n_bins,best_k_overall);
 for k=1:best_k_overall
     reconstruct(kept_bins,k) = stable_loading(k,:);
 end

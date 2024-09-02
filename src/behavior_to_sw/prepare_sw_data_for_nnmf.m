@@ -6,8 +6,8 @@ arguments
     options.log_transform logical = 0;
     options.n_bins = 50;
 end
-reshaped_jid = cellfun(@(JID) reshape(JID,2500,1) ,jid_param,'UniformOutput' ,false);
-reshaped_jid = [reshaped_jid{:}];
+
+reshaped_jid = [jid_param{:}];
 if options.zscore
     reshaped_jid = nanzscore(reshaped_jid);
 end
