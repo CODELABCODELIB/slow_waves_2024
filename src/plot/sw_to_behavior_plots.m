@@ -266,3 +266,32 @@ for pp=1:size(res,2)
     sgtitle(sprintf('SW-JID amplitudes (no log transformation) - Sub:%d',pp))
     saveas(h, sprintf('%s/sw_to_behavior/sw_jid_amplitudes_pp_%d.svg',figures_save_path,pp))
 end
+%% plot JID-SW slopes 
+parameter = 'mxdnslp';
+for pp=1:size(res,2)
+    max_all = max(cell2mat(cellfun(@(x) length(x),{res(pp).refilter.channels.negzx},'UniformOutput',false)));
+    selected_waves = cell(64,length(max_all)-2);
+    for chan=1:size(res(pp).refilter.channels,2)
+        slow_waves = [res(pp).refilter.channels(chan).negzx{:}];
+        slope = [res(pp).refilter.channels(chan).(parameter){:}];
+        for slow_waves_triad_idx = 1:length(slow_waves)-2
+            triad = slope(slow_waves_triad_idx:slow_waves_triad_idx+2);
+            selected_waves{chan,slow_waves_triad_idx} = triad;
+        end
+    end
+    h = figure;
+    tiledlayout(8,8, 'TileSpacing','none')
+    % estimate the SW jid per channel
+    for chan=1:64
+        nexttile;
+        taps_on_sw = assign_input_to_bin([res(pp).refilter.channels(chan).negzx{:}],selected_waves);
+        sw_jid_amplitude = cellfun(@(x) median(x),taps_on_sw{chan}, 'UniformOutput',0);
+        plot_jid(reshape([sw_jid_amplitude{:}],50,50))
+        colorbar;
+        title(sprintf('chan %d',chan))
+        clim(quantile([sw_jid_amplitude{:}], [0.25, 0.75]))
+        axis square; 
+    end
+    sgtitle(sprintf('SW-JID slope (no log transformation) - Sub:%d',pp))
+    saveas(h, sprintf('%s/sw_to_behavior/sw_jid_%s_pp_%d.svg',figures_save_path,parameter,pp))
+end
