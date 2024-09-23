@@ -38,18 +38,25 @@ end
 for pp=1:length(res)
     jid_all_chans = cell(64,1); 
     % prepare sw jid per channel
-    for chan=1:64
+    for chan=1:62
         if strcmp(options.parameter, 'sw_jid')
-            sw_jid = taps2JID([res(pp).refilter.channels(chan).negzx{:}]);
-            jid_all_chans{chan} = cellfun(@(JID) reshape(JID,2500,1) ,sw_jid,'UniformOutput' ,false);
+            sw_jid = taps2JID([res(pp).behavior_sws{chan,:}]);
+            jid_all_chans{chan} = reshape(sw_jid,2500,1);
+        elseif strcmp(options.parameter, 'sw_amplitude')
+            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).amplitude);
+            jid_sw_amplitude = cellfun(@(x) median(x),taps_on_sw{chan}, 'UniformOutput',0);
+            jid_all_chans{chan} =  reshape([jid_sw_amplitude{:}],2500,1);
         elseif strcmp(options.parameter, 'sw_rate')
-            taps_on_sw = assign_input_to_bin([res(pp).refilter.channels(chan).negzx{:}],res(pp).rate);
-            triad_lengths_on_sw = assign_input_to_bin([res(pp).refilter.channels(chan).negzx{:}],res(pp).triad_lengths);
+            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate);
+            triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths);
             rate_jid = cellfun(@(x,y) sum(x)/sum(y),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
             %rate_jid(reshape([rate_jid{:}] == 0, 50,50)) = {NaN};
             tmp = rate_jid; 
-            tmp(reshape([rate_jid{:}] == 0, 50,50)) = {NaN};
-            jid_all_chans{chan} = cat(1,reshape([rate_jid{:}],2500,1),reshape([tmp{:}],2500,1));
+            % tmp(reshape([rate_jid{:}] == 0, 50,50)) = {NaN};
+            % binarize the rates
+            % rate_jid(reshape([rate_jid{:}] > 0, 50,50)) = {1};
+            % rate without the behaviors
+            jid_all_chans{chan} = reshape([tmp{:}],2500,1);
         end
     end
 
@@ -61,6 +68,7 @@ for pp=1:length(res)
     if options.save_results
         save(sprintf('%s/jid_all_chans_%d',options.save_path, pp),'jid_all_chans')
         save(sprintf('%s/reshaped_jid_amp_%d',options.save_path, pp),'reshaped_jid_all_chans')
+        save(sprintf('%s/kept_bins_%d',options.save_path, pp),'kept_bins')
         save(sprintf('%s/reconstruct_%d',options.save_path, pp),'reconstruct_all_chans')
         save(sprintf('%s/stable_basis_%d',options.save_path, pp),'stable_basis_all_chans')
     end

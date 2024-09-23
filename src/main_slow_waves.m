@@ -22,11 +22,11 @@ EEG = pop_loadset('/mnt/ZETA18/User_Specific_Data_Storage/ruchella/Feb_2022_BS_t
 % create folder to save the results
 if ~exist(save_path_upper, 'dir'); mkdir(save_path_upper); end
 % file naming
-unique_name = 'sw2'; bandpass_lower = 1; bandpass_upper = 4; 
+unique_name = 'sw_test'; bandpass_lower = 1; bandpass_upper = 4; 
 % run f using f2
 f = @sw_detection; 
 f2 = @call_f_all_p_parallel_sw; 
-gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data_path',processed_data_path,'save_path_upper',save_path_upper, 'count',1);
+gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data_path',processed_data_path,'save_path_upper',save_path_upper, 'count',10);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%% Figure 4:JID-waves NNMF %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -69,15 +69,6 @@ if ~exist(save_path, 'dir')
 end
 f = @sw_to_behavior_all_pps;
 run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 1);
-%%
-save_path = sprintf('%s/test',save_path_upper); 
-data_path = sprintf('%s/erp_sw2_1_4',save_path_upper);
-load_str='sw2'; data_name='A';
-if ~exist(save_path, 'dir')
-       mkdir(save_path); addpath(genpath(save_path))
-end
-f = @seperate_movie_phone;
-run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 1);
 %% prepare the data
 load(sprintf('%s/sw_to_behavior/EEG_res.mat',save_path_upper));
 res = res(cellfun(@(x) isfield(x,'taps'),res));
@@ -87,11 +78,41 @@ save_path = sprintf('%s/sw_jid',save_path_upper);
 if ~exist(save_path, 'dir')
     mkdir(save_path); addpath(genpath(save_path))
 end
-sw_jid_nnmf_main(res,'save_path',save_path)
-%% plot NNMF results
+sw_jid_nnmf_main(res,'save_path',save_path, 'parameter', 'sw_jid')
+%% cluster the nnmf maps across the population
+stable_basis_all_pps = {};
 for pp=1:41
     load(sprintf('%s/sw_jid/stable_basis_%d',save_path_upper,pp))
     load(sprintf('%s/sw_jid/reconstruct_%d',save_path_upper,pp))
+    res(pp).stable_basis = stable_basis_all_chans;
+    res(pp).reconstruct = reconstruct_all_chans;
+end
+% select the spatial maps
+all_maps = cat(2,res.stable_basis);
+[prototypes,labels,cluster_prototypes,cluster_labels] = cluster(all_maps);
+%% %%%%%%%%%%%%%%%%%%%%%%%%% run NNMF SW rate %%%%%%%%%%%%%%%%%%%%%%%%%%
+save_path = sprintf('%s/sw_rate_only_behaviour_nnmf',save_path_upper);
+if ~exist(save_path, 'dir')
+    mkdir(save_path); addpath(genpath(save_path))
+end
+sw_jid_nnmf_main(res,'save_path',save_path, 'parameter', 'sw_rate', 'log_transform',1)
+%% %%%%%%%%%%%%%%%%%%%%%%%%% run NNMF SW rate %%%%%%%%%%%%%%%%%%%%%%%%%%
+save_path = sprintf('%s/sw_rate_only_behaviour_nnmf',save_path_upper);
+if ~exist(save_path, 'dir')
+    mkdir(save_path); addpath(genpath(save_path))
+end
+sw_jid_nnmf_main(res,'save_path',save_path, 'parameter', 'sw_rate', 'log_transform',1)
+%% %%%%%%%%%%%%%%%%%%%%%%%%% run NNMF SW amplitude %%%%%%%%%%%%%%%%%%%%%%%%%%
+save_path = sprintf('%s/sw_amplitude_nnmf',save_path_upper);
+if ~exist(save_path, 'dir')
+    mkdir(save_path); addpath(genpath(save_path))
+end
+sw_jid_nnmf_main(res,'save_path',save_path, 'parameter', 'sw_amplitude', 'log_transform',0,'z_score',1)
+%% plot NNMF results
+subfolder = 'sw_rate_only_behaviour_nnmf';
+for pp=1:41
+    load(sprintf('%s/%s/stable_basis_%d',save_path_upper,subfolder,pp))
+    load(sprintf('%s/%s/reconstruct_%d',save_path_upper,subfolder,pp))
     h = figure;
     best_k_overall = size(reconstruct_all_chans,2);
     tiledlayout(best_k_overall,2)
@@ -111,54 +132,5 @@ for pp=1:41
         set(gca, 'fontsize', 18)
     end
     sgtitle(sprintf('SW-JID NNMF Sub:%d',pp), 'fontsize', 18)
-    saveas(h, sprintf('%s/nnmf/jid_sw_nnmf_pp_%d.svg',figures_save_path,pp))
-end
-%% cluster the nnmf maps across the population
-stable_basis_all_pps = {};
-for pp=1:41
-    load(sprintf('%s/sw_jid/stable_basis_%d',save_path_upper,pp))
-    load(sprintf('%s/sw_jid/reconstruct_%d',save_path_upper,pp))
-    res(pp).stable_basis = stable_basis_all_chans;
-    res(pp).reconstruct = reconstruct_all_chans;
-end
-% select the spatial maps
-all_maps = cat(2,res.stable_basis);
-[prototypes,labels,cluster_prototypes,cluster_labels] = cluster(all_maps);
-%% %%%%%%%%%%%%%%%%%%%%%%%%% run NNMF SW rate %%%%%%%%%%%%%%%%%%%%%%%%%%
-save_path = sprintf('%s/sw_rate_nnmf',save_path_upper);
-if ~exist(save_path, 'dir')
-    mkdir(save_path); addpath(genpath(save_path))
-end
-sw_jid_nnmf_main(res,'save_path',save_path, 'parameter', 'sw_rate', 'log_transform',1, 'n_bins',sqrt(5000))
-%%
-save_path = sprintf('%s/sw_rate_2d_nnmf',save_path_upper);
-if ~exist(save_path, 'dir')
-    mkdir(save_path); addpath(genpath(save_path))
-end
-sw_jid_nnmf_main(res,'save_path',save_path, 'parameter', 'sw_rate', 'log_transform',1, 'n_bins',sqrt(5000))
-%% 
-for pp=1:31
-    load(sprintf('%s/sw_rate_nnmf/stable_basis_%d',save_path_upper,pp))
-    load(sprintf('%s/sw_rate_nnmf/reconstruct_%d',save_path_upper,pp))
-    h = figure;
-    best_k_overall = size(reconstruct_all_chans,2);
-    tiledlayout(best_k_overall,2)
-    for k=1:best_k_overall
-        nexttile;
-        plot_jid(reshape(reconstruct_all_chans(:,k),50,50))
-        axis square;
-        xlabel('K (log10[ms])')
-        ylabel('K+1 (log10[ms])')
-        title(sprintf('Meta behavioral rates - Rank :%d',k))
-        colorbar;
-        set(gca, 'fontsize', 18)
-        nexttile;
-        topoplot(stable_basis_all_chans(1:62,k),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
-        clim([0 1])
-        colorbar;
-        title(sprintf('Meta location - Rank :%d',k))
-        set(gca, 'fontsize', 18)
-    end
-    sgtitle(sprintf('SW-rates NNMF Sub:%d',pp), 'fontsize', 18)
-    saveas(h, sprintf('%s/nnmf/sw_rate_nnmf_pp_%d.svg',figures_save_path,pp))
+    saveas(h, sprintf('%s/nnmf/%s_pp_%d.svg',figures_save_path,subfolder,pp))
 end

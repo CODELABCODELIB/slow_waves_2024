@@ -146,6 +146,28 @@ for pp=1:41
         set(gca, 'fontsize', 18)
     end
 end
+%% plot nnmf rate all participants
+for pp=1:10
+    load(sprintf('/mnt/ZETA18/User_Specific_Data_Storage/ruchella/slow_waves/sw_rate_2d_nnmf/reconstruct_%d.mat',pp))
+    load(sprintf('/mnt/ZETA18/User_Specific_Data_Storage/ruchella/slow_waves/sw_rate_2d_nnmf/stable_basis_%d.mat',pp))
+    stable_basis = stable_basis_all_chans;
+    reconstruct = reconstruct_all_chans;
+    h = figure;
+    best_k_overall = size(reconstruct,2);
+    tiledlayout(best_k_overall,3)
+    for k=1:best_k_overall
+        nexttile;
+        plot_jid(reshape(reconstruct(1:2500,k),50,50))
+        nexttile;
+        plot_jid(reshape(reconstruct(2501:5000,k),50,50))
+        colorbar;
+        set(gca, 'fontsize', 18)
+        nexttile;
+        topoplot(stable_basis(1:62,k),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+        axis square;
+        set(gca, 'fontsize', 18)
+    end
+end
 %% plot nnmf population clusters
 h= figure;
 tiledlayout(4,size(prototypes,2))
