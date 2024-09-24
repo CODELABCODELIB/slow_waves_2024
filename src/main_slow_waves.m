@@ -24,9 +24,18 @@ if ~exist(save_path_upper, 'dir'); mkdir(save_path_upper); end
 % file naming
 unique_name = 'sw_test'; bandpass_lower = 1; bandpass_upper = 4; 
 % run f using f2
-f = @sw_detection; 
+f = @get_eeg_structs; 
 f2 = @call_f_all_p_parallel_sw; 
 gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data_path',processed_data_path,'save_path_upper',save_path_upper, 'count',18);
+%% perform slow wave detection on EEG checkpoints
+save_path = sprintf('%s/sw_to_behavior_rerun',save_path_upper); 
+data_path = sprintf('%s/erp_sw_test_1_4',save_path_upper);
+load_str='sw_test'; data_name='A';
+if ~exist(save_path, 'dir')
+       mkdir(save_path); addpath(genpath(save_path))
+end
+f = @sw_detection_main;
+run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 1);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Slow waves to behavior %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -59,6 +68,8 @@ end
 % select the spatial maps
 all_maps = cat(2,res.stable_basis);
 [prototypes,labels,cluster_prototypes,cluster_labels] = cluster(all_maps);
+save(sprintf('%s/sw_jid/labels.mat',save_path_upper),'labels')
+save(sprintf('%s/sw_jid/prototypes.mat',save_path_upper),'prototypes')
 %% %%%%%%%%%%%%%%%%%%%%%%%%% run NNMF SW rate %%%%%%%%%%%%%%%%%%%%%%%%%%
 save_path = sprintf('%s/sw_rate_only_behaviour_nnmf',save_path_upper);
 if ~exist(save_path, 'dir')

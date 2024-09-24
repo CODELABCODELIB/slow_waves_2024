@@ -30,35 +30,9 @@ function [data,EEG] = sw_detection(EEG, participant, options)
 %   -filter_results.m
 %
 % Author: R.M.D. Kock, Leiden University
-
-%% select the smartphone events 
-if isfield(EEG, 'Aligned.BS_to_tap') && ~options.pt
-    % epoch around aligned tap
-    num_taps = size(find(EEG.Aligned.BS_to_tap.Phone == 1),2);
-    [EEG] = add_events(EEG,[find(EEG.Aligned.BS_to_tap.Phone == 1)],num_taps,'pt');
-    EEG.latencies = [EEG.event.latency]; 
-    EEG.taps = latencies(strcmp({EEG.event.type}, 'pt'));
-    [EEG.phone_indexes] = find_gaps_in_taps(taps);
-end
-% perform SW detection on smartphone events only
-if isfield(EEG, 'Aligned.BS_to_tap') && options.pt
-    [EEG,indexes] = prepare_EEG_w_taps_only(EEG_taps);
-    EEG.indexes = indexes;
-end
-
-%% SW detection
-[EEG] = preprocess_EEG(EEG);
-[twa_results]= twalldetectnew_TA_v4(EEG.data,1000,0);
-refilter = filter_results(twa_results);
-
 %% data to save
-if options.remove_EEG
-    EEG.data = [];
-end
 data{1} = participant;
 % EEG.data removed due to save time
 data{2} = EEG;
-data{3} = twa_results;
-data{4} = refilter;
 
 end
