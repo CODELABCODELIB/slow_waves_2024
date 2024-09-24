@@ -14,7 +14,7 @@ for pp=1:size(res,2)
         title(sprintf('Chan %d - N %d',chan, length([res(pp).behavior_sws{chan,:}])))
     end
     sgtitle(sprintf('SW JID - Sub %d',pp))
-    saveas(h, sprintf('%s/sw_to_behavior/jid_sw_pp__behavior_%d.svg',figures_save_path,pp))
+    saveas(h, sprintf('%s/sw_to_behavior/jid_sw_pp_behavior_%d.svg',figures_save_path,pp))
 end
 %% plot SW jids movie vs phone
 n_chans = 15;
@@ -84,7 +84,6 @@ end
 %% plot SW rate
 fontsize = 10;
 for pp=1:size(res,2)
-
     h = figure;
     tiledlayout(5,5, 'TileSpacing','none')
     for chan =1:25
@@ -95,7 +94,7 @@ for pp=1:size(res,2)
             rate_jid = cellfun(@(x,y) sum(x, 'omitnan')/sum(y, 'omitnan'),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
             % rate_jid(reshape([rate_jid{:}] == 0, 50,50)) = {NaN};
             plot_jid(log10(reshape([rate_jid{:}],50,50)+ 0.00000000001));
-            clim([-6 -3])
+            clim([-5 -3])
             % clim([quantile(log10([rate_jid{:}]),[0.10, 0.90])])
             set(gca, 'FontSize',fontsize)
             xlabel('K (log10[ms])')
@@ -105,7 +104,7 @@ for pp=1:size(res,2)
     end
     colorbar;
     sgtitle(sprintf('SW JID and behavioral rate - Sub %d (No behavior removed)',pp))
-    % saveas(h, sprintf('%s/rates/rate_pp_%d.svg',figures_save_path,pp))
+    saveas(h, sprintf('%s/rates/rate_pp_%d.svg',figures_save_path,pp))
 
 end
 % close all;
@@ -136,7 +135,7 @@ for pp=1:size(res,2)
     sgtitle(sprintf('Rate %d min after SW dynamics - Sub %d',mins,pp))
     saveas(h, sprintf('%s/rates/post_rate_pp_%d.svg',figures_save_path,pp))
 end
-% plot SW pre rate
+%% plot SW pre rate
 mins=1;
 for pp=1:size(res,2)
     h = figure;
@@ -168,7 +167,7 @@ lim_data = [-4 -3];
 fontsize = 10;
 % for pp=1:size(res,2)
 for pp=1:41
-    for chan =1:1
+    for chan =1:10
         h = figure;
         t = tiledlayout(3,3, 'TileSpacing', 'compact');
         % pre rate
@@ -226,7 +225,7 @@ for pp=1:41
         % rate adjusted lims
         nexttile;
         plot_jid(log10(reshape([rate_jid{:}],50,50)+ 0.00000000001));
-        clim(lim_data)
+        clim([-4,-3])
         colorbar;
         set(gca, 'FontSize',fontsize)
         % title('Rate')
@@ -379,7 +378,7 @@ for pp=1:41
         set(gca, 'FontSize',fontsize)
 
         sgtitle(t, sprintf('Subject:%d',pp))
-        saveas(h, sprintf('%s/rates/summary_%d.svg',figures_save_path,pp))
+        saveas(h, sprintf('%s/sw_to_behavior/summary_%d.svg',figures_save_path,pp))
     end
 end
 %% Plot JID-amplitdes
@@ -387,7 +386,7 @@ for pp=1:size(res,2)
     h = figure;
     tiledlayout(8,8, 'TileSpacing','none')
     % estimate the SW jid per channel
-    for chan=1:64
+    for chan=1:62
         nexttile;
         taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).amplitude);
         sw_jid_amplitude = cellfun(@(x) median(x, 'omitnan'),taps_on_sw{chan}, 'UniformOutput',0);

@@ -169,8 +169,9 @@ for pp=1:10
     end
 end
 %% plot nnmf population clusters
+all_jids = cat(2,res.reconstruct);
 h= figure;
-tiledlayout(4,size(prototypes,2))
+tiledlayout(2,size(prototypes,2))
 for n_map=1:size(prototypes,2)
     nexttile;
     topoplot(prototypes(1:62,n_map),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
@@ -179,27 +180,48 @@ end
 for n_map=1:size(prototypes,2)
     tmp = all_jids(:,labels==n_map);
     nexttile;
-    plot_jid(reshape(tmp(:,1),[50,50]))
-    clim([0, 0.7])
-    axis square
-end
-for n_map=1:size(prototypes,2)
-    tmp = all_jids(:,labels==n_map);
-    nexttile;
-    plot_jid(reshape(tmp(:,2),[50,50]))
-    clim([0, 0.7])
-    axis square
-end
-for n_map=1:size(prototypes,2)
-    tmp = all_jids(:,labels==n_map);
-    nexttile;
-    plot_jid(reshape(tmp(:,3),[50,50]))
+    plot_jid(reshape(mean(tmp,2),50,50))
     clim([0, 0.7])
     axis square
 end
 colorbar;
 colormap('jet')
-% saveas(h,sprintf('%s/jid_nnmf/prototypes.svg',save_path))
+saveas(h,sprintf('%s/jid_nnmf/prototypes.svg',save_path))
+%% plot all jids in clustered map
+for n_map=1:size(prototypes,2)
+    h = figure;
+    tmp = all_jids(:,labels==n_map);
+    tiledlayout(3, ceil(size(tmp,2)/3)+1)
+    for pp=1:size(tmp,2)
+        nexttile;
+        plot_jid(reshape(tmp(:,pp),[50,50]))
+        clim([0, 0.7])
+        axis square
+    end
+    nexttile;
+    topoplot(prototypes(1:62,n_map),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+    clim([0, 0.2])
+    nexttile;
+    plot_jid(reshape(mean(tmp,2),50,50))
+    saveas(h,sprintf('%s/jid_nnmf/jids_clus_%d.svg',save_path,n_map))
+end
+% plot all maps in clustered maps
+all_maps = cat(2,res.stable_basis);
+for n_map=1:size(prototypes,2)
+    figure
+    tmp = all_maps(:,labels==n_map);
+    tiledlayout(3, ceil(size(tmp,2)/3)+1)
+    for pp=1:size(tmp,2)
+        nexttile;
+        topoplot(tmp(1:62,pp),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+        clim([0, 0.7])
+        axis square
+    end
+    nexttile;
+    topoplot(prototypes(1:62,n_map),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+    clim([0, 0.2])
+    saveas(h,sprintf('%s/jid_nnmf/maps_clus_%d.svg',save_path,n_map))
+end
 %% plot the clustered JIDs
 all_jids = cat(2,res.reconstruct);
 for n_map=1:size(prototypes,2)
