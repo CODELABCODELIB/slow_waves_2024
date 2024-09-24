@@ -55,7 +55,8 @@ end
 %%
 A = {};
 tic
-parfor i=1:length(files_grouped)
+count = 1;
+for i=1:length(files_grouped)
     % file selection
     all_set_files = load(sprintf('%s/status_2.mat',folder{i}));
     all_set_files = all_set_files.all_set_files;
@@ -86,23 +87,54 @@ parfor i=1:length(files_grouped)
             [~,EEG.movie_indexes,EEG.movie_present] = find_movie_passive_event(EEG);
             % select file if there is movie OR phone data 
             % some subjects may not have only movie if phone data is not aligned
-            if select_from_EEG_struct_3(EEG) && size(EEG.data,1) == 64 && (EEG.movie_present || isfield(EEG, 'Aligned.BS_to_tap'))
+            % && (EEG.movie_present || isfield(EEG.Aligned, 'BS_to_tap'))
+            if select_from_EEG_struct_3(EEG) && size(EEG.data,1) == 64 
                 EEG_all = [EEG_all, EEG];
             end
         end  
         % merge EEG structd
-        if ~isempty(EEG_all)
-            EEG = pop_mergeset(EEG_all, [1:length(EEG_all)], 0);
-            A{i} = f(EEG, sprintf('%s/%s',folder{i}, files_grouped{i}{1}), options);
+        if ~isempty(EEG_all) && length(EEG_all) > 1          
+            dates = cellfun(@(x) datetime(x(end-11:end-4),"InputFormat",'dd_MM_yy'), {EEG_all.filename}, 'UniformOutput', false);
+            dates = sort([dates{:}]);
+            [sel_dates,~,ic] = unique(dates); 
+            unique_ic = unique(ic);
+            [counts] = histcounts(ic);
+            % if the files are from the same day then merge them
+            if length(find(counts > 1))
+                n_iter = unique_ic(find(counts>1));
+                for pp=1:length(n_iter)
+                    idxs = find(ic==n_iter(pp));
+                    EEG = pop_mergeset(EEG_all(idxs(1):idxs(2)), [1:length(EEG_all(idxs(1):idxs(2)))], 0);
+                    EEG.Aligned.merged = cat(2,{EEG_all(idxs(1)).Aligned},{EEG_all(idxs(2)).Aligned});
+                    EEG.Aligned.merged_time = [length(EEG_all(idxs(1)).data),length(EEG_all(idxs(2)).data)];
+                    A{count} = f(EEG, sprintf('%s/%s',folder{i}, EEG_all(idxs(1)).filename(1)), options);
+                    count = count + 1;
+                end
+            end
+            % if the files are from seperate day do not keep them seperate
+            if length(find(counts == 1))
+                n_iter = unique_ic(find(counts==1));
+                for pp=1:length(n_iter)
+                    idxs = find(ic==n_iter(pp));
+                    A{count} = f(EEG_all(idxs), sprintf('%s/%s',folder{i}, EEG_all(idxs).filename), options);
+                    count = count + 1;
+                end
+            end
+        % if only one file selected then just run the funtion on it
+        elseif ~isempty(EEG_all)
+            A{count} = f(EEG_all, sprintf('%s/%s',folder{i}, EEG_all.filename), options);
+            count = count+1;
         end
     elseif num_files
         EEG = pop_loadset(sprintf('%s/%s',folder{i}, files_grouped{i}{1}));
         EEG = gettechnicallycleanEEG_sw(EEG, [],[]);
         [~,EEG.movie_indexes,EEG.movie_present,~] = find_movie_passive_event(EEG);
         % select file if there is movie OR phone data 
-        if select_from_EEG_struct_3(EEG) && size(EEG.data,1) == 64 && (EEG.movie_present || isfield(EEG, 'Aligned.BS_to_tap'))
-            A{i} = f(EEG, sprintf('%s/%s',folder{i}, files_grouped{i}{1}), options);
+        % && (EEG.movie_present || isfield(EEG.Aligned, 'BS_to_tap'))
+        if select_from_EEG_struct_3(EEG) && size(EEG.data,1) == 64 
+            A{count} = f(EEG, sprintf('%s/%s',folder{i}, files_grouped{i}{1}), options);
         end
+        count = count + 1;
     end
 end
 parfor_time = toc;
