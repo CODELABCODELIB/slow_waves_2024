@@ -106,10 +106,14 @@ if strcmp(exp_condition, '')
         patch = findobj(gcf, 'Type', 'patch');
         set(patch, 'FaceColor', 'white', 'EdgeColor', 'black', 'EdgeAlpha', 0);
         lines = findobj(gcf, 'Type', 'line');
-        set(lines(5), 'LineWidth', 1.5);
-        set(lines(2:4), 'LineWidth', 1.5);
-        filename = sprintf('%s/topoplot_%s.png', target_dir_path, par_name);
-        saveas(gcf, filename);
+        set(lines(6), 'LineWidth', 3); % rim
+        set(lines(3:5), 'LineWidth', 1.5); % ears and nose
+
+        % filename = sprintf('%s/topoplot_%s.png', target_dir_path, par_name);
+        % saveas(gcf, filename);
+
+        filename = sprintf('%s/topoplot_%s.svg', target_dir_path, par_name);
+        print(gcf, '-dsvg', filename);
     end
 
 else
@@ -168,11 +172,15 @@ else
         patch = findobj(gcf, 'Type', 'patch');
         set(patch, 'FaceColor', 'white', 'EdgeColor', 'black', 'EdgeAlpha', 0);
         lines = findobj(gcf, 'Type', 'line');
-        set(lines(5), 'LineWidth', 3);
-        set(lines(2:4), 'LineWidth', 1.5);
-        set(lines(1), 'MarkerSize', 5);
-        filename = sprintf('%s/topoplot_%s.png', target_dir_path, par_name);
-        saveas(gcf, filename);
+        set(lines(5), 'LineWidth', 3); % rim
+        set(lines(2:4), 'LineWidth', 1.5); % ears and nose
+        set(lines(1), 'MarkerSize', 5); % channel markers
+
+        % filename = sprintf('%s/topoplot_%s.png', target_dir_path, par_name);
+        % saveas(gcf, filename);
+
+        filename = sprintf('%s/topoplot_%s.svg', target_dir_path, par_name);
+        print(gcf, '-dsvg', filename);
     end
 
 end
