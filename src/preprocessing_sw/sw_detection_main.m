@@ -41,6 +41,6 @@ for pp=1:size(load_data,1)
     participant = load_data{pp,1};
     res = sw_detection(EEG, participant, options);
     if options.save_results
-        save(sprintf('%s/%s_res_%d',options.save_path,options.file, pp),'res')
+        save(sprintf('%s/%s_res_%d',options.save_path,options.file, pp),'res', '-v7.3')
     end
 end

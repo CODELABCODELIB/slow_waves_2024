@@ -2,6 +2,26 @@ save_path = '/home/ruchella/slow_waves_2023/figures';
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% plot res %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+EEG_raw = pop_loadset('/mnt/ZETA18/User_Specific_Data_Storage/ruchella/Feb_2022_BS_to_tap_classification_EEG/AT08/12_57_07_05_18.set');
+EEG_refilter = gettechnicallycleanEEG(EEG_raw,1,4);
+twa_results = data{1,3};
+%% plot mean slow wave during behavior
+chan=1; 
+for wave = 1:10;
+    figure;
+    plot(twa_results.channels(chan).negzx{wave}:twa_results.channels(chan).wvend{wave},EEG_refilter.data(chan,twa_results.channels(chan).negzx{wave}:twa_results.channels(chan).wvend{wave})); 
+    xline(twa_results.channels(chan).maxnegpk{wave}, 'r'); yline(twa_results.channels(chan).maxnegpkamp{wave}, 'r')
+    xline(twa_results.channels(chan).maxpospk{wave}); yline(twa_results.channels(chan).maxpospkamp{wave})
+end
+%% plot erp 
+% maxnegpk = cell2mat(twa_results.channels(1).maxnegpk);
+% [EEG_taps_ch1] = add_events(EEG_taps,maxnegpk,length(maxnegpk),'maxnegpk');
+% [EEG_epoched_ch1, indices] = pop_epoch(EEG_taps_ch1, {'maxnegpk'},[-2 2]);
+chan=1;
+[epochedvals] = getepocheddata(EEG_refilter.data(chan,:), cell2mat(twa_results.channels(chan).negzx), [0,1000]);
+figure; plot([0:1000],trimmean(epochedvals,20,1));
+title(sprintf('E %d',chan))
 %% plot topoplots with SW params
 figure;
 tiledlayout(1,3)
@@ -186,8 +206,8 @@ for n_map=1:size(prototypes,2)
 end
 colorbar;
 colormap('jet')
-saveas(h,sprintf('%s/jid_nnmf/prototypes.svg',save_path))
-%% plot all jids in clustered map
+saveas(h,sprintf('%s/nnmf/prototypes.svg',save_path))
+% plot all jids in clustered map
 for n_map=1:size(prototypes,2)
     h = figure;
     tmp = all_jids(:,labels==n_map);
@@ -203,7 +223,7 @@ for n_map=1:size(prototypes,2)
     clim([0, 0.2])
     nexttile;
     plot_jid(reshape(mean(tmp,2),50,50))
-    saveas(h,sprintf('%s/jid_nnmf/jids_clus_%d.svg',save_path,n_map))
+    saveas(h,sprintf('%s/nnmf/jids_clus_%d.svg',save_path,n_map))
 end
 % plot all maps in clustered maps
 all_maps = cat(2,res.stable_basis);
@@ -220,7 +240,7 @@ for n_map=1:size(prototypes,2)
     nexttile;
     topoplot(prototypes(1:62,n_map),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
     clim([0, 0.2])
-    saveas(h,sprintf('%s/jid_nnmf/maps_clus_%d.svg',save_path,n_map))
+    saveas(h,sprintf('%s/nnmf/maps_clus_%d.svg',save_path,n_map))
 end
 %% plot the clustered JIDs
 all_jids = cat(2,res.reconstruct);
