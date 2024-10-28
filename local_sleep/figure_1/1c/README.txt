@@ -1,9 +1,9 @@
-######################################################################
-Short Description of the Functions/Scripts on the Directory 'Figure 1'
-######################################################################
+#######################################################################
+Short Description of the Functions/Scripts on the Directory 'Figure 1c'
+#######################################################################
 
 ############################################
-Author: David Hof (last updated: 23-09-2024)
+Author: David Hof (last updated: 08-10-2024)
 ############################################
 
 
@@ -12,11 +12,18 @@ Functions:
 – sw_pars_per_participant_v2: Computes the SW parameters per participant and condition (movie/
                               phone/overall), and (optionally) visualizes them in the form of
                               topographical plots. The detection and interpolation of SW
-                              parameter outliers is another feature of the function that is
-                              still being worked on. Status: Function works with the optional
-                              argument 'interpolate_outliers' set to false/0 (default).
+                              parameter outliers is another feature of the function.
 
 – compute_wave_pars_new_v2: Helper function for 'sw_pars_per_participant_v2'.
+
+– estimate_lambda: Helper function for 'sw_pars_per_participant_v2'. Estimates the lambda that
+                   maximizes the log-likelihood function for the Box-Cox transformation.
+
+– boxcox_log_lik: Helper function for 'estimate_lambda'. Computes the log-likelihood of the
+                  transformed data assuming a normal distribution.
+
+– boxcox_transform: Helper function for 'sw_pars_per_participant_v2'. Performs Box-Cox
+                    transformation using the optimal lambda.
 
 – aggregate_sw_pars_v2: Pools the SW parameters per channel and condition (movie/phone/overall)
                         across participants using a preferred aggregation function (e.g., mean,

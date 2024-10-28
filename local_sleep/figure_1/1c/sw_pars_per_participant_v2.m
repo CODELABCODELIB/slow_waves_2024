@@ -209,28 +209,21 @@ for file_name = file_names
     
                         pars_vals = tmp.(tmp_field).(pars_field);
                         
-                        % % Detect values below the 2.5th percentile and above the 97.5th percentile
-                        % lower_percentile = 2.5;
-                        % upper_percentile = 97.5;
-                        % lower_threshold = prctile(pars_vals, lower_percentile);
-                        % upper_threshold = prctile(pars_vals, upper_percentile);
-                        % 
-                        % percentile_outliers = (pars_vals < lower_threshold) | (pars_vals > upper_threshold);
+                        % Perform Box-Cox transformation
+                        lambda_opt = estimate_lambda(pars_vals);
+                        transformed_pars_vals = boxcox_transform(pars_vals, lambda_opt);
                         
-                        % Compute the median and MAD
-                        median_value = median(pars_vals);
-                        MAD_value = mad(pars_vals, 1);  % Median absolute deviation (MAD)
+                        % Perform z-standardization
+                        z_transformed_pars_vals = (transformed_pars_vals - mean(transformed_pars_vals)) / std(transformed_pars_vals);
                         
-                        % Compute modified z-scores
-                        modified_z = 0.6745 * (pars_vals - median_value) / MAD_value;
+                        % Compute absolute z-values
+                        abs_z_transformed_pars_vals = abs(z_transformed_pars_vals);
                         
-                        % Use a threshold for modified z-scores
-                        z_threshold = 5;
-                        outliers = abs(modified_z) > z_threshold;
-                        % z_outliers = abs(modified_z) > z_threshold;
+                        % Set z-score threshold
+                        z_threshold = 2.58;
                         
-                        % % Identify outliers that meet both the percentile and modified z-score conditions
-                        % outliers = percentile_outliers & z_outliers;
+                        % Identify outliers
+                        outliers = abs_z_transformed_pars_vals > z_threshold;
     
                         if any(outliers)
 
