@@ -3,7 +3,7 @@ Short Description of the Functions/Scripts on the Directory 'local_sleep'
 #########################################################################
 
 ############################################
-Author: David Hof (last updated: 13-11-2024)
+Author: David Hof (last updated: 14-11-2024)
 ############################################
 
 
@@ -51,6 +51,9 @@ Functions:
                             'blink_rate'.
 
 – count_blinks_in_intervals: Counting of blinks in intervals. Helper function for 'blink_rate'.
+
+– visualize_corr: Creating topographical plots for time-lagged correlations. Helper function for
+                  'time_lagged_corr'.
 
 
 Other Scripts:
