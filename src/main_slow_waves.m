@@ -26,29 +26,29 @@ unique_name = 'sw_test'; bandpass_lower = 1; bandpass_upper = 4;
 % run f using f2
 f = @get_eeg_structs; 
 f2 = @call_f_all_p_parallel_sw; 
-gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data_path',processed_data_path,'save_path_upper',save_path_upper, 'count',18);
+gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data_path',processed_data_path,'save_path_upper',save_path_upper, 'count',1);
 %% perform slow wave detection on EEG checkpoints
-save_path = sprintf('%s/sw_to_behavior_rerun',save_path_upper); 
+save_path = sprintf('%s/sws',save_path_upper); 
 data_path = sprintf('%s/erp_sw_test_1_4',save_path_upper);
 load_str='sw_test'; data_name='A';
 if ~exist(save_path, 'dir')
        mkdir(save_path); addpath(genpath(save_path))
 end
 f = @sw_detection_main;
-run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 1);
+run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 0,'start_range',47);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Slow waves to behavior %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-save_path = sprintf('%s/sw_to_behavior',save_path_upper); 
-data_path = sprintf('%s/erp_sw2_1_4',save_path_upper);
-load_str='sw2'; data_name='A';
+save_path = sprintf('%s/sws_processed',save_path_upper); 
+data_path = sprintf('%s/sws',save_path_upper);
+load_str='sw_test'; data_name='res';
 if ~exist(save_path, 'dir')
        mkdir(save_path); addpath(genpath(save_path))
 end
 f = @sw_to_behavior_all_pps;
 run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 1);
 %% prepare the data
-load(sprintf('%s/sw_to_behavior/EEG_res.mat',save_path_upper));
+load(sprintf('%s/sws_processed/EEG_res.mat',save_path_upper));
 res = res(cellfun(@(x) isfield(x,'taps'),res));
 res = cat(2,res{:});
 %% %%%%%%%%%%%%%%%%%%%%%%%%% run NNMF SW JID %%%%%%%%%%%%%%%%%%%%%%%%%%%

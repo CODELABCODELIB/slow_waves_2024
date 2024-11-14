@@ -1,4 +1,4 @@
-function [data,EEG] = sw_detection(EEG, participant, options)
+function [data,EEG] = get_eeg_structs(EEG, participant, options)
 %% Preprocess EEG data and generate ERP or ERSP
 %
 % **Usage:** [data] = process_EEG(EEG, participant)

@@ -32,6 +32,7 @@ arguments
     options.file = '';
     options.parameter = 1;
     options.remove_EEG = 1;
+    options.pt = 0;
 end
 
 res = struct();

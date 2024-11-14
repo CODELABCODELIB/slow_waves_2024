@@ -72,11 +72,13 @@ for pp=options.start_range:options.end_range
         end
     end
     %% get the EEG indexes only if taps were aligned
-    if isfield(EEG.Aligned, 'BS_to_tap') && options.get_phone_idxs
+    if isfield(EEG.Aligned, 'BS_to_tap') && options.get_phone_idxs && ~isfield(EEG.Aligned, 'merged_phone')
         % calculate number of taps
         num_taps = size(find(EEG.Aligned.BS_to_tap.Phone == 1),2);
         % add taps to the struct
-        [EEG] = add_events(EEG,[find(EEG.Aligned.BS_to_tap.Phone == 1)],num_taps,'pt');
+        if num_taps > 1 && ~sum(strcmp({EEG.event.type}, 'pt'))
+            [EEG] = add_events(EEG,[find(EEG.Aligned.BS_to_tap.Phone == 1)],num_taps,'pt');
+        end
         latencies = [EEG.event.latency];
         % get tap indexes
         taps{pp} = latencies(strcmp({EEG.event.type}, 'pt'));
@@ -94,5 +96,33 @@ for pp=options.start_range:options.end_range
         end
         % check if the phone and movie indexes are not overlapping
         % intersect(movie_indexes.movie_latencies(end),indexes{1})
+    elseif isfield(EEG.Aligned, 'merged_phone') && options.get_phone_idxs
+        % calculate number of taps
+        num_taps = size(find(EEG.Aligned.merged_phone == 1),2);       
+        % add taps to the struct if not added already
+        if num_taps > 1 && ~sum(strcmp({EEG.event.type}, 'pt'))
+            [EEG] = add_events(EEG,[find(EEG.Aligned.merged_phone == 1)],num_taps,'pt');
+        end
+        latencies = [EEG.event.latency];
+        % get tap indexes
+        taps{pp} = latencies(strcmp({EEG.event.type}, 'pt'));
+        % find phone indexes without the gaps
+        [phone_indexes{pp}] = find_gaps_in_taps(taps{pp});
+        tmp = {};
+        % there may be multiple indexes if there was a gap
+        % loop over all of them and select the sws
+        if ~isempty(options.sel_sw)
+            for gap=1:length(phone_indexes{pp})
+                sws_p_gap = sw(sw > phone_indexes{pp}{gap}(1) & sw < phone_indexes{pp}{gap}(end));
+                tmp = cat(1,tmp,sws_p_gap);
+            end
+            sw_phone{pp} = tmp;
+        end
+        % check if the phone and movie indexes are not overlapping
+        % intersect(movie_indexes.movie_latencies(end),indexes{1})
+    else
+        taps{pp} = [];
+        phone_indexes{pp} = [];
+        sw_phone{pp} = [];
     end
 end

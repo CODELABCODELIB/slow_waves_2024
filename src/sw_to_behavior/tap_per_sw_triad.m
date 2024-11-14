@@ -72,7 +72,7 @@ for chan=1:length(refilter.channels)
             neg_amplitudes = [refilter.channels(chan).maxnegpkamp{:}];
             neg_amplitudes = neg_amplitudes(slow_waves_start>=taps(1) & slow_waves_start<=taps(end));
             pos_amplitudes = [refilter.channels(chan).maxpospkamp{:}];
-            pos_amplitudes(slow_waves_start>=taps(1) & slow_waves_start<=taps(end))
+            pos_amplitudes(slow_waves_start>=taps(1) & slow_waves_start<=taps(end));
 
             triad_neg = neg_amplitudes(triad_idx:triad_idx+2);
             triad_pos = pos_amplitudes(triad_idx:triad_idx+2);

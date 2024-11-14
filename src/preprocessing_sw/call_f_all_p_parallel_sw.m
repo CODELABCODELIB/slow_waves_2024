@@ -92,7 +92,7 @@ for i=1:length(files_grouped)
                 EEG_all = [EEG_all, EEG];
             end
         end  
-        % merge EEG structd
+        % merge EEG structs for same day files
         if ~isempty(EEG_all) && length(EEG_all) > 1          
             dates = cellfun(@(x) datetime(x(end-11:end-4),"InputFormat",'dd_MM_yy'), {EEG_all.filename}, 'UniformOutput', false);
             dates = sort([dates{:}]);

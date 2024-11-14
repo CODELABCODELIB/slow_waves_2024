@@ -31,19 +31,29 @@ function [data,EEG] = sw_detection(EEG, participant, options)
 %
 % Author: R.M.D. Kock, Leiden University
 
-%% select the smartphone events 
-if isfield(EEG, 'Aligned.BS_to_tap') && ~options.pt
+%% select the smartphone events
+% perform SW detection on smartphone events only
+if isfield(EEG.Aligned, 'BS_to_tap') && options.pt && ~isfield(EEG.Aligned,'merged')
+    [EEG,indexes] = prepare_EEG_w_taps_only(EEG_taps);
+    EEG.indexes = indexes;
+end
+% perform SW detection on whole dataset movie and phone, here participants 
+% did not have two seperate files
+if isfield(EEG.Aligned, 'BS_to_tap') && ~options.pt && ~isfield(EEG.Aligned,'merged')
     % epoch around aligned tap
     num_taps = size(find(EEG.Aligned.BS_to_tap.Phone == 1),2);
     [EEG] = add_events(EEG,[find(EEG.Aligned.BS_to_tap.Phone == 1)],num_taps,'pt');
     EEG.latencies = [EEG.event.latency]; 
-    EEG.taps = latencies(strcmp({EEG.event.type}, 'pt'));
-    [EEG.phone_indexes] = find_gaps_in_taps(taps);
+    EEG.taps = EEG.latencies(strcmp({EEG.event.type}, 'pt'));
+    [EEG.phone_indexes] = find_gaps_in_taps(EEG.taps);
 end
-% perform SW detection on smartphone events only
-if isfield(EEG, 'Aligned.BS_to_tap') && options.pt
-    [EEG,indexes] = prepare_EEG_w_taps_only(EEG_taps);
-    EEG.indexes = indexes;
+% here paraticipants did have two seperate files
+if isfield(EEG.Aligned,'merged_phone') 
+    num_taps = size(find(EEG.Aligned.merged_phone == 1),2);
+    [EEG] = add_events(EEG,[find(EEG.Aligned.merged_phone == 1)],num_taps,'pt');
+    EEG.latencies = [EEG.event.latency]; 
+    EEG.taps = EEG.latencies(strcmp({EEG.event.type}, 'pt'));
+    [EEG.phone_indexes] = find_gaps_in_taps(EEG.taps);
 end
 
 %% SW detection

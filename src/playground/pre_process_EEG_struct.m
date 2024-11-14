@@ -13,8 +13,12 @@ for pp=1:length(A)
            EEG.Aligned.merged_phone = cat(2,zeros(1,EEG.Aligned.merged_time(1)),EEG.Aligned.merged{2}.BS_to_tap.Phone); 
         end
         EEG.has_aligned_phone = has_aligned_phone;
+    elseif isfield(EEG.Aligned, 'BS_to_tap')
+        EEG.has_aligned_phone =1;
+    else
+        EEG.has_aligned_phone =0;        
     end
-    if EEG.movie_present || isfield(EEG.Aligned, 'merged_phone')
+    if EEG.movie_present || EEG.has_aligned_phone
         A{pp,2} = EEG;
         selected_A{pp} = A(pp,:);
     end
