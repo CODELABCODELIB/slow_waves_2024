@@ -1,11 +1,11 @@
-function [] = plot_SWdensity_timeseries_v2(data_path, channels)
+function [] = plot_SWamplitude_timeseries(data_path, channels)
 
 arguments
     data_path char;
     channels double = 1:62;
 end
 
-output_dir = 'SW_Density_Timeseries';
+output_dir = 'SW_Amplitude_Timeseries';
 if ~exist(output_dir, 'dir')
     mkdir(output_dir);
 end
@@ -128,32 +128,54 @@ for idx_file = 1:length(file_names)
 
             fprintf('---------------------------------------------\n\n');
 
-            %% Calculate the average incidence across selected channels
+            %% Calculate the median amplitude per bin across selected channels
 
             % Define bin edges (1-minute bins in seconds)
             bin_edges_sec = movie_start_sec:60:phone_end_sec; % 60 seconds = 1 minute
             num_bins = length(bin_edges_sec) - 1;
 
-            % Initialize an array to store the total counts across the selected channels
-            total_counts = zeros(1, num_bins);
+            % Initialize a cell array to store amplitudes per bin
+            bin_amplitudes = cell(1, num_bins);
 
-            % Loop through all channels and accumulate the counts
+            % Loop through all channels
             for ch = channels
                 % Extract 'maxnegpk' (positions of negative peaks in ms) for the specified channel
                 maxnegpk_data = top10_filtered_results.channels(ch).maxnegpk;
-
                 % Convert 'maxnegpk' data into seconds
                 maxnegpk_seconds = cell2mat(maxnegpk_data) / 1000;
 
-                % Count the occurrences in each bin for the current channel
-                [counts, ~] = histcounts(maxnegpk_seconds, bin_edges_sec);
+                % Extract 'maxnegpkamp' and 'maxpospkamp' for the specified channel
+                maxnegpkamp_data = top10_filtered_results.channels(ch).maxnegpkamp;
+                maxpospkamp_data = top10_filtered_results.channels(ch).maxpospkamp;
 
-                % Accumulate the counts across all channels
-                total_counts = total_counts + counts;
+                % Convert to arrays
+                maxnegpkamp_values = cell2mat(maxnegpkamp_data);
+                maxpospkamp_values = cell2mat(maxpospkamp_data);
+
+                % Compute amplitudes
+                amplitudes = abs(maxnegpkamp_values) + maxpospkamp_values;
+
+                % For each wave, determine which bin it belongs to
+                [~, ~, bin_indices] = histcounts(maxnegpk_seconds, bin_edges_sec);
+
+                % Loop through waves and assign amplitudes to bins
+                for i = 1:length(bin_indices)
+                    bin_idx = bin_indices(i);
+                    if bin_idx >= 1 && bin_idx <= num_bins
+                        bin_amplitudes{bin_idx} = [bin_amplitudes{bin_idx}, amplitudes(i)];
+                    end
+                end
             end
 
-            % Calculate the average by dividing the total counts by the number of channels
-            average_counts = total_counts / length(channels);
+            % Now, compute median amplitude per bin
+            median_amplitudes = zeros(1, num_bins);
+            for bin_idx = 1:num_bins
+                if ~isempty(bin_amplitudes{bin_idx})
+                    median_amplitudes(bin_idx) = median(bin_amplitudes{bin_idx});
+                else
+                    median_amplitudes(bin_idx) = NaN;
+                end
+            end
 
             %% Remove gap between movie and phone conditions
 
@@ -167,35 +189,35 @@ for idx_file = 1:length(file_names)
 
             % Identify indices of bins corresponding to the gap
             gap_bins = bin_centers_adj >= movie_end_min_adj & bin_centers_adj < phone_start_min_adj;
-            
-            % Remove gap bins from bin_centers_adj and average_counts
-            bin_centers_adj_gapless = bin_centers_adj(~gap_bins);
-            average_counts_gapless = average_counts(~gap_bins);
 
-            % Adjust the time axis to remove the gap
-            idx_after_gap = bin_centers_adj_gapless >= phone_start_min_adj;
-            bin_centers_adj_gapless(idx_after_gap) = bin_centers_adj_gapless(idx_after_gap) - gap_duration;
+            % Remove gap bins from bin_centers_adj and median_amplitudes
+            bin_centers_adj_gapless = bin_centers_adj(~gap_bins);
+            median_amplitudes_gapless = median_amplitudes(~gap_bins);
 
             % Adjusted movie and phone start/end times
             movie_end_min_adj_gapless = movie_end_min_adj;
             phone_start_min_adj_gapless = phone_start_min_adj - gap_duration;
             phone_end_min_adj_gapless = phone_end_min_adj - gap_duration;
 
+            % Adjust the time axis to remove the gap
+            idx_after_gap = bin_centers_adj_gapless >= phone_start_min_adj_gapless;
+            bin_centers_adj_gapless(idx_after_gap) = bin_centers_adj_gapless(idx_after_gap) - gap_duration;
+
             % Find indices corresponding to the movie and phone conditions on the adjusted time axis
             movie_bins = bin_centers_adj_gapless >= 0 & bin_centers_adj_gapless < movie_end_min_adj_gapless;
-            phone_bins = bin_centers_adj_gapless >= phone_start_min_adj_gapless & bin_centers_adj_gapless < phone_end_min_adj_gapless;
+            phone_bins = bin_centers_adj_gapless >= movie_end_min_adj_gapless & bin_centers_adj_gapless < phone_end_min_adj_gapless;
 
-            % Calculate the average counts for each condition
-            movie_avg_count = mean(average_counts_gapless(movie_bins));
-            phone_avg_count = mean(average_counts_gapless(phone_bins));
+            % Calculate the average median amplitude for each condition
+            movie_avg_median_amplitude = mean(median_amplitudes_gapless(movie_bins), 'omitnan');
+            phone_avg_median_amplitude = mean(median_amplitudes_gapless(phone_bins), 'omitnan');
 
-            %% Plot the average incidence of slow waves across selected channels
+            %% Plot the median amplitude of slow waves across selected channels
 
             figure;
-            plot(bin_centers_adj_gapless, average_counts_gapless, 'o-', 'LineWidth', 2, 'Color', [0.3 0.3 0.3]);
+            plot(bin_centers_adj_gapless, median_amplitudes_gapless, 'o-', 'LineWidth', 2, 'Color', [0.3 0.3 0.3]);
             xlabel('Time (minutes)');
-            ylabel('Average Slow-Wave Count');
-            title(sprintf('Average Slow-Wave Incidence per 1 Minute - %s', participant_id), 'Interpreter', 'none');
+            ylabel('Median Slow-Wave Amplitude (\muV)');
+            title(sprintf('Median Slow-Wave Amplitude per 1 Minute - %s', participant_id), 'Interpreter', 'none');
             grid on;
 
             % Plot vertical line at the end of the movie condition
@@ -203,14 +225,14 @@ for idx_file = 1:length(file_names)
 
             % Plot horizontal line for the movie condition (from x = 0 to movie end)
             hold on;
-            plot([0, movie_end_min_adj_gapless], [movie_avg_count, movie_avg_count], 'b--', 'LineWidth', 2);
+            plot([0, movie_end_min_adj_gapless], [movie_avg_median_amplitude, movie_avg_median_amplitude], 'b--', 'LineWidth', 2);
 
-            % Plot horizontal line for the phone condition (from movie end to the end of recording)
-            plot([movie_end_min_adj_gapless, phone_end_min_adj_gapless], [phone_avg_count, phone_avg_count], 'r--', 'LineWidth', 2);
+            % Plot horizontal line for the phone condition (from movie end to phone end)
+            plot([movie_end_min_adj_gapless, phone_end_min_adj_gapless], [phone_avg_median_amplitude, phone_avg_median_amplitude], 'r--', 'LineWidth', 2);
 
-            legend('Average Counts', 'Movie End/Phone Start', 'Movie Average', 'Phone Average');
+            legend('Median Amplitudes', 'Movie End/Phone Start', 'Movie Average', 'Phone Average');
 
-            filename = fullfile(output_dir, sprintf('SWdensity_timeseries_%s.png', participant_id));
+            filename = fullfile(output_dir, sprintf('SWamplitude_timeseries_%s.png', participant_id));
             saveas(gcf, filename);
             close(gcf); % Close the figure to prevent too many open figures
 

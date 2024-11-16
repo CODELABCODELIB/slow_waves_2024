@@ -13,4 +13,4 @@
 
 module load MATLAB/2023b
 cd /home/s3821013
-matlab -nosplash -nodesktop -r "addpath('/home/s3821013/eeglab2023.1'); addpath('/home/s3821013/pipeline2'); addpath(genpath('/home/s3821013/src')); data_path = '/home/s3821013/data_pi-ghosha2/erp_sw2_1_4'; addpath(data_path); eeglab nogui; plot_SWdensity_timeseries_v2(data_path, 1:62); exit"
+matlab -nosplash -nodesktop -r "addpath('/home/s3821013/eeglab2023.1'); addpath('/home/s3821013/pipeline1'); addpath(genpath('/home/s3821013/src')); data_path = '/home/s3821013/data_pi-ghosha2/erp_sw2_1_4'; addpath(data_path); eeglab nogui; plot_SWdensity_timeseries_v2(data_path, 1:62); exit"
