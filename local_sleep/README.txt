@@ -3,7 +3,7 @@ Short Description of the Functions/Scripts on the Directory 'local_sleep'
 #########################################################################
 
 ############################################
-Author: David Hof (last updated: 14-11-2024)
+Author: David Hof (last updated: 22-11-2024)
 ############################################
 
 
@@ -55,6 +55,16 @@ Functions:
 – visualize_corr: Creating topographical plots for time-lagged correlations. Helper function for
                   'time_lagged_corr'.
 
+– plot_binned_timeseries: Creating binned slow-wave density and/or amplitude time-series plots
+                          for all subjects (this script needs to be run via batch script
+                          'LS_sw_binning(.slurm)', see below).
+
+– density_binning: Computing and plotting the binned slow-wave density time series for one
+                   participant. Helper function for 'plot_binned_timeseries'.
+
+– amplitude_binning: Computing and plotting the binned slow-wave amplitude time series for one
+                     participant. Helper function for 'plot_binned_timeseries'.
+
 
 Other Scripts:
 
@@ -98,10 +108,6 @@ Other Scripts:
 – avg_waveform: Creating an ERP-like plot for the average slow-wave waveform (for the entire
                 recording or split by condition).
 
-– plot_SWdensity_timeseries_v2: Creating binned slow-wave density time-series plots for all
-                                subjects (this script needs to be run via batch script
-                                'LS_sw_density_v2(.slurm)', see below).
-
 – test_LS_3(.slurm): Batch script for full data pipeline on complete EEG data.
 – test_LS_4(.slurm): Batch script for full data pipeline on movie EEG data.
 – test_LS_5(.slurm): Batch script for full data pipeline on phone EEG data.
@@ -117,4 +123,4 @@ Other Scripts:
 – test_LS_11(.slurm): Batch script for full data pipeline on temporally segmented EEG data
                       (using newly developed pre-processing pipeline).
 
-– LS_sw_density_v2(.slurm): Batch script for the MATLAB script 'plot_SWdensity_timeseries_v2'.
+– LS_sw_binning(.slurm): Batch script for running the function 'plot_binned_timeseries'.
