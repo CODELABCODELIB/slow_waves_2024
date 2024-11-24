@@ -1,18 +1,6 @@
-function [counts_movie, counts_phone] = density_binning(participant_id, participant_data, channels, density_dir)
-% density_binning Computes and plots SW density/counts for a participant.
-%
-% Usage:
-%   [counts_movie, counts_phone] = density_binning(participant_id, participant_data, channels, density_dir)
-%
-% Arguments:
-%   participant_id (char): Identifier for the participant.
-%   participant_data (struct): Data associated with the participant.
-%   channels (double): Channels to include in the analysis.
-%   density_dir (char): Directory to save the density plots.
-%
-% Returns:
-%   counts_movie (double): Binned counts during the movie condition.
-%   counts_phone (double): Binned counts during the phone condition.
+function [average_counts_movie, average_counts_phone] = density_binning(participant_id, participant_data, channels, density_dir)
+% density_binning Computes and plots SW density/counts for a participant,
+% binning separately for movie and phone conditions, and includes average lines and variability shading.
 
     % Extract relevant data
     top10_filtered_results = participant_data.top10_filtered_results;
@@ -35,22 +23,12 @@ function [counts_movie, counts_phone] = density_binning(participant_id, particip
 
     % Convert times to seconds and minutes
     movie_start_sec = movie_start / 1000;
-    movie_start_min = movie_start_sec / 60;
-
     movie_end_sec = movie_end / 1000;
-    movie_end_min = movie_end_sec / 60;
-    movie_end_min_adj = movie_end_min - movie_start_min;
-
     phone_start_sec = phone_start / 1000;
-    phone_start_min = phone_start_sec / 60;
-    phone_start_min_adj = phone_start_min - movie_start_min;
-
     phone_end_sec = phone_end / 1000;
-    phone_end_min = phone_end_sec / 60;
-    phone_end_min_adj = phone_end_min - movie_start_min;
 
-    movie_length = movie_end - movie_start;
-    phone_length = phone_end - phone_start;
+    movie_length_sec = movie_end_sec - movie_start_sec;
+    phone_length_sec = phone_end_sec - phone_start_sec;
 
     % Adjust channels data
     num_channels = length(top10_filtered_results.channels);
@@ -62,7 +40,7 @@ function [counts_movie, counts_phone] = density_binning(participant_id, particip
         for field_idx = 1:length(channel_fields)
             field = channel_fields{field_idx};
             if strcmp(field, 'datalength')
-                top10_filtered_results.channels(ch).(field) = movie_length + phone_length;
+                top10_filtered_results.channels(ch).(field) = (movie_length_sec + phone_length_sec) * 1000; % Convert back to ms
             else
                 field_data = top10_filtered_results.channels(ch).(field);
                 top10_filtered_results.channels(ch).(field) = field_data(idx_keep_movie_phone);
@@ -74,174 +52,201 @@ function [counts_movie, counts_phone] = density_binning(participant_id, particip
 
     fprintf('\n---------------------------------------------\n');
     fprintf('Participant: %s\n\n', participant_id);
-    fprintf('Movie start: %.1f min\n', movie_start_min);
-    fprintf('Movie end: %.1f min\n', movie_end_min);
-    fprintf('Phone start: %.1f min\n', phone_start_min);
-    fprintf('Phone end: %.1f min\n\n', phone_end_min);
-    fprintf('Movie length: %.1f min\n', movie_length / 1000 / 60);
-    fprintf('Phone length: %.1f min\n\n', phone_length / 1000 / 60);
+    fprintf('Movie start: %.1f min\n', movie_start_sec / 60);
+    fprintf('Movie end: %.1f min\n', movie_end_sec / 60);
+    fprintf('Phone start: %.1f min\n', phone_start_sec / 60);
+    fprintf('Phone end: %.1f min\n\n', phone_end_sec / 60);
+    fprintf('Movie length: %.1f min\n', movie_length_sec / 60);
+    fprintf('Phone length: %.1f min\n\n', phone_length_sec / 60);
     fprintf('Recording end: %.1f min\n', recording_end / 1000 / 60);
     fprintf('---------------------------------------------\n\n');
 
-    %% Calculate the average incidence across selected channels %%
+    %% Binning for Movie Condition %%
 
-    % Define bin edges (1-minute bins in seconds)
-    bin_edges_sec = movie_start_sec:60:phone_end_sec; % 60 seconds = 1 minute
-    num_bins = length(bin_edges_sec) - 1;
+    % Calculate number of full bins in movie condition
+    num_full_bins_movie = floor(movie_length_sec / 60);
 
-    % Initialize a matrix to store counts per channel per bin
-    channel_counts = zeros(length(channels), num_bins);
+    if num_full_bins_movie >= 1
+        % Define bin edges for movie condition
+        bin_edges_movie_sec = movie_start_sec : 60 : (movie_start_sec + num_full_bins_movie * 60);
+        num_bins_movie = length(bin_edges_movie_sec) - 1;
+    else
+        warning('Movie duration is less than one full bin for participant %s.', participant_id);
+        average_counts_movie = [];
+        num_bins_movie = 0;
+    end
 
-    % Loop through all channels and accumulate the counts
-    channel_idx = 0;
-    for ch = channels
-        channel_idx = channel_idx + 1;
-        % Extract 'maxnegpk' (positions of negative peaks in ms) for the specified channel
+    % Initialize counts for movie condition
+    channel_counts_movie = zeros(length(channels), num_bins_movie);
+
+    % Binning for movie condition
+    for ch_idx = 1:length(channels)
+        ch = channels(ch_idx);
         maxnegpk_data = top10_filtered_results.channels(ch).maxnegpk;
-
-        % Convert 'maxnegpk' data into seconds
         maxnegpk_seconds = cell2mat(maxnegpk_data) / 1000;
 
+        % Keep only data within movie condition
+        maxnegpk_movie = maxnegpk_seconds(maxnegpk_seconds >= movie_start_sec & maxnegpk_seconds < movie_end_sec);
+
         % Count the occurrences in each bin for the current channel
-        counts = histcounts(maxnegpk_seconds, bin_edges_sec);
+        counts = histcounts(maxnegpk_movie, bin_edges_movie_sec);
 
         % Store counts for each channel
-        channel_counts(channel_idx, :) = counts;
+        channel_counts_movie(ch_idx, :) = counts;
     end
 
-    % Calculate the average counts across channels
-    average_counts = mean(channel_counts, 1);
+    % Average counts across channels for movie condition
+    average_counts_movie = mean(channel_counts_movie, 1);
 
-    % Calculate the standard deviation across channels per bin
-    std_counts = std(channel_counts, 0, 1);
+    %% Binning for Phone Condition %%
 
-    %% Remove gap between movie and phone conditions %%
+    % Calculate number of full bins in phone condition
+    num_full_bins_phone = floor(phone_length_sec / 60);
 
-    % Calculate bin centers in minutes
-    bin_centers_sec = bin_edges_sec(1:end-1) + diff(bin_edges_sec) / 2;
-    bin_centers_min = bin_centers_sec / 60;
-    bin_centers_adj = bin_centers_min - movie_start_min;
+    if num_full_bins_phone >= 1
+        % Define bin edges for phone condition
+        bin_edges_phone_sec = phone_start_sec : 60 : (phone_start_sec + num_full_bins_phone * 60);
+        num_bins_phone = length(bin_edges_phone_sec) - 1;
+    else
+        warning('Phone duration is less than one full bin for participant %s.', participant_id);
+        average_counts_phone = [];
+        num_bins_phone = 0;
+    end
 
-    % Calculate the gap duration in minutes
-    gap_duration = phone_start_min_adj - movie_end_min_adj;
+    % Initialize counts for phone condition
+    channel_counts_phone = zeros(length(channels), num_bins_phone);
 
-    % Identify indices of bins corresponding to the gap
-    gap_bins = bin_centers_adj >= movie_end_min_adj & bin_centers_adj < phone_start_min_adj;
+    % Binning for phone condition
+    for ch_idx = 1:length(channels)
+        ch = channels(ch_idx);
+        maxnegpk_data = top10_filtered_results.channels(ch).maxnegpk;
+        maxnegpk_seconds = cell2mat(maxnegpk_data) / 1000;
 
-    % Remove gap bins from bin_centers_adj and average_counts and std_counts
-    bin_centers_adj_gapless = bin_centers_adj(~gap_bins);
-    average_counts_gapless = average_counts(~gap_bins);
-    std_counts_gapless = std_counts(~gap_bins);
+        % Keep only data within phone condition
+        maxnegpk_phone = maxnegpk_seconds(maxnegpk_seconds >= phone_start_sec & maxnegpk_seconds < phone_end_sec);
 
-    % Adjusted movie and phone start/end times
-    movie_end_min_adj_gapless = movie_end_min_adj;
-    phone_start_min_adj_gapless = phone_start_min_adj - gap_duration;
-    phone_end_min_adj_gapless = phone_end_min_adj - gap_duration;
+        % Count the occurrences in each bin for the current channel
+        counts = histcounts(maxnegpk_phone, bin_edges_phone_sec);
 
-    % Adjust the time axis to remove the gap
-    idx_after_gap = bin_centers_adj_gapless >= phone_start_min_adj_gapless;
-    bin_centers_adj_gapless(idx_after_gap) = bin_centers_adj_gapless(idx_after_gap) - gap_duration;
+        % Store counts for each channel
+        channel_counts_phone(ch_idx, :) = counts;
+    end
 
-    % Find indices corresponding to the movie and phone conditions on the adjusted time axis
-    movie_bins = bin_centers_adj_gapless >= 0 & bin_centers_adj_gapless < movie_end_min_adj_gapless;
-    phone_bins = bin_centers_adj_gapless >= phone_start_min_adj_gapless & bin_centers_adj_gapless < phone_end_min_adj_gapless;
+    % Average counts across channels for phone condition
+    average_counts_phone = mean(channel_counts_phone, 1);
 
-    % Calculate the average counts and standard deviation for each condition
-    movie_avg_count = mean(average_counts_gapless(movie_bins), 'omitnan');
-    phone_avg_count = mean(average_counts_gapless(phone_bins), 'omitnan');
+    %% Calculate Standard Deviations Across Bins %%
 
-    movie_std_count = std(average_counts_gapless(movie_bins), 'omitnan');
-    phone_std_count = std(average_counts_gapless(phone_bins), 'omitnan');
+    % Standard deviation across bins for movie condition
+    std_counts_movie = std(average_counts_movie, 0, 'omitnan');
 
-    %% Plot the average incidence of slow waves across selected channels %%
+    % Standard deviation across bins for phone condition
+    std_counts_phone = std(average_counts_phone, 0, 'omitnan');
+
+    % Compute overall averages for each condition
+    overall_avg_movie = mean(average_counts_movie, 'omitnan');
+    overall_avg_phone = mean(average_counts_phone, 'omitnan');
+
+    %% Combine Data for Plotting %%
+
+    % Concatenate average counts
+    average_counts_combined = [average_counts_movie, average_counts_phone];
+
+    % Create x-axis based on bin indices (each bin represents 1 minute)
+    total_bins = num_bins_movie + num_bins_phone;
+    x_axis = 1:total_bins;
+
+    %% Plotting %%
 
     figure;
-
     hold on;
 
-    % Initialize arrays to store handles and labels
-    legend_handles = [];
-    legend_labels = {};
+    % --- Adjusted Plotting Order ---
 
-    %% 1. Plot the shaded areas first (background)
-    % For Movie Condition
-    if any(movie_bins)
-        % Define upper and lower bounds
-        movie_upper = movie_avg_count + movie_std_count;
-        movie_lower = movie_avg_count - movie_std_count;
-        % Time range for movie condition
-        movie_time = [0, movie_end_min_adj_gapless];
-        % Create shaded area
-        patch([movie_time(1), movie_time(2), movie_time(2), movie_time(1)],...
-              [movie_lower, movie_lower, movie_upper, movie_upper],...
-              'b', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+    % 1. Add shaded areas representing ±1 SD around the average lines (plot first to be in the background)
+    if num_bins_movie > 0
+        % Shading for Movie condition (excluded from legend)
+        x_movie = [0, num_bins_movie + 0.5, num_bins_movie + 0.5, 0];
+        y_movie = [overall_avg_movie - std_counts_movie, overall_avg_movie - std_counts_movie, overall_avg_movie + std_counts_movie, overall_avg_movie + std_counts_movie];
+        patch(x_movie, y_movie, 'b', 'FaceAlpha', 0.2, 'EdgeColor', 'none', 'HandleVisibility', 'off');
     end
 
-    % For Phone Condition
-    if any(phone_bins)
-        % Define upper and lower bounds
-        phone_upper = phone_avg_count + phone_std_count;
-        phone_lower = phone_avg_count - phone_std_count;
-        % Time range for phone condition
-        phone_time = [movie_end_min_adj_gapless, phone_end_min_adj_gapless];
-        % Create shaded area
-        patch([phone_time(1), phone_time(2), phone_time(2), phone_time(1)],...
-              [phone_lower, phone_lower, phone_upper, phone_upper],...
-              'r', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+    if num_bins_phone > 0
+        % Shading for Phone condition (excluded from legend)
+        x_phone = [num_bins_movie + 0.5, total_bins + 1, total_bins + 1, num_bins_movie + 0.5];
+        y_phone = [overall_avg_phone - std_counts_phone, overall_avg_phone - std_counts_phone, overall_avg_phone + std_counts_phone, overall_avg_phone + std_counts_phone];
+        patch(x_phone, y_phone, 'r', 'FaceAlpha', 0.2, 'EdgeColor', 'none', 'HandleVisibility', 'off');
     end
 
-    %% 2. Plot the average counts (data points)
-    h_average_counts = plot(bin_centers_adj_gapless, average_counts_gapless, 'o-', 'LineWidth', 2, 'Color', [0.3 0.3 0.3]);
-    % Add to legend
-    legend_handles(end+1) = h_average_counts;
-    legend_labels{end+1} = 'Average Counts';
+    % 2. Plot the average counts (data points)
+    h_counts = plot(x_axis, average_counts_combined, 'o-', 'LineWidth', 2, 'Color', [0.3 0.3 0.3]);
+    legend_handles = h_counts;
+    legend_labels = {'Average Counts'};
 
-    %% 3. Plot the average lines (foreground)
-    % For Movie Condition
-    if any(movie_bins)
-        % Time range for movie condition
-        movie_time = [0, movie_end_min_adj_gapless];
-        % Plot average line
-        h_movie_avg_line = plot([movie_time(1), movie_time(2)], [movie_avg_count, movie_avg_count], 'b--', 'LineWidth', 2);
-        % Add to legend
-        legend_handles(end+1) = h_movie_avg_line;
+    % 3. Add horizontal dashed lines representing overall averages
+    if num_bins_movie > 0
+        h_movie_avg = plot([0.5, num_bins_movie + 0.5], [overall_avg_movie, overall_avg_movie], 'b--', 'LineWidth', 2);
+    end
+
+    if num_bins_phone > 0
+        h_phone_avg = plot([num_bins_movie + 0.5, total_bins + 0.5], [overall_avg_phone, overall_avg_phone], 'r--', 'LineWidth', 2);
+    end
+
+    % 4. Add vertical line to separate conditions (plot last to be on top)
+    if num_bins_movie > 0 && num_bins_phone > 0
+        h_boundary = xline(num_bins_movie + 0.5, 'Color', 'g', 'LineWidth', 2);
+    end
+
+    % --- End of Adjusted Plotting Order ---
+
+    % Add horizontal average lines to legend
+    if num_bins_movie > 0
+        legend_handles(end+1) = h_movie_avg;
         legend_labels{end+1} = 'Movie Average ±1 SD';
     end
 
-    % For Phone Condition
-    if any(phone_bins)
-        % Time range for phone condition
-        phone_time = [movie_end_min_adj_gapless, phone_end_min_adj_gapless];
-        % Plot average line
-        h_phone_avg_line = plot([phone_time(1), phone_time(2)], [phone_avg_count, phone_avg_count], 'r--', 'LineWidth', 2);
-        % Add to legend
-        legend_handles(end+1) = h_phone_avg_line;
+    if num_bins_phone > 0
+        legend_handles(end+1) = h_phone_avg;
         legend_labels{end+1} = 'Phone Average ±1 SD';
     end
 
-    %% 4. Plot vertical line at the end of the movie condition (topmost)
-    h_xline = xline(movie_end_min_adj_gapless, 'Color', 'g', 'LineWidth', 2);
-    legend_handles(end+1) = h_xline;
-    legend_labels{end+1} = 'Movie End/Phone Start';
+    % Add condition boundary line to legend
+    if exist('h_boundary', 'var')
+        legend_handles(end+1) = h_boundary;
+        legend_labels{end+1} = 'Movie End/Phone Start';
+    end
 
-    %% Arrange legend entries in specified order
+    % Adjust legend to desired order
     % Desired order:
     % 1) Average Counts
     % 2) Movie End/Phone Start
     % 3) Movie Average ±1 SD
     % 4) Phone Average ±1 SD
 
-    desired_order = {'Average Counts', 'Movie End/Phone Start', 'Movie Average ±1 SD', 'Phone Average ±1 SD'};
+    % Reorder legend handles and labels accordingly
+    % First, find indices of each item
+    idx_counts = find(strcmp(legend_labels, 'Average Counts'));
+    idx_boundary = find(strcmp(legend_labels, 'Movie End/Phone Start'));
+    idx_movie_avg = find(strcmp(legend_labels, 'Movie Average ±1 SD'));
+    idx_phone_avg = find(strcmp(legend_labels, 'Phone Average ±1 SD'));
 
-    [~, idx_order] = ismember(desired_order, legend_labels);
-    valid_idx_order = idx_order > 0;
-    idx_order = idx_order(valid_idx_order);
-    ordered_handles = legend_handles(idx_order);
-    ordered_labels = legend_labels(idx_order);
+    % Build legend_order array based on availability of handles
+    legend_order = [];
+    legend_order(end+1) = idx_counts;
+    if ~isempty(idx_boundary)
+        legend_order(end+1) = idx_boundary;
+    end
+    if ~isempty(idx_movie_avg)
+        legend_order(end+1) = idx_movie_avg;
+    end
+    if ~isempty(idx_phone_avg)
+        legend_order(end+1) = idx_phone_avg;
+    end
 
-    legend(ordered_handles, ordered_labels, 'Location', 'best');
+    % Set the legend with the desired order
+    legend(legend_handles(legend_order), legend_labels(legend_order), 'Location', 'best');
 
-    %% Final plot adjustments
+    % Labels and title
     xlabel('Time (minutes)');
     ylabel('Average Slow-Wave Count');
     title(sprintf('Average Slow-Wave Incidence per 1 Minute - %s', participant_id), 'Interpreter', 'none');
@@ -251,8 +256,4 @@ function [counts_movie, counts_phone] = density_binning(participant_id, particip
     filename = fullfile(density_dir, sprintf('SWdensity_timeseries_%s.png', participant_id));
     saveas(gcf, filename);
     close(gcf); % Close the figure to prevent too many open figures
-
-    %% Extract counts for movie and phone conditions
-    counts_movie = average_counts_gapless(movie_bins);
-    counts_phone = average_counts_gapless(phone_bins);
 end

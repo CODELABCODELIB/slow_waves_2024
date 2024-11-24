@@ -1,18 +1,6 @@
 function [median_amplitudes_movie, median_amplitudes_phone] = amplitude_binning(participant_id, participant_data, channels, amplitude_dir)
-% amplitude_binning Computes and plots SW amplitude for a participant.
-%
-% Usage:
-%   [median_amplitudes_movie, median_amplitudes_phone] = amplitude_binning(participant_id, participant_data, channels, amplitude_dir)
-%
-% Arguments:
-%   participant_id (char): Identifier for the participant.
-%   participant_data (struct): Data associated with the participant.
-%   channels (double): Channels to include in the analysis.
-%   amplitude_dir (char): Directory to save the amplitude plots.
-%
-% Returns:
-%   median_amplitudes_movie (double): Binned median amplitudes during the movie condition.
-%   median_amplitudes_phone (double): Binned median amplitudes during the phone condition.
+% amplitude_binning Computes and plots SW amplitude for a participant,
+% binning separately for movie and phone conditions, and includes mean lines and variability shading.
 
     % Extract relevant data
     top10_filtered_results = participant_data.top10_filtered_results;
@@ -33,24 +21,15 @@ function [median_amplitudes_movie, median_amplitudes_phone] = amplitude_binning(
         end
     end
 
-    % Convert times to seconds and minutes
+    % Convert times to seconds
     movie_start_sec = movie_start / 1000;
-    movie_start_min = movie_start_sec / 60;
-
     movie_end_sec = movie_end / 1000;
-    movie_end_min = movie_end_sec / 60;
-    movie_end_min_adj = movie_end_min - movie_start_min;
-
     phone_start_sec = phone_start / 1000;
-    phone_start_min = phone_start_sec / 60;
-    phone_start_min_adj = phone_start_min - movie_start_min;
-
     phone_end_sec = phone_end / 1000;
-    phone_end_min = phone_end_sec / 60;
-    phone_end_min_adj = phone_end_min - movie_start_min;
 
-    movie_length = movie_end - movie_start;
-    phone_length = phone_end - phone_start;
+    % Calculate lengths
+    movie_length_sec = movie_end_sec - movie_start_sec;
+    phone_length_sec = phone_end_sec - phone_start_sec;
 
     % Adjust channels data
     num_channels = length(top10_filtered_results.channels);
@@ -62,7 +41,7 @@ function [median_amplitudes_movie, median_amplitudes_phone] = amplitude_binning(
         for field_idx = 1:length(channel_fields)
             field = channel_fields{field_idx};
             if strcmp(field, 'datalength')
-                top10_filtered_results.channels(ch).(field) = movie_length + phone_length;
+                top10_filtered_results.channels(ch).(field) = (movie_length_sec + phone_length_sec) * 1000; % Convert back to ms
             else
                 field_data = top10_filtered_results.channels(ch).(field);
                 top10_filtered_results.channels(ch).(field) = field_data(idx_keep_movie_phone);
@@ -74,183 +53,217 @@ function [median_amplitudes_movie, median_amplitudes_phone] = amplitude_binning(
 
     fprintf('\n---------------------------------------------\n');
     fprintf('Participant: %s\n\n', participant_id);
-    fprintf('Movie start: %.1f min\n', movie_start_min);
-    fprintf('Movie end: %.1f min\n', movie_end_min);
-    fprintf('Phone start: %.1f min\n', phone_start_min);
-    fprintf('Phone end: %.1f min\n\n', phone_end_min);
-    fprintf('Movie length: %.1f min\n', movie_length / 1000 / 60);
-    fprintf('Phone length: %.1f min\n\n', phone_length / 1000 / 60);
+    fprintf('Movie start: %.1f min\n', movie_start_sec / 60);
+    fprintf('Movie end: %.1f min\n', movie_end_sec / 60);
+    fprintf('Phone start: %.1f min\n', phone_start_sec / 60);
+    fprintf('Phone end: %.1f min\n\n', phone_end_sec / 60);
+    fprintf('Movie length: %.1f min\n', movie_length_sec / 60);
+    fprintf('Phone length: %.1f min\n\n', phone_length_sec / 60);
     fprintf('Recording end: %.1f min\n', recording_end / 1000 / 60);
     fprintf('---------------------------------------------\n\n');
 
-    %% Calculate the median amplitude per bin across selected channels %%
+    %% Binning for Movie Condition %%
 
-    % Define bin edges (1-minute bins in seconds)
-    bin_edges_sec = movie_start_sec:60:phone_end_sec; % 60 seconds = 1 minute
-    num_bins = length(bin_edges_sec) - 1;
+    % Calculate number of full bins in movie condition
+    num_full_bins_movie = floor(movie_length_sec / 60);
 
-    % Initialize a cell array to store amplitudes per bin
-    bin_amplitudes = cell(1, num_bins);
+    if num_full_bins_movie >= 1
+        % Define bin edges for movie condition
+        bin_edges_movie_sec = movie_start_sec : 60 : (movie_start_sec + num_full_bins_movie * 60);
+        num_bins_movie = length(bin_edges_movie_sec) - 1;
+    else
+        warning('Movie duration is less than one full bin for participant %s.', participant_id);
+        median_amplitudes_movie = [];
+        num_bins_movie = 0;
+    end
 
-    % Loop through all channels
+    % Initialize cell array to store amplitudes per bin
+    bin_amplitudes_movie = cell(1, num_bins_movie);
+
+    % Binning for movie condition
     for ch = channels
-        % Extract 'maxnegpk' (positions of negative peaks in ms) for the specified channel
         maxnegpk_data = top10_filtered_results.channels(ch).maxnegpk;
-        % Convert 'maxnegpk' data into seconds
         maxnegpk_seconds = cell2mat(maxnegpk_data) / 1000;
 
-        % Extract 'maxnegpkamp' and 'maxpospkamp' for the specified channel
+        % Extract amplitudes
         maxnegpkamp_data = top10_filtered_results.channels(ch).maxnegpkamp;
         maxpospkamp_data = top10_filtered_results.channels(ch).maxpospkamp;
-
-        % Convert to arrays
         maxnegpkamp_values = cell2mat(maxnegpkamp_data);
         maxpospkamp_values = cell2mat(maxpospkamp_data);
-
-        % Compute amplitudes
         amplitudes = abs(maxnegpkamp_values) + maxpospkamp_values;
 
-        % For each wave, determine which bin it belongs to
-        [~, ~, bin_indices] = histcounts(maxnegpk_seconds, bin_edges_sec);
+        % Keep only data within movie condition
+        idx_movie = maxnegpk_seconds >= movie_start_sec & maxnegpk_seconds < movie_end_sec;
+        maxnegpk_movie = maxnegpk_seconds(idx_movie);
+        amplitudes_movie = amplitudes(idx_movie);
 
-        % Loop through waves and assign amplitudes to bins
+        % Assign amplitudes to bins
+        [~, ~, bin_indices] = histcounts(maxnegpk_movie, bin_edges_movie_sec);
         for i = 1:length(bin_indices)
             bin_idx = bin_indices(i);
-            if bin_idx >= 1 && bin_idx <= num_bins
-                bin_amplitudes{bin_idx} = [bin_amplitudes{bin_idx}, amplitudes(i)];
+            if bin_idx >= 1 && bin_idx <= num_bins_movie
+                bin_amplitudes_movie{bin_idx} = [bin_amplitudes_movie{bin_idx}, amplitudes_movie(i)];
             end
         end
     end
 
-    % Now, compute median amplitude per bin
-    median_amplitudes = zeros(1, num_bins);
-    for bin_idx = 1:num_bins
-        if ~isempty(bin_amplitudes{bin_idx})
-            median_amplitudes(bin_idx) = median(bin_amplitudes{bin_idx});
+    % Compute median amplitude per bin for movie condition
+    median_amplitudes_movie = zeros(1, num_bins_movie);
+    for bin_idx = 1:num_bins_movie
+        if ~isempty(bin_amplitudes_movie{bin_idx})
+            median_amplitudes_movie(bin_idx) = median(bin_amplitudes_movie{bin_idx});
         else
-            median_amplitudes(bin_idx) = NaN;
+            median_amplitudes_movie(bin_idx) = NaN;
         end
     end
 
-    %% Remove gap between movie and phone conditions %%
+    %% Binning for Phone Condition %%
 
-    % Calculate bin centers in minutes
-    bin_centers_sec = bin_edges_sec(1:end-1) + diff(bin_edges_sec) / 2;
-    bin_centers_min = bin_centers_sec / 60;
-    bin_centers_adj = bin_centers_min - movie_start_min;
+    % Calculate number of full bins in phone condition
+    num_full_bins_phone = floor(phone_length_sec / 60);
 
-    % Calculate the gap duration in minutes
-    gap_duration = phone_start_min_adj - movie_end_min_adj;
+    if num_full_bins_phone >= 1
+        % Define bin edges for phone condition
+        bin_edges_phone_sec = phone_start_sec : 60 : (phone_start_sec + num_full_bins_phone * 60);
+        num_bins_phone = length(bin_edges_phone_sec) - 1;
+    else
+        warning('Phone duration is less than one full bin for participant %s.', participant_id);
+        median_amplitudes_phone = [];
+        num_bins_phone = 0;
+    end
 
-    % Identify indices of bins corresponding to the gap
-    gap_bins = bin_centers_adj >= movie_end_min_adj & bin_centers_adj < phone_start_min_adj;
+    % Initialize cell array to store amplitudes per bin
+    bin_amplitudes_phone = cell(1, num_bins_phone);
 
-    % Remove gap bins from bin_centers_adj and median_amplitudes
-    bin_centers_adj_gapless = bin_centers_adj(~gap_bins);
-    median_amplitudes_gapless = median_amplitudes(~gap_bins);
+    % Binning for phone condition
+    for ch = channels
+        maxnegpk_data = top10_filtered_results.channels(ch).maxnegpk;
+        maxnegpk_seconds = cell2mat(maxnegpk_data) / 1000;
 
-    % Adjusted movie and phone start/end times
-    movie_end_min_adj_gapless = movie_end_min_adj;
-    phone_start_min_adj_gapless = phone_start_min_adj - gap_duration;
-    phone_end_min_adj_gapless = phone_end_min_adj - gap_duration;
+        % Extract amplitudes
+        maxnegpkamp_data = top10_filtered_results.channels(ch).maxnegpkamp;
+        maxpospkamp_data = top10_filtered_results.channels(ch).maxpospkamp;
+        maxnegpkamp_values = cell2mat(maxnegpkamp_data);
+        maxpospkamp_values = cell2mat(maxpospkamp_data);
+        amplitudes = abs(maxnegpkamp_values) + maxpospkamp_values;
 
-    % Adjust the time axis to remove the gap
-    idx_after_gap = bin_centers_adj_gapless >= phone_start_min_adj_gapless;
-    bin_centers_adj_gapless(idx_after_gap) = bin_centers_adj_gapless(idx_after_gap) - gap_duration;
+        % Keep only data within phone condition
+        idx_phone = maxnegpk_seconds >= phone_start_sec & maxnegpk_seconds < phone_end_sec;
+        maxnegpk_phone = maxnegpk_seconds(idx_phone);
+        amplitudes_phone = amplitudes(idx_phone);
 
-    % Find indices corresponding to the movie and phone conditions on the adjusted time axis
-    movie_bins = bin_centers_adj_gapless >= 0 & bin_centers_adj_gapless < movie_end_min_adj_gapless;
-    phone_bins = bin_centers_adj_gapless >= phone_start_min_adj_gapless & bin_centers_adj_gapless < phone_end_min_adj_gapless;
+        % Assign amplitudes to bins
+        [~, ~, bin_indices] = histcounts(maxnegpk_phone, bin_edges_phone_sec);
+        for i = 1:length(bin_indices)
+            bin_idx = bin_indices(i);
+            if bin_idx >= 1 && bin_idx <= num_bins_phone
+                bin_amplitudes_phone{bin_idx} = [bin_amplitudes_phone{bin_idx}, amplitudes_phone(i)];
+            end
+        end
+    end
 
-    % Calculate the average median amplitude for each condition
-    movie_avg_median_amplitude = mean(median_amplitudes_gapless(movie_bins), 'omitnan');
-    phone_avg_median_amplitude = mean(median_amplitudes_gapless(phone_bins), 'omitnan');
+    % Compute median amplitude per bin for phone condition
+    median_amplitudes_phone = zeros(1, num_bins_phone);
+    for bin_idx = 1:num_bins_phone
+        if ~isempty(bin_amplitudes_phone{bin_idx})
+            median_amplitudes_phone(bin_idx) = median(bin_amplitudes_phone{bin_idx});
+        else
+            median_amplitudes_phone(bin_idx) = NaN;
+        end
+    end
 
-    % Calculate the standard deviation of median amplitudes for each condition
-    movie_std_median_amplitude = std(median_amplitudes_gapless(movie_bins), 'omitnan');
-    phone_std_median_amplitude = std(median_amplitudes_gapless(phone_bins), 'omitnan');
+    %% Calculate Mean and Standard Deviations Across Bins %%
 
-    %% Plot the median amplitude of slow waves across selected channels %%
+    % Compute mean of median amplitudes across bins for each condition
+    mean_of_medians_movie = mean(median_amplitudes_movie, 'omitnan');
+    mean_of_medians_phone = mean(median_amplitudes_phone, 'omitnan');
+
+    % Compute standard deviation of median amplitudes across bins for each condition
+    std_of_medians_movie = std(median_amplitudes_movie, 0, 'omitnan');
+    std_of_medians_phone = std(median_amplitudes_phone, 0, 'omitnan');
+
+    %% Combine Data for Plotting %%
+
+    % Concatenate median amplitudes
+    median_amplitudes_combined = [median_amplitudes_movie, median_amplitudes_phone];
+
+    % Create x-axis based on bin indices (each bin represents 1 minute)
+    total_bins = num_bins_movie + num_bins_phone;
+    x_axis = 1:total_bins;
+
+    %% Plotting %%
 
     figure;
-
     hold on;
 
-    % Initialize arrays to store handles and labels
-    legend_handles = [];
-    legend_labels = {};
+    % --- Adjusted Plotting Order ---
 
-    %% 1. Plot the shaded areas first (background)
-    % For Movie Condition
-    if any(movie_bins)
-        % Define upper and lower bounds
-        movie_upper = movie_avg_median_amplitude + movie_std_median_amplitude;
-        movie_lower = movie_avg_median_amplitude - movie_std_median_amplitude;
-        % Time range for movie condition
-        movie_time = [0, movie_end_min_adj_gapless];
-        % Create shaded area
-        patch([movie_time(1), movie_time(2), movie_time(2), movie_time(1)],...
-              [movie_lower, movie_lower, movie_upper, movie_upper],...
-              'b', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+    % 1. Add shaded areas representing ±1 SD around the mean lines (plot first to be in the background)
+    if num_bins_movie > 0
+        % Shading for Movie condition (excluded from legend)
+        x_movie = [0, num_bins_movie + 0.5, num_bins_movie + 0.5, 0];
+        y_movie = [mean_of_medians_movie - std_of_medians_movie, mean_of_medians_movie - std_of_medians_movie, mean_of_medians_movie + std_of_medians_movie, mean_of_medians_movie + std_of_medians_movie];
+        patch(x_movie, y_movie, 'b', 'FaceAlpha', 0.2, 'EdgeColor', 'none', 'HandleVisibility', 'off');
     end
 
-    % For Phone Condition
-    if any(phone_bins)
-        % Define upper and lower bounds
-        phone_upper = phone_avg_median_amplitude + phone_std_median_amplitude;
-        phone_lower = phone_avg_median_amplitude - phone_std_median_amplitude;
-        % Time range for phone condition
-        phone_time = [movie_end_min_adj_gapless, phone_end_min_adj_gapless];
-        % Create shaded area
-        patch([phone_time(1), phone_time(2), phone_time(2), phone_time(1)],...
-              [phone_lower, phone_lower, phone_upper, phone_upper],...
-              'r', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+    if num_bins_phone > 0
+        % Shading for Phone condition (excluded from legend)
+        x_phone = [num_bins_movie + 0.5, total_bins + 1, total_bins + 1, num_bins_movie + 0.5];
+        y_phone = [mean_of_medians_phone - std_of_medians_phone, mean_of_medians_phone - std_of_medians_phone, mean_of_medians_phone + std_of_medians_phone, mean_of_medians_phone + std_of_medians_phone];
+        patch(x_phone, y_phone, 'r', 'FaceAlpha', 0.2, 'EdgeColor', 'none', 'HandleVisibility', 'off');
     end
 
-    %% 2. Plot the median amplitudes (data points)
-    valid_idx = ~isnan(median_amplitudes_gapless);
+    % 2. Plot the median amplitudes (data points)
+    valid_idx = ~isnan(median_amplitudes_combined);
+    x_valid = x_axis(valid_idx);
+    y_valid = median_amplitudes_combined(valid_idx);
 
-    h_median_amplitudes = plot(bin_centers_adj_gapless(valid_idx), median_amplitudes_gapless(valid_idx), 'o-', 'LineWidth', 2, 'Color', [0.3 0.3 0.3]);
-    % Add to legend
-    legend_handles(end+1) = h_median_amplitudes;
-    legend_labels{end+1} = 'Median Amplitudes';
+    h_median = plot(x_valid, y_valid, 'o-', 'LineWidth', 2, 'Color', [0.3 0.3 0.3]);
+    legend_handles = h_median;
+    legend_labels = {'Median Amplitudes'};
 
-    %% 3. Plot missing data points with a different marker
-    if sum(~valid_idx) > 0
-        h_missing_data = plot(bin_centers_adj_gapless(~valid_idx), zeros(sum(~valid_idx),1), 'rx', 'LineWidth', 2);
-        legend_handles(end+1) = h_missing_data;
+    % 3. Indicate missing data with red crosses
+    missing_idx = isnan(median_amplitudes_combined);
+    if any(missing_idx)
+        h_missing = plot(x_axis(missing_idx), zeros(sum(missing_idx),1), 'rx', 'LineWidth', 2);
+        legend_handles(end+1) = h_missing;
         legend_labels{end+1} = 'No Slow Waves Detected';
     end
 
-    %% 4. Plot the average lines (foreground)
-    % For Movie Condition
-    if any(movie_bins)
-        % Time range for movie condition
-        movie_time = [0, movie_end_min_adj_gapless];
-        % Plot average line
-        h_movie_avg_line = plot([movie_time(1), movie_time(2)], [movie_avg_median_amplitude, movie_avg_median_amplitude], 'b--', 'LineWidth', 2);
-        % Add to legend
-        legend_handles(end+1) = h_movie_avg_line;
+    % 4. Add horizontal dashed lines representing mean of medians
+    if num_bins_movie > 0
+        h_movie_mean = plot([0.5, num_bins_movie + 0.5], [mean_of_medians_movie, mean_of_medians_movie], 'b--', 'LineWidth', 2);
+    end
+
+    if num_bins_phone > 0
+        h_phone_mean = plot([num_bins_movie + 0.5, total_bins + 0.5], [mean_of_medians_phone, mean_of_medians_phone], 'r--', 'LineWidth', 2);
+    end
+
+    % 5. Add vertical line to separate conditions (plot last to be on top)
+    if num_bins_movie > 0 && num_bins_phone > 0
+        h_boundary = xline(num_bins_movie + 0.5, 'Color', 'g', 'LineWidth', 2);
+    end
+
+    % --- End of Adjusted Plotting Order ---
+
+    % Add horizontal average lines to legend
+    if num_bins_movie > 0
+        legend_handles(end+1) = h_movie_mean;
         legend_labels{end+1} = 'Movie Average ±1 SD';
     end
 
-    % For Phone Condition
-    if any(phone_bins)
-        % Time range for phone condition
-        phone_time = [movie_end_min_adj_gapless, phone_end_min_adj_gapless];
-        % Plot average line
-        h_phone_avg_line = plot([phone_time(1), phone_time(2)], [phone_avg_median_amplitude, phone_avg_median_amplitude], 'r--', 'LineWidth', 2);
-        % Add to legend
-        legend_handles(end+1) = h_phone_avg_line;
+    if num_bins_phone > 0
+        legend_handles(end+1) = h_phone_mean;
         legend_labels{end+1} = 'Phone Average ±1 SD';
     end
 
-    %% 5. Plot vertical line at the end of the movie condition (topmost)
-    h_xline = xline(movie_end_min_adj_gapless, 'Color', 'g', 'LineWidth', 2);
-    legend_handles(end+1) = h_xline;
-    legend_labels{end+1} = 'Movie End/Phone Start';
+    % Add condition boundary line to legend
+    if exist('h_boundary', 'var')
+        legend_handles(end+1) = h_boundary;
+        legend_labels{end+1} = 'Movie End/Phone Start';
+    end
 
-    %% Arrange legend entries in specified order
+    % Adjust legend to desired order
     % Desired order:
     % 1) Median Amplitudes
     % 2) No Slow Waves Detected
@@ -258,17 +271,34 @@ function [median_amplitudes_movie, median_amplitudes_phone] = amplitude_binning(
     % 4) Movie Average ±1 SD
     % 5) Phone Average ±1 SD
 
-    desired_order = {'Median Amplitudes', 'No Slow Waves Detected', 'Movie End/Phone Start', 'Movie Average ±1 SD', 'Phone Average ±1 SD'};
+    % Reorder legend handles and labels accordingly
+    % First, find indices of each item
+    idx_median = find(strcmp(legend_labels, 'Median Amplitudes'));
+    idx_missing = find(strcmp(legend_labels, 'No Slow Waves Detected'));
+    idx_boundary = find(strcmp(legend_labels, 'Movie End/Phone Start'));
+    idx_movie_avg = find(strcmp(legend_labels, 'Movie Average ±1 SD'));
+    idx_phone_avg = find(strcmp(legend_labels, 'Phone Average ±1 SD'));
 
-    [~, idx_order] = ismember(desired_order, legend_labels);
-    valid_idx_order = idx_order > 0;
-    idx_order = idx_order(valid_idx_order);
-    ordered_handles = legend_handles(idx_order);
-    ordered_labels = legend_labels(idx_order);
+    % Build legend_order array based on availability of handles
+    legend_order = [];
+    legend_order(end+1) = idx_median;
+    if ~isempty(idx_missing)
+        legend_order(end+1) = idx_missing;
+    end
+    if ~isempty(idx_boundary)
+        legend_order(end+1) = idx_boundary;
+    end
+    if ~isempty(idx_movie_avg)
+        legend_order(end+1) = idx_movie_avg;
+    end
+    if ~isempty(idx_phone_avg)
+        legend_order(end+1) = idx_phone_avg;
+    end
 
-    legend(ordered_handles, ordered_labels, 'Location', 'best');
+    % Set the legend with the desired order
+    legend(legend_handles(legend_order), legend_labels(legend_order), 'Location', 'best');
 
-    %% Final plot adjustments
+    % Labels and title
     xlabel('Time (minutes)');
     ylabel('Median Slow-Wave Amplitude (\muV)');
     title(sprintf('Median Slow-Wave Amplitude per 1 Minute - %s', participant_id), 'Interpreter', 'none');
@@ -278,8 +308,4 @@ function [median_amplitudes_movie, median_amplitudes_phone] = amplitude_binning(
     filename = fullfile(amplitude_dir, sprintf('SWamplitude_timeseries_%s.png', participant_id));
     saveas(gcf, filename);
     close(gcf); % Close the figure to prevent too many open figures
-
-    %% Extract median amplitudes for movie and phone conditions
-    median_amplitudes_movie = median_amplitudes_gapless(movie_bins);
-    median_amplitudes_phone = median_amplitudes_gapless(phone_bins);
 end

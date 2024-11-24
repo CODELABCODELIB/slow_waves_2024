@@ -5,8 +5,8 @@
 #SBATCH --error=LS_sw_binning.err
 #SBATCH --mail-user="s3821013@vuw.leidenuniv.nl"
 #SBATCH --mail-type="ALL"
-#SBATCH --partition="cpu-medium"
-#SBATCH --time=1-0:00:00
+#SBATCH --partition="cpu-short"
+#SBATCH --time=0-4:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=64G
 #SBATCH --cpus-per-task=1

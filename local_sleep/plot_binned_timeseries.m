@@ -1,6 +1,6 @@
 function [] = plot_binned_timeseries(data_path, channels, options)
 % plot_binned_timeseries Computes and plots binned slow-wave (SW) density/counts,
-% amplitude, or both for participants.
+% amplitude, or both for participants, using separate binning for movie and phone conditions.
 %
 % Usage:
 %   plot_binned_timeseries(data_path)
@@ -65,12 +65,12 @@ function [] = plot_binned_timeseries(data_path, channels, options)
 
             % Process Density/Counts if required
             if strcmp(options.sw_par, 'dens') || strcmp(options.sw_par, 'both')
-                [counts_movie, counts_phone] = density_binning(participant_id, participant_data, channels, density_dir);
+                [average_counts_movie, average_counts_phone] = density_binning(participant_id, participant_data, channels, density_dir);
                 % Collect density data
                 participant_idx_dens = participant_idx_dens + 1;
                 data_cell_array_dens{participant_idx_dens, 1} = participant_id;
-                data_cell_array_dens{participant_idx_dens, 2} = counts_movie;
-                data_cell_array_dens{participant_idx_dens, 3} = counts_phone;
+                data_cell_array_dens{participant_idx_dens, 2} = average_counts_movie;
+                data_cell_array_dens{participant_idx_dens, 3} = average_counts_phone;
             end
 
             % Process Amplitude if required
@@ -159,12 +159,12 @@ function [] = plot_binned_timeseries(data_path, channels, options)
 
                     % Process Density/Counts if required
                     if strcmp(options.sw_par, 'dens') || strcmp(options.sw_par, 'both')
-                        [counts_movie, counts_phone] = density_binning(participant_id, participant_data, channels, density_dir);
+                        [average_counts_movie, average_counts_phone] = density_binning(participant_id, participant_data, channels, density_dir);
                         % Collect density data
                         participant_idx_dens = participant_idx_dens + 1;
                         data_cell_array_dens{participant_idx_dens, 1} = participant_id;
-                        data_cell_array_dens{participant_idx_dens, 2} = counts_movie;
-                        data_cell_array_dens{participant_idx_dens, 3} = counts_phone;
+                        data_cell_array_dens{participant_idx_dens, 2} = average_counts_movie;
+                        data_cell_array_dens{participant_idx_dens, 3} = average_counts_phone;
                     end
 
                     % Process Amplitude if required
