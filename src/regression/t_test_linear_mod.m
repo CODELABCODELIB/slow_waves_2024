@@ -38,10 +38,10 @@ LIMO.design.method = 'Trimmed Mean';
 LIMO_paths(size(betas,3)) = string();
 
 for current_beta_index = 1:size(betas,3)
-    current_beta = squeeze(betas(:, :, current_beta_index, :));
+    current_beta = reshape((betas(:, 1, current_beta_index, :)),[size(current_ppt_limo, 1),1,size(model,1)]);
     LIMO_paths(current_beta_index) = limo_random_robust(1, current_beta, current_beta_index, LIMO);
 end
 %%
 significance_threshold = 0.05;
-[mask, cluster_p, one_sample] = run_clustering_linear(LIMO_paths, significance_threshold, channeighbstructmat);
+[mask, cluster_p, one_sample] = run_clustering_reg(LIMO_paths, significance_threshold, channeighbstructmat);
 end 
