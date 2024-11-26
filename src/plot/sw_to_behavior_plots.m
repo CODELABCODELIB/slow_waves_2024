@@ -1,3 +1,4 @@
+figures_save_path = sprintf('%s/dec_rerun',figures_save_path);
 %% plot SW jids
 for pp=1:size(res,2)
     h = figure;
@@ -158,9 +159,7 @@ for pp=1:size(res,2)
     end
     sgtitle(sprintf('Rate %d min before SW dynamics - Sub %d',mins,pp))
     saveas(h, sprintf('%s/rates/pre_rate_pp_%d.svg',figures_save_path,pp))
-
 end
-close all;
 %% plot SW pre rate, rate and post rate
 mins=1;
 lim_data = [-4 -3];
