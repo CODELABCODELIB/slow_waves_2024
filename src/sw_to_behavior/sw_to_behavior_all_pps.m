@@ -62,9 +62,9 @@ for pp=1:size(load_data,1)
         [~,~,res(count).movie_sws] = tap_per_sw_triad(movie_indexes{1}.movie_latencies,load_data{count,4}, 'rate');
 
         
-        duration_phone = (phone_indexes{1}{1}(end)-phone_indexes{1}{1}(1))/60000<20;
+        duration_phone = (phone_indexes{1}{end}(end)-phone_indexes{1}{1}(1))/60000;
         duration_movie = (movie_indexes{1}.movie_latencies(end)-movie_indexes{1}.movie_latencies(1))/60000;
-        writecell({options.file,res(count).pp,duration_phone,duration_movie,phone_indexes{1}{1}(end),phone_indexes{1}{1}(1),movie_indexes{1}.movie_latencies(end),movie_indexes{1}.movie_latencies(1)}, 'durations.txt', 'WriteMode','append')
+        writecell({options.file,res(count).pp,duration_phone,duration_movie,phone_indexes{1}{end}(end),phone_indexes{1}{1}(1),movie_indexes{1}.movie_latencies(end),movie_indexes{1}.movie_latencies(1)}, sprintf('%s/durations.txt',options.save_path), 'WriteMode','append')
         count = count +1;
         if options.save_results
             save(sprintf('%s/%s_res_%d',options.save_path,options.file, pp),'res')
