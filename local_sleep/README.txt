@@ -1,0 +1,126 @@
+#########################################################################
+Short Description of the Functions/Scripts on the Directory 'local_sleep'
+#########################################################################
+
+############################################
+Author: David Hof (last updated: 22-11-2024)
+############################################
+
+
+Functions:
+
+– test_processing4: Pre-processing of EEG data (as in Andrillon et al., 2021; except Chebyshev
+                    filtering & downsampling -> included in 'twalldetectnew_TA_v2') and
+                    optional selection of movie/phone part of the recording.
+– preprocessing_complete: Newly developed pre-processing pipeline (including optional selection
+                          of movie/phone part of the recording).
+
+– twalldetectnew_TA_v2: Delta/theta wave detection (code by Andrillon et al., 2021) + Chebyshev
+                        filtering & downsampling in a first step.
+– twalldetectnew_TA_v3: Same as above but adapted by David Hof to perform the wave detection
+                        iteratively on 8 equal-sized bins of the input data (-> temp. analysis).
+– twalldetectnew_TA_v4: Same as 'twalldetectnew_TA_v2', but the pre-processing steps previously
+                        included in this function have been removed.
+– twalldetectnew_TA_v5: Same as 'twalldetectnew_TA_v3', but the pre-processing steps previously
+                        included in this function have been removed.
+
+– meanfilt: Smoothing of the EEG signal. Helper function for 'twalldetectnew_TA_v2/v3'.
+
+– filter_results: Filtering of the detected slow waves according to criteria used in Andrillon
+                  et al. (2021).
+– filter_results2: Same as above but adapted to handle the 8 equal-sized bins of the data
+                   created in 'twalldetectnew_TA_v3'.
+– filter_results_thresh: Same as 'filter_results' but performs the filtering iteratively for 4
+                         different P2P-amplitude relative thresholds (-> heuristic analysis).
+
+– compute_wave_pars: Computing of the wave parameters.
+– compute_wave_pars2: Same as above but adapted to handle the 8 equal-sized bins of the data
+                      created in 'twalldetectnew_TA_v3'.
+– compute_wave_pars_thresh: Same as 'compute_wave_pars' but adapted to handle the 4 different
+                            versions of the filtered waves created in 'filter_results_thresh'.
+
+– visualize_wave_pars: Creating topographical plots for the wave parameters.
+– visualize_wave_pars2: Same as above but for all 8 equal-sized bins of the data created in
+                        'twalldetectnew_TA_v3'.
+– visualize_wave_pars_thresh: Same as 'visualize_wave_pars' but for all 4 different versions of
+                              the filtered waves created in 'filter_results_thresh'.
+
+– merge_intervals: Merging of intervals around slow waves. Helper function for 'blink_rate'.
+
+– get_complement_intervals: Identifying of complementary intervals. Helper function for
+                            'blink_rate'.
+
+– count_blinks_in_intervals: Counting of blinks in intervals. Helper function for 'blink_rate'.
+
+– visualize_corr: Creating topographical plots for time-lagged correlations. Helper function for
+                  'time_lagged_corr'.
+
+– plot_binned_timeseries: Creating binned slow-wave density and/or amplitude time-series plots
+                          for all subjects (this script needs to be run via batch script
+                          'LS_sw_binning(.slurm)', see below).
+
+– density_binning: Computing and plotting the binned slow-wave density time series for one
+                   participant. Helper function for 'plot_binned_timeseries'.
+
+– amplitude_binning: Computing and plotting the binned slow-wave amplitude time series for one
+                     participant. Helper function for 'plot_binned_timeseries'.
+
+
+Other Scripts:
+
+– par_corr: Computing correlations between wave parameters across EEG electrodes.
+
+– SWfreq_timeseries_plot: Creating a time-series plot of slow-wave freq. for a specific channel.
+– SWfreq_timeseries_plot2: Same as above but for the comparison of anterior/posterior channels.
+– SWfreq_timeseries_plot3: Same as above but for the comparison of central/peripheral channels.
+– SWfreq_timeseries_plot4: Same as above but for the comparison of right/left channels.
+– SWfreq_timeseries_plot5: Same as above but for the comparison of low-/high-density channels.
+
+– SWandBLfreq_timeseries_plot: Creating a time-series plot for slow-wave vs. blink frequency.
+
+– SWp2p_timeseries_plot: Creating a time-series plot for slow-wave peak-to-peak amplitude
+                         (optional comparison of anterior/posterior, central/peripheral, right/
+                         left, low-/high-amplitude channels).
+
+– SWp2p_and_BLfreq_timeseries_plot: Creating a time-series plot for slow-wave peak-to-peak
+                                    amplitude vs. blink frequency.
+
+– SWfreq_and_SWp2p_timeseries_plot: Creating a time-series plot for slow-wave frequency vs.
+                                    slow-wave peak-to-peak amplitude.
+– SWfreq_and_SWp2p_HighLowCmp_ts_plot: Same as above but for comparison of channels with high
+                                       slow-wave density and high slow-wave peak-to-peak
+                                       amplitude.
+
+– SWpower_timeseries_plot: Creating a time-series plot for slow-wave (delta) power.
+
+– blink_rate: Determining the blink rate around slow waves vs. not around slow waves.
+
+– blink_explore: Creating time-series event plots for slow waves and blinks in random X-min
+                 interval.
+
+– JID_SW: Creating JID plots for taps within/outside of slow waves and for slow waves
+          themselves (in the movie/phone part of the recording).
+
+– time_lagged_corr: Calculating time-lagged correlations between taps / blinks / slow waves and
+                    creating corresponding topographical plots (if applicable).
+– autocorrelations: Same as above but for auto-correlations in taps / blinks / slow waves.
+
+– avg_waveform: Creating an ERP-like plot for the average slow-wave waveform (for the entire
+                recording or split by condition).
+
+– test_LS_3(.slurm): Batch script for full data pipeline on complete EEG data.
+– test_LS_4(.slurm): Batch script for full data pipeline on movie EEG data.
+– test_LS_5(.slurm): Batch script for full data pipeline on phone EEG data.
+– test_LS_6(.slurm): Batch script for full data pipeline on temporally segmented EEG data.
+– test_LS_7(.slurm): Batch script for full data pipeline on complete EEG data using different
+                     P2P-amplitude relative thresholds.
+– test_LS_8(.slurm): Batch script for full data pipeline on complete EEG data (using newly
+                     developed pre-processing pipeline, i.e., 'preprocessing_complete').
+– test_LS_9(.slurm): Batch script for full data pipeline on movie EEG data (using newly
+                     developed pre-processing pipeline).
+– test_LS_10(.slurm): Batch script for full data pipeline on phone EEG data (using newly
+                      developed pre-processing pipeline).
+– test_LS_11(.slurm): Batch script for full data pipeline on temporally segmented EEG data
+                      (using newly developed pre-processing pipeline).
+
+– LS_sw_binning(.slurm): Batch script for running the function 'plot_binned_timeseries'.

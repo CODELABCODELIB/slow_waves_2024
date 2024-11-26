@@ -1,9 +1,9 @@
-#######################################################################
-Short Description of the Functions/Scripts on the Directory 'Figure 1c'
-#######################################################################
+#####################################################################################
+Short Description of the Functions/Scripts on the Directory 'local_sleep/figure_1/1c'
+#####################################################################################
 
 ############################################
-Author: David Hof (last updated: 08-10-2024)
+Author: David Hof (last updated: 13-11-2024)
 ############################################
 
 
@@ -41,4 +41,4 @@ Functions:
 
 Other Scripts:
 
-– LS_sw_pars_v2.slurm: Batch script for the entire data analysis pipeline for figure 1c).
+– LS_sw_pars_v2(.slurm): Batch script for the entire data analysis pipeline for figure 1c).

@@ -3,6 +3,16 @@ load('top10_filtered_results.mat');
 
 %%
 
+load('AT06_top10filtered.mat')
+top10_filtered_results = AT06_top10filtered;
+
+%%
+
+load('AT08_top10filtered.mat')
+top10_filtered_results = AT08_top10filtered;
+
+%%
+
 % Select channel
 channel_number = 1;
 
