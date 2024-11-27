@@ -6,6 +6,7 @@ subjects = readcell('/home/ruchella/slow_waves_2023/data/subjects.csv', "Delimit
 load('compile.mat');
 
 participant_files = strcmp(subjects(:,1), participant);
-sleepData = compile{contains([compile{:,1}],participant), 5};
+sleep_times = compile{contains([compile{:,1}],participant), 4};
+sleep_durations = compile{contains([compile{:,1}],participant), 5};
 
-[sleep_durations] = calculate_sleep_metrics(participant_files,subjects,sleepData);
+[sleep_durations] = calculate_sleep_metrics(participant_files,subjects,sleep_durations,sleep_times);
