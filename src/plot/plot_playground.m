@@ -456,3 +456,34 @@ for pp=1:size(res,2)
     sgtitle(sprintf('Sub %d - Amplitude',pp))
     saveas(h,sprintf('%s/dec_rerun/corr_delays/amplitude_spearman_rho_%d.svg',figures_save_path,pp))
 end
+%% spearman correlation plot lag 0
+rho = zeros(length(res),64);
+p = zeros(length(res),64);
+rho_amp = zeros(length(res),64);
+p_amp = zeros(length(res),64);
+time_win = 1*1000*60;
+for pp=1:length(res)
+    [features] = prepare_features_rate(res,pp, 'plot',0,'time_win', time_win);
+    for chan=1:64
+        [rho(pp,chan),p(pp,chan)] = corr(features.rate(chan,:)',features.density(chan,:)', 'Type', 'Spearman', 'rows','complete');
+        [rho_amp(pp,chan),p_amp(pp,chan)] = corr(features.rate(chan,:)',features.amplitude(chan,:)', 'Type', 'Spearman', 'rows','complete');
+    end
+end
+%
+figure;
+tiledlayout(7,6)
+alpha=0.05;
+for pp=1:length(res)
+    nexttile;
+    topoplot(rho(pp,1:62).*(p(pp,1:62)<alpha),EEG.chanlocs(1:62), 'maplimits',[-0.5,0.5], 'electrodes', 'off', 'style', 'map');
+end
+sgtitle(sprintf('Density - alpha %.2f - t %d',alpha,time_win))
+
+alpha = 0.05;
+figure;
+tiledlayout(7,6)
+for pp=1:length(res)
+    nexttile;
+    topoplot(rho_amp(pp,1:62).*(p_amp(pp,1:62)<alpha),EEG.chanlocs(1:62), 'maplimits',[-0.5,0.5], 'electrodes', 'off', 'style', 'map');
+end
+sgtitle(sprintf('Amplitude - alpha  %.2f - t %d',alpha,time_win))
