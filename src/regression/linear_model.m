@@ -1,11 +1,11 @@
-function [reg, index] = linear_model(x,y, participant, index, reg,options)
+function [reg, index] = linear_model(x,Y, participant, index, reg,options)
 %% Run LIMO level 1 regression analysis
 %
 % **Usage:** [reg, indx] = linear_model(features, participant, indx, reg)
 %
 % Input(s):
 %   - x = matrix with independent variables shape (electrodes x time [x freq] x params)
-%   - y = dependant variable  (electrodes x time [x freq])
+%   - y = dependent variable  (electrodes x time [x freq])
 %   - participant (char array) = participant name 
 %   - indx = pp number 
 %   - reg = struct with linear model results 
@@ -25,7 +25,7 @@ function [reg, index] = linear_model(x,y, participant, index, reg,options)
 %
 arguments 
     x;
-    y;
+    Y;
     participant char;
     index double; 
     reg;
@@ -35,17 +35,17 @@ arguments
 end
 %% LIMO level 1
 fprintf('train mod 1 - Sub %d\n',index)
-model = cell(size(y, 1),1);
+model = cell(size(Y, 1),1);
 % train model per electrode
-for current_electrode = 1:size(y, 1) 
+for current_electrode = 1:size(Y, 1) 
     % select single electrode 
-    Y_1 = squeeze(y(current_electrode,:,:));
-    x_1 = squeeze(x(current_electrode,:,:));
+    Y_current = squeeze(Y(current_electrode,:,:));
+    x_current = squeeze(x(current_electrode,:,:));
     % remove nans
-    Y_1(any(isnan(x(current_electrode,:,:)),3)) = [];
-    x_1(any(isnan(x(current_electrode,:,:)),3), :) = [];
+    Y_current(any(isnan(x(current_electrode,:,:)),3)) = [];
+    x_current(any(isnan(x(current_electrode,:,:)),3), :) = [];
     % perform regression
-    model{current_electrode,1} = limo_glm(Y_1', x_1, options.nb_conditions, options.nb_interactions, options.nb_continous, 'OLS', 'Time', 0, size(y,2));
+    model{current_electrode,1} = limo_glm(Y_current', x_current, options.nb_conditions, options.nb_interactions, options.nb_continous, 'OLS', 'Time', 0, size(Y,2));
 end
 %% save results
 reg{index, 1} = participant;
