@@ -4,6 +4,9 @@ function [mask, cluster_p, one_sample] = paired_t_test_movie_vs_phone(input1,inp
 load('expected_chanlocs.mat')
 load('channeighbstructmat.mat')
 cd(path) 
+
+channeighbstructmat = channeighbstructmat(1:62,1:62);
+expected_chanlocs = expected_chanlocs(:,1:62);
 %% create limo struct for step 2
 LIMO = struct();
 LIMO.dir = pwd();
