@@ -67,7 +67,7 @@ for ed = 1:length(experimentDays)
     experimentResult(ed).time_of_day = timeofday(exactExperimentStart);
     experimentResult(ed).time_of_day_hours = hours(experimentResult(ed).time_of_day) + minutes(experimentResult(ed).time_of_day)/60 + seconds(experimentResult(ed).time_of_day)/3600;
    % check if the sleep on the experiment data is missing 
-    if day(relevantSleepDates(end)) == day(endDate) && month(relevantSleepDates(end)) == month(endDate) && year(relevantSleepDates(end)) == year(endDate)
+    if ~isempty(relevantSleepDates) && day(relevantSleepDates(end)) == day(endDate) && month(relevantSleepDates(end)) == month(endDate) && year(relevantSleepDates(end)) == year(endDate)
         experimentResult(ed).time_awake = timeofday(exactExperimentStart) - timeofday(relevantSleepDates(end));
         experimentResult(ed).time_awake_posix = exactExperimentStartPosix*1000 - relevantSleepDatesPosix(end);
     else
