@@ -82,7 +82,7 @@ for pp=1:size(res,2)
     sgtitle(sprintf('Time to next tap (Log10[ms])- Sub %d',pp))
     saveas(h, sprintf('%s/sw_to_behavior/latency_hist_pp_%d.svg',figures_save_path,pp))
 end
-%% plot SW rate
+%% plot SW rate individual
 fontsize = 10;
 for pp=1:size(res,2)
     h = figure;
@@ -109,6 +109,30 @@ for pp=1:size(res,2)
 
 end
 % close all;
+%% plot SW rate pooled
+rate_jid = cell(64,length(res));
+fontsize = 10;
+for pp=1:length(res)
+    for chan =1:64
+        if length([res(pp).behavior_sws{chan,:}])>3
+            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate);
+            triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths);
+            rate_jid{chan,pp} = cellfun(@(x,y) sum(x, 'omitnan')/sum(y, 'omitnan'),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
+        end
+    end
+end
+%% plot the pooled sw rate JID
+rj = cat(3,cellfun(@(jid) log10(reshape([jid{:}],2500,1)+0.00000000001),rate_jid,'UniformOutput',false));
+figure; 
+tiledlayout(8,8, 'TileSpacing','none')
+[sorted_idx] = sort_electrodes(EEG.Orignalchanlocs); 
+for chan=sorted_idx
+    nexttile;
+    tmp = cat(2,rj{:,chan});
+    plot_jid(reshape(trimmean(tmp,20,2),50,50));
+    clim([-11,-3])
+    % set(gca, 'visible', 'off')
+end
 %% plot SW post rate
 mins=1;
 for pp=1:size(res,2)
