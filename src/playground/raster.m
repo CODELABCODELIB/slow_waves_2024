@@ -1,8 +1,8 @@
-time_range = 3000;
+time_range = 2000;
 pnts = -time_range-1:time_range;
 rasters = cell(64,length(res));
 for pp=1:length(res)
-    for chan=1:64
+    for chan=1:62
         tmp = [res(pp).behavior_sws{chan,:}];
         behavior_raster = zeros(length(tmp),time_range*2);
         for i=1:length(tmp)
@@ -151,7 +151,7 @@ occipital = [13,14,12,27,26,25,28,42,43,41,56,55,54];
 groups = {contr_sensorimotor,ipsi_sensorimotor,central,frontal,occipital};
 colors = {[0 0 0 0.3],[1 0 0 0.3],[0 1 0 0.3],[0 0 1 0.3],[0 1 1 0.3]};
 legends = {};
-figure; 
+fig = figure; 
 hold on;
 for group_idx=1:length(groups)
     group=groups{group_idx};
