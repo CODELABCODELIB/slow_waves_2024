@@ -28,14 +28,14 @@ for pp=1:size(res,2)
 end
 save(sprintf('%s/plot_data/latency.mat',save_path), 'latency', '-v7.3')
 %% plot SW rate pooled
-rate_jid = cell(length(res),n_elecs);
+rate = cell(length(res),n_elecs);
 for pp=1:length(res)
     for chan =1:n_elecs
         if length([res(pp).behavior_sws{chan,:}])>3
             taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate);
             triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths);
             rate_jid = cellfun(@(x,y) sum(x, 'omitnan')/sum(y, 'omitnan'),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
-            rate_jid{pp,chan} = (log10(reshape([rate_jid{:}],50,50)+ 0.00000000001));
+            rate{pp,chan} = (log10(reshape([rate_jid{:}],50,50)+ 0.00000000001));
         end
     end
 end

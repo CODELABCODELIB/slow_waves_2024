@@ -1,4 +1,32 @@
 figures_save_path = sprintf('%s/dec_rerun',figures_save_path);
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% pop level plots %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% behavior sw jid
+behavior_sw_jid = cell(length(res),64);
+for pp=1:length(res)
+    for chan =1:64
+        behavior_sw_jid{pp,chan} = taps2JID([res(pp).behavior_sws{chan,:}]);
+    end
+end
+save_path = sprintf('%s/pop/behavior_sw_jid.svg',figures_save_path);
+population_sw_to_behavior_plots(behavior_sw_jid, EEG.Orignalchanlocs, 'color_lims', [0, 0.6], 'show_title', 0,'save_path',save_path);
+save_path = sprintf('%s/pop/behavior_sw_jid_title.svg',figures_save_path);
+population_sw_to_behavior_plots(behavior_sw_jid, EEG.Orignalchanlocs, 'color_lims', [0, 0.6], 'show_title', 1,'save_path',save_path);
+%% movie sw jid
+movie_sw_jid = cell(length(res),64);
+for pp=1:length(res)
+    for chan =1:64
+        movie_sw_jid{pp,chan} = taps2JID([res(pp).movie_sws{chan,:}]);
+    end
+end
+save_path = sprintf('%s/pop/movie_sw_jid.svg',figures_save_path);
+population_sw_to_behavior_plots(movie_sw_jid, EEG.Orignalchanlocs, 'color_lims', [0, 0.5], 'show_title', 0,'save_path',save_path);
+save_path = sprintf('%s/pop/movie_sw_jid_title.svg',figures_save_path);
+population_sw_to_behavior_plots(movie_sw_jid, EEG.Orignalchanlocs, 'color_lims', [0, 0.5], 'show_title', 1,'save_path',save_path);
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Individual level plots %%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% plot SW jids
 for pp=1:size(res,2)
     h = figure;
@@ -128,7 +156,7 @@ tiledlayout(8,8, 'TileSpacing','none')
 [sorted_idx] = sort_electrodes(EEG.Orignalchanlocs); 
 for chan=sorted_idx
     nexttile;
-    tmp = cat(2,rj{:,chan});
+    tmp = cat(2,rj{chan,:});
     plot_jid(reshape(trimmean(tmp,20,2),50,50));
     clim([-11,-3])
     % set(gca, 'visible', 'off')

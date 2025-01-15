@@ -7,14 +7,14 @@ EEG_raw = pop_loadset('/mnt/ZETA18/User_Specific_Data_Storage/ruchella/Feb_2022_
 EEG_refilter = gettechnicallycleanEEG(EEG_raw,1,4);
 twa_results = data{1,3};
 %% plot mean slow wave during behavior
-chan=1; 
+chan=1;
 for wave = 1:10;
     figure;
-    plot(twa_results.channels(chan).negzx{wave}:twa_results.channels(chan).wvend{wave},EEG_refilter.data(chan,twa_results.channels(chan).negzx{wave}:twa_results.channels(chan).wvend{wave})); 
+    plot(twa_results.channels(chan).negzx{wave}:twa_results.channels(chan).wvend{wave},EEG_refilter.data(chan,twa_results.channels(chan).negzx{wave}:twa_results.channels(chan).wvend{wave}));
     xline(twa_results.channels(chan).maxnegpk{wave}, 'r'); yline(twa_results.channels(chan).maxnegpkamp{wave}, 'r')
     xline(twa_results.channels(chan).maxpospk{wave}); yline(twa_results.channels(chan).maxpospkamp{wave})
 end
-%% plot erp 
+%% plot erp
 % maxnegpk = cell2mat(twa_results.channels(1).maxnegpk);
 % [EEG_taps_ch1] = add_events(EEG_taps,maxnegpk,length(maxnegpk),'maxnegpk');
 % [EEG_epoched_ch1, indices] = pop_epoch(EEG_taps_ch1, {'maxnegpk'},[-2 2]);
@@ -206,8 +206,8 @@ for n_map=1:size(prototypes,2)
 end
 colorbar;
 colormap('jet')
-saveas(h,sprintf('%s/nnmf/prototypes.svg',save_path))
-% plot all jids in clustered map
+% saveas(h,sprintf('%s/nnmf/prototypes.svg',save_path))
+%% plot all jids in clustered map
 for n_map=1:size(prototypes,2)
     h = figure;
     tmp = all_jids(:,labels==n_map);
@@ -266,15 +266,29 @@ for n_map=1:size(prototypes,2)
     end
     % saveas(h,sprintf('%s/jid_nnmf/topoplots_nnmf_clus_%d.svg',save_path,n_map))
 end
+%% kmeans elbow method
+kmeans_error = zeros(1,10);
+for n_clus=1:10
+    [~,~,~,~,kmeans_error(n_clus)] = cluster(all_jids', 'modkmeans', 0, 'n_clus',n_clus);
+end
+figure;
+plot(kmeans_error)
+evaluation = evalclusters(all_jids',"kmeans","silhouette","KList",1:10);
+plot(evaluation)
 %% cluster behavior and explore the relevant maps
-for n_clus=2:5
-    [prototypes,labels] = cluster(all_jids', 'modkmeans', 0, 'n_clus',n_clus);
+for n_clus=3
+    [prototypes,labels,cluster_prototypes,cluster_labels,error] = cluster(all_jids', 'modkmeans', 0, 'n_clus',n_clus);
     figure;
-    tiledlayout(1,size(prototypes,1));
+    tiledlayout(size(prototypes,1),2);
     for clus=1:size(prototypes,1)
         nexttile;
         plot_jid(reshape(prototypes(clus,:),50,50));
         axis square;
+        nexttile;
+        tmp = all_maps(:, labels==clus);
+        mean_map = trimmean(tmp,20,2);
+        topoplot(mean_map(1:62,:),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+        clim([0,0.6])
     end
 
     for clus=1:size(prototypes,1)
@@ -290,6 +304,42 @@ for n_clus=2:5
             clim([0,1])
         end
     end
+end
+%% movie and phone clusters
+fig = figure;
+[prototypes_movie,labels_movie,cluster_prototypes,cluster_labels,error] = cluster(all_jids_movie', 'modkmeans', 0, 'n_clus',3);
+[prototypes_phone,labels_phone,cluster_prototypes,cluster_labels,error] = cluster(all_jids_phone', 'modkmeans', 0, 'n_clus',3);
+tiledlayout(2,(size(prototypes_movie,1)+size(prototypes_phone,1)));
+for clus=1:size(prototypes_movie,1)
+    nexttile;
+    plot_jid(reshape(prototypes_movie(clus,:),50,50));
+    axis square;
+    title('movie')
+end
+
+for clus=1:size(prototypes_phone,1)
+    nexttile;
+    plot_jid(reshape(prototypes_phone(clus,:),50,50));
+    axis square;
+    title('phone')
+end
+for clus=1:size(prototypes_movie,1)
+    nexttile;
+    tmp = all_maps_movie(:, labels_movie==clus);
+    mean_map = trimmean(tmp,20,2);
+    topoplot(mean_map(1:62,:),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+    colorbar
+    clim([0,0.7])
+    title('movie')
+end
+for clus=1:size(prototypes_phone,1)
+    nexttile;
+    tmp = all_maps_phone(:, labels_phone==clus);
+    mean_map = trimmean(tmp,20,2);
+    topoplot(mean_map(1:62,:),EEG.chanlocs(1:62), 'electrodes', 'off', 'style', 'map');
+    clim([0,0.7])
+    colorbar
+    title('phone')
 end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%% plot basic sw features %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -470,7 +520,7 @@ for pp=1:length(res)
     end
 end
 %
-figure;
+d = figure;
 tiledlayout(7,6)
 alpha=0.05;
 for pp=1:length(res)
@@ -478,12 +528,14 @@ for pp=1:length(res)
     topoplot(rho(pp,1:62).*(p(pp,1:62)<alpha),EEG.chanlocs(1:62), 'maplimits',[-0.5,0.5], 'electrodes', 'off', 'style', 'map');
 end
 sgtitle(sprintf('Density - alpha %.2f - t %d',alpha,time_win))
+saveas(d, '/home/ruchella/slow_waves_2023/figures/dec_rerun/corr_delays/delay_0_density_pop.svg')
 
 alpha = 0.05;
-figure;
+a = figure;
 tiledlayout(7,6)
 for pp=1:length(res)
     nexttile;
     topoplot(rho_amp(pp,1:62).*(p_amp(pp,1:62)<alpha),EEG.chanlocs(1:62), 'maplimits',[-0.5,0.5], 'electrodes', 'off', 'style', 'map');
 end
 sgtitle(sprintf('Amplitude - alpha  %.2f - t %d',alpha,time_win))
+saveas(d, '/home/ruchella/slow_waves_2023/figures/dec_rerun/corr_delays/delay_0_amplitude_pop.svg')
