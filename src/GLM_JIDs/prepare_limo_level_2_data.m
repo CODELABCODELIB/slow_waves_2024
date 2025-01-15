@@ -17,7 +17,7 @@ end
 %     sel_idx = [std(input1(chan,:,:),[],3)>0 & std(input2(chan,:,:),[],3)>0];
 %     input2(~sel_idx,:) = NaN;
 %     input1(~sel_idx,:) = NaN;
-%     sel_idxs(chan,:) = sel_idx;
+%     sel_idxs(chan,:) = se l_idx;
 % end
 range = quantile([std(input_beh,[],3),std(input_movie,[],3)], [0.5], 'all');
 not_sel_idx = std(input_beh,[],3)<=range | std(input_movie,[],3)<=range;
@@ -25,9 +25,10 @@ tmp_input_beh = input_beh(1:62,~any(not_sel_idx(1:62,:),1),:)+0.000001;
 tmp_input_movie = input_movie(1:62,~any(not_sel_idx(1:62,:),1),:)+0.000001;
 %% run ttest model
 linear_model_save_path = '/home/ruchella/slow_waves_2023/data/GLM_movie_vs_behavior';
-[mask, cluster_p, one_sample] = paired_t_test_movie_vs_phone(tmp_input_beh(1:62,:,:),tmp_input_movie(1:62,:,:),linear_model_save_path);
-load(fullfile(linear_model_save_path, sprintf('paired_samples_ttest_parameter_%d.mat', 1)), 'paired_samples');
+[mask, cluster_p, one_sample] = paired_t_test_movie_vs_phone(input_beh(1:62,:,:),input_movie(1:62,:,:),linear_model_save_path);
 %% reconstruct
+load(fullfile(linear_model_save_path, sprintf('paired_samples_ttest_parameter_%d.mat', 1)), 'paired_samples');
+load(fullfile(linear_model_save_path, 'mask.mat'));
 reconstructed_mask = nan(62,2500);
 reconstructed_paired = nan(62,2500,size(paired_samples,3));
 % sel_idx = std(input1,[],3)>range | std(input2,[],3)>range;
@@ -58,13 +59,14 @@ for n=1:10:60
     %     plot_jid(reshape(squeeze(reconstructed_paired(chan,:,5)).*reconstructed_mask(chan,:),50,50))
     %     title(sprintf('p<0.05 E %d',chan))
     % end
-    saveas(h, sprintf('%s/ttest_movie_vs_behavior_%d_%d.svg','/home/ruchella/slow_waves_2023/figures/movie_vs_behavior',n,n+9))
+    saveas(h, sprintf('%s/ttest_movie_vs_behavior_%d_%d.svg','/home/ruchella/slow_waves_2023/figures/dec_rerun/movie_vs_behavior',n,n+9))
 end
 %% movie and behavior per channel
-% med_beh = median(input_beh,3);
-% med_movie = median(input_movie,3);
+med_beh = trimmean(input_beh,20,3);
+med_movie = trimmean(input_movie,20,3);
 diff_b_m = med_beh - med_movie;
 med_diff = median(diff_b_m,3);
+mean_diff = trimmean(input_beh-input_movie,20,3);
 for n=1:10:60
     h=figure;
     tiledlayout(4,10, 'TileSpacing','none');
@@ -84,7 +86,7 @@ for n=1:10:60
     end
     for chan=n:n+9
         nexttile
-        plot_jid(reshape(med_diff(chan,:),50,50))
+        plot_jid(reshape(mean_diff(chan,:),50,50))
         title(sprintf('Diff E %d'),chan)
     end
     for chan=n:n+9
