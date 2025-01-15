@@ -73,7 +73,7 @@ for i=1:length(files_grouped)
     files_grouped{i} = intersect(selected_1,all_set_files(1,:));
     num_files = length(files_grouped{i});
 
-    % merge multiple files
+    % participant has more than 1 file
     if num_files > 1
         EEG_all = [];
         for j=1:num_files
@@ -88,7 +88,7 @@ for i=1:length(files_grouped)
             % select file if there is movie OR phone data
             % some subjects may not have only movie if phone data is not aligned
             % && (EEG.movie_present || isfield(EEG.Aligned, 'BS_to_tap'))
-            if select_from_EEG_struct_3(EEG) && size(EEG.data,1) == 64
+            if select_from_EEG_struct_3(EEG) 
                 EEG_all = [EEG_all, EEG];
             end
         end
@@ -96,7 +96,8 @@ for i=1:length(files_grouped)
         if ~isempty(EEG_all) && length(EEG_all) > 1
             % get the date of the recording from the files
             dates = cellfun(@(x) datetime(x(end-11:end-4),"InputFormat",'dd_MM_yy'), {EEG_all.filename}, 'UniformOutput', false);
-            dates = sort([dates{:}]);
+            [dates,sort_idxs] = sort([dates{:}]);
+            EEG_all = EEG_all(sort_idxs);
             % how many files are on different dates? 
             [sel_dates,~,ic] = unique(dates);
             % indexes of the unique files
@@ -107,23 +108,13 @@ for i=1:length(files_grouped)
             if length(find(counts > 1))
                 n_iter = unique_ic(find(counts>1));
                 for pp=1:length(n_iter)
-                    % if only 2 files on the same date
-                    if counts(find(counts>1))==2
-                        idxs = find(ic==n_iter(pp));
-                        EEG = pop_mergeset(EEG_all(idxs(1):idxs(2)), [1:length(EEG_all(idxs(1):idxs(2)))], 0);
-                        EEG.Aligned.merged = cat(2,{EEG_all(idxs(1)).Aligned},{EEG_all(idxs(2)).Aligned});
-                        EEG.Aligned.merged_time = [length(EEG_all(idxs(1)).data),length(EEG_all(idxs(2)).data)];
-                        A{count} = f(EEG, sprintf('%s/%s/%s',folder{i}, EEG_all(idxs(1)).filename,EEG_all(idxs(2)).filename), options);
-                        count = count + 1;
-                    % if 3 files on same date (e.g. AG03)
-                    elseif counts(find(counts>1)) == 3
-                        idxs = find(ic==n_iter(pp));
-                        EEG = pop_mergeset(EEG_all(idxs(1):idxs(3)), [1:length(EEG_all(idxs(1):idxs(3)))], 0);
-                        EEG.Aligned.merged = cat(2,{EEG_all(idxs(1)).Aligned},{EEG_all(idxs(2)).Aligned},{EEG_all(idxs(3)).Aligned});
-                        EEG.Aligned.merged_time = [length(EEG_all(idxs(1)).data),length(EEG_all(idxs(2)).data),length(EEG_all(idxs(3)).data)];
-                        A{count} = f(EEG, sprintf('%s/%s/%s/%s',folder{i}, EEG_all(idxs(1)).filename,EEG_all(idxs(2)).filename,EEG_all(idxs(3)).filename), options);
-                        count = count + 1;
-                    end
+                    idxs = find(ic==n_iter(pp));
+                    n_files = length(idxs);
+                    EEG = pop_mergeset(EEG_all(idxs(1):idxs(n_files)), [1:length(EEG_all(idxs(1):idxs(n_files)))], 0);
+                    EEG.Aligned.merged = cat(2,{EEG_all(idxs(1):idxs(n_files)).Aligned});
+                    EEG.Aligned.merged_time = cellfun(@(x) size(x,2),{EEG_all(idxs(1):idxs(n_files)).data});
+                    A{count} = f(EEG, sprintf('%s/%s',folder{i}, strcat(EEG_all(idxs(1):idxs(n_files)).filename)), options);
+                    count = count + 1;
                 end
             end
             % if the files are from seperate days keep them seperate
