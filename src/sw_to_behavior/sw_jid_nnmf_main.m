@@ -42,6 +42,9 @@ for pp=1:length(res)
         if strcmp(options.parameter, 'sw_jid')
             sw_jid = taps2JID([res(pp).behavior_sws{chan,:}]);
             jid_all_chans{chan} = reshape(sw_jid,2500,1);
+        elseif strcmp(options.parameter, 'sw_jid_movie')
+            sw_jid = taps2JID([res(pp).movie_sws{chan,:}]);
+            jid_all_chans{chan} = reshape(sw_jid,2500,1);
         elseif strcmp(options.parameter, 'sw_amplitude')
             taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).amplitude);
             jid_sw_amplitude = cellfun(@(x) median(x),taps_on_sw{chan}, 'UniformOutput',0);

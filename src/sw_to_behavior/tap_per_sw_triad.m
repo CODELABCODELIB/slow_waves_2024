@@ -1,4 +1,4 @@
-function [selected_waves,triad_lengths,behavior_sws_cell] = tap_per_sw_triad(taps,refilter,type,options)
+function [selected_waves,triad_lengths,behavior_sws_cell,behavior_sws_indexes] = tap_per_sw_triad(taps,refilter,type,options)
 %% Select the slow wave per electrode and triad
 %
 % **Usage:**
@@ -39,7 +39,8 @@ triad_lengths = cell(64,max_all-2);
 behavior_sws_cell = cell(64,max_all-2);
 for chan=1:length(refilter.channels)
     slow_waves_start = [refilter.channels(chan).maxnegpk{:}];
-    behavior_sws = slow_waves_start(slow_waves_start>=taps(1) & slow_waves_start<=taps(end));
+    behavior_sws_indexes = slow_waves_start>=taps(1) & slow_waves_start<=taps(end);
+    behavior_sws = slow_waves_start(behavior_sws_indexes);
     behavior_sws_cell(chan,1:length(behavior_sws)) = num2cell(behavior_sws);
     for triad_idx = 1:length(behavior_sws)-2
         triad = behavior_sws(triad_idx:triad_idx+2);
