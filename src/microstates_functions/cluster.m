@@ -1,4 +1,4 @@
-function [prototypes,labels,cluster_prototypes,cluster_labels] = cluster(all_prototypes,options)
+function [prototypes,labels,cluster_prototypes,cluster_labels,error] = cluster(all_prototypes,options)
 %% perform kmeans clustering
 %
 % **Usage:**
@@ -51,6 +51,6 @@ for rep=1:options.numreps
     cluster_labels{rep} = labels;
     
 end
-[~,idx] = min(ssqs);
+[error,idx] = min(ssqs);
 prototypes = cluster_prototypes{idx};
 labels = cluster_labels{idx};
