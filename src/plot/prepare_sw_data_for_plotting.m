@@ -39,7 +39,7 @@ for pp=1:length(res)
         end
     end
 end
-save(sprintf('%s/plot_data/rate_jid.mat',save_path), 'rate_jid', '-v7.3')
+save(sprintf('%s/plot_data/rate_jid.mat',save_path), 'rate', '-v7.3')
 %% plot SW post rate
 mins=1;
 post_rate = cell(length(res),n_elecs);
@@ -64,8 +64,10 @@ for pp=1:size(res,2)
         if length([res(pp).behavior_sws{chan,:}])>3
             taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).pre_rate);
             pre_rate_jid = cellfun(@(x) sum(x, 'omitnan')/(mins*60*1000),taps_on_sw{chan}, 'UniformOutput',0);
-            pre_rate_jid(reshape([pre_rate_jid{:}] == 0, 50,50)) = {NaN};
-            pre_rate{pp,chan} = (log10(reshape([pre_rate_jid{:}],50,50)+ 0.00000000001));
+            % pre_rate_jid(reshape([pre_rate_jid{:}] == 0, 50,50)) = {NaN};
+            empty_bins = cellfun(@(x) isempty(x),taps_on_sw{chan}, 'UniformOutput',0);
+            pre_rate_jid(logical(cell2mat(empty_bins))) = {NaN};
+            pre_rate{pp,chan} = (log10(reshape([pre_rate_jid{:}],50,50)+ 0.00000000001));            
         end
     end
 end
@@ -80,3 +82,43 @@ for pp=1:size(res,2)
     end
 end
 save(sprintf('%s/plot_data/amp_jid.mat',save_path), 'amp_jid', '-v7.3')
+%% plots SW jid phone
+save_path = sprintf('%s/pop/behavior_sw_jid.svg',figures_save_path);
+population_sw_to_behavior_plots(behavior_sw_jid, EEG.Orignalchanlocs, 'color_lims', [0, 0.6], 'show_title', 0,'save_path',save_path);
+save_path = sprintf('%s/pop/behavior_sw_jid_title.svg',figures_save_path);
+population_sw_to_behavior_plots(behavior_sw_jid, EEG.Orignalchanlocs, 'color_lims', [0, 0.6], 'show_title', 1,'save_path',save_path);
+%% plots SW jid movie
+save_path = sprintf('%s/pop/movie_sw_jid.svg',figures_save_path);
+population_sw_to_behavior_plots(movie_sw_jid, EEG.Orignalchanlocs, 'color_lims', [0, 0.5], 'show_title', 0,'save_path',save_path);
+save_path = sprintf('%s/pop/movie_sw_jid_title.svg',figures_save_path);
+population_sw_to_behavior_plots(movie_sw_jid, EEG.Orignalchanlocs, 'color_lims', [0, 0.5], 'show_title', 1,'save_path',save_path);
+%% plots SW amp
+save_path = sprintf('%s/pop/amplitude_jid.svg',figures_save_path);
+population_sw_to_behavior_plots(amp_jid, EEG.Orignalchanlocs, 'color_lims', [10,40], 'show_title', 0,'save_path',save_path);
+%% plot SW post rate 
+save_path = sprintf('%s/pop/rates.svg',figures_save_path);
+population_sw_to_behavior_plots(rate, EEG.Orignalchanlocs, 'color_lims', [-11,-3], 'show_title', 0,'save_path',save_path);
+%% plot SW post rate 
+save_path = sprintf('%s/pop/post_rates.svg',figures_save_path);
+population_sw_to_behavior_plots(post_rate, EEG.Orignalchanlocs, 'color_lims', [-4,-3],  'show_title', 0,'save_path',save_path);
+% plot sw pre rate
+save_path = sprintf('%s/pop/pre_rates.svg',figures_save_path);
+population_sw_to_behavior_plots(pre_rate, EEG.Orignalchanlocs, 'color_lims', [-4,-3], 'color_lims', [-11,-4], 'show_title', 0,'save_path',save_path);
+%% plot sw latency 
+save_path = sprintf('%s/pop/latency.svg',figures_save_path);
+population_sw_to_behavior_plots(latency, EEG.Orignalchanlocs,'color_lims', [2,4], 'show_title', 0,'save_path',save_path);
+%% electrode locations
+save_path = sprintf('%s/pop',figures_save_path);
+h = figure;
+tiledlayout(8,8, 'TileSpacing','compact')
+[sorted_idx] = sort_electrodes(EEG.Orignalchanlocs);
+for chan=sorted_idx
+    % h = figure;
+    nexttile;
+    electrodes = zeros(1,62);
+    electrodes(chan) = 1;
+    topoplot(electrodes,EEG.chanlocs(1:62), 'electrodes', 'off', 'style','blank');
+    % title(sprintf('%d',chan))
+        % saveas(h, sprintf('%s/chan_%d.svg',save_path,chan))
+end
+    saveas(h, sprintf('%s/electrodes.svg',save_path))

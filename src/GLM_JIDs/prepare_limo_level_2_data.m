@@ -25,7 +25,7 @@ tmp_input_beh = input_beh(1:62,~any(not_sel_idx(1:62,:),1),:)+0.000001;
 tmp_input_movie = input_movie(1:62,~any(not_sel_idx(1:62,:),1),:)+0.000001;
 %% run ttest model
 linear_model_save_path = '/home/ruchella/slow_waves_2023/data/GLM_movie_vs_behavior';
-[mask, cluster_p, one_sample] = paired_t_test_movie_vs_phone(input_beh(1:62,:,:),input_movie(1:62,:,:),linear_model_save_path);
+[mask, cluster_p, one_sample] = paired_t_test_movie_vs_phone(tmp_input_beh(1:62,:,:),tmp_input_movie(1:62,:,:),linear_model_save_path);
 %% reconstruct
 load(fullfile(linear_model_save_path, sprintf('paired_samples_ttest_parameter_%d.mat', 1)), 'paired_samples');
 load(fullfile(linear_model_save_path, 'mask.mat'));
@@ -61,6 +61,43 @@ for n=1:10:60
     % end
     saveas(h, sprintf('%s/ttest_movie_vs_behavior_%d_%d.svg','/home/ruchella/slow_waves_2023/figures/dec_rerun/movie_vs_behavior',n,n+9))
 end
+%% plot mean 
+h=figure;
+tiledlayout(8,8, 'TileSpacing','compact');
+[sorted_idx] = sort_electrodes(EEG.Orignalchanlocs);
+for chan=sorted_idx
+    nexttile;
+    if chan==63 || chan==64
+        plot_jid(nan(50,50))
+    else
+        plot_jid(reshape(squeeze(reconstructed_paired(chan,:,1)),50,50))
+    end
+    clim([-0.1,0.1])
+    colormap('jet')
+    xticks([])
+    yticks([])
+    box off;
+    saveas(h, sprintf('%s/movie_vs_phone/mean_movie_vs_behavior.svg',figures_save_path))
+end
+%% plot ttests 
+h=figure;
+tiledlayout(8,8, 'TileSpacing','compact');
+[sorted_idx] = sort_electrodes(EEG.Orignalchanlocs);
+for chan=sorted_idx
+    nexttile;
+    if chan==63 || chan==64
+        plot_jid(nan(50,50))
+    else
+        plot_jid(reshape(squeeze(reconstructed_paired(chan,:,4)).*reconstructed_mask(chan,:),50,50))
+    end
+    colormap('cool')
+    clim([-6,6])
+    xticks([])
+    yticks([])
+    box off;
+    colorbar
+    saveas(h, sprintf('%s/movie_vs_phone/ttest_movie_vs_behavior.svg',figures_save_path))
+end
 %% movie and behavior per channel
 med_beh = trimmean(input_beh,20,3);
 med_movie = trimmean(input_movie,20,3);
@@ -94,6 +131,7 @@ for n=1:10:60
         plot_jid(reshape(squeeze(reconstructed_paired(chan,:,4)).*reconstructed_mask(chan,:),50,50))
         title(sprintf('T-values E %d'),chan)
     end
+    saveas(h, sprintf('%s/movie_vs_phone/all_values_%d_to_%d.svg',figures_save_path,n,n+9))
 end
 %% behavior or movie across channels per participant
 for chan=1:62

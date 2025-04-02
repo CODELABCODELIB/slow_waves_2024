@@ -1,7 +1,7 @@
 N=5;
 n_boots =1000;
 % bootstrap_matrix_behavior = zeros(64,max([res(pp).behavior_sws{:}], [], 'all'));
-for pp=1:length(res)
+for pp=20:length(res)
     for chan =1:64 
         bootstraps = cell(1,n_boots);
         SWs = [res(pp).behavior_sws{chan,:}];
@@ -9,7 +9,7 @@ for pp=1:length(res)
         for boots=1:n_boots     
             bootstrap_matrix_SWs = nan(1,n_sws*5);
             count = 1;
-            for i=1:floor(size(SWs,2)/5)
+            while sum(~ismissing(bootstrap_matrix_SWs)) <= n_sws*5
                 sel_SW_int = randi([1,size(SWs,2)-N]);
                 selected_SWs = SWs(sel_SW_int:sel_SW_int+N);
                 intervals = [0,diff(selected_SWs)];
@@ -34,21 +34,21 @@ end
 tmp = cellfun(@(y) y(1:min(cellfun(@(x) length(x),bootstraps))),bootstraps,'UniformOutput',false);
 boots = cat(1,tmp{:});
 %%
-boot_rasters = cell(64,length(res));
-for pp=1:1
-    taps = zeros(1, max([res(pp).behavior_sws{:}], [], 'all'));
-    taps(round(res(pp).taps)) = 1;
-    for chan=1:64
-        sw_indexes = bootstraps{chan,pp};
-        behavior_raster = zeros(length(sw_indexes),time_range*2);
-        for i=1:length(sw_indexes)
-            if sw_indexes(i)-time_range > 0 && sw_indexes(i)+time_range < length(taps)
-                behavior_raster(i,:) = taps(sw_indexes(i)-time_range:sw_indexes(i)+time_range-1);
-            end
+boot_rasters = cell(1,size(boots,1));
+pp=1;
+for boot=1:size(boots,1)
+    tmp = boots(boot,:);
+    behavior_raster = zeros(length(tmp),time_range*2);
+    for i=1:length(tmp)
+        if tmp(i)-time_range > 0 && tmp(i)+time_range < length(taps)
+            taps_in_window = res(pp).taps >= tmp(i)-time_range & res(pp).taps <= tmp(i)+time_range;
+            tap_indexes = res(pp).taps(taps_in_window);
+            behavior_raster(i,:) = ismember(tmp(i)-(time_range-1):tmp(i)+time_range,tap_indexes);
         end
-        boot_rasters{chan,pp} = sum(behavior_raster);
     end
+    boot_rasters{1,boot} = sum(behavior_raster);
 end
+boot_rasters = cat(1,boot_rasters{:});
 %%
 for pp=1:1
     tmp = cat(1,boot_rasters{:,pp});
