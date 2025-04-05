@@ -106,8 +106,14 @@ if strcmp(exp_condition, '')
         patch = findobj(gcf, 'Type', 'patch');
         set(patch, 'FaceColor', 'white', 'EdgeColor', 'black', 'EdgeAlpha', 0);
         lines = findobj(gcf, 'Type', 'line');
-        set(lines(6), 'LineWidth', 3); % rim
-        set(lines(3:5), 'LineWidth', 1.5); % ears and nose
+
+        if length(lines) == 6  % if there are sign. clusters, there will be an additional object for channel highlighters
+            set(lines(6), 'LineWidth', 3); % rim
+            set(lines(3:5), 'LineWidth', 1.5); % ears and nose
+        else
+            set(lines(5), 'LineWidth', 3); % rim
+            set(lines(2:4), 'LineWidth', 1.5); % ears and nose
+        end
 
         % filename = sprintf('%s/topoplot_%s.png', target_dir_path, par_name);
         % saveas(gcf, filename);
