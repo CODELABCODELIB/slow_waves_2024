@@ -1,29 +1,11 @@
-figures_save_path = sprintf('%s/dec_rerun',figures_save_path);
+save_string = 'feb_2025';
+if ~contains(figures_save_path, save_string)
+    figures_save_path = sprintf('%s/%s',figures_save_path,save_string);
+end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% pop level plots %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% behavior sw jid
-behavior_sw_jid = cell(length(res),64);
-for pp=1:length(res)
-    for chan =1:64
-        behavior_sw_jid{pp,chan} = taps2JID([res(pp).behavior_sws{chan,:}]);
-    end
-end
-save_path = sprintf('%s/pop/behavior_sw_jid.svg',figures_save_path);
-population_sw_to_behavior_plots(behavior_sw_jid, EEG.Orignalchanlocs, 'color_lims', [0, 0.6], 'show_title', 0,'save_path',save_path);
-save_path = sprintf('%s/pop/behavior_sw_jid_title.svg',figures_save_path);
-population_sw_to_behavior_plots(behavior_sw_jid, EEG.Orignalchanlocs, 'color_lims', [0, 0.6], 'show_title', 1,'save_path',save_path);
-%% movie sw jid
-movie_sw_jid = cell(length(res),64);
-for pp=1:length(res)
-    for chan =1:64
-        movie_sw_jid{pp,chan} = taps2JID([res(pp).movie_sws{chan,:}]);
-    end
-end
-save_path = sprintf('%s/pop/movie_sw_jid.svg',figures_save_path);
-population_sw_to_behavior_plots(movie_sw_jid, EEG.Orignalchanlocs, 'color_lims', [0, 0.5], 'show_title', 0,'save_path',save_path);
-save_path = sprintf('%s/pop/movie_sw_jid_title.svg',figures_save_path);
-population_sw_to_behavior_plots(movie_sw_jid, EEG.Orignalchanlocs, 'color_lims', [0, 0.5], 'show_title', 1,'save_path',save_path);
+% prepare_sw_data_for_plotting
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% Individual level plots %%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -114,8 +96,8 @@ end
 fontsize = 10;
 for pp=1:size(res,2)
     h = figure;
-    tiledlayout(5,5, 'TileSpacing','none')
-    for chan =1:25
+    tiledlayout(8,8, 'TileSpacing','none')
+    for chan =1:64
         if length([res(pp).behavior_sws{chan,:}])>3
             nexttile;
             taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate);
@@ -132,35 +114,36 @@ for pp=1:size(res,2)
         end
     end
     colorbar;
-    sgtitle(sprintf('SW JID and behavioral rate - Sub %d (No behavior removed)',pp))
+    sgtitle(sprintf('SW JID and behavioral rate - Sub %d',pp))
     saveas(h, sprintf('%s/rates/rate_pp_%d.svg',figures_save_path,pp))
 
 end
-% close all;
-%% plot SW rate pooled
-rate_jid = cell(64,length(res));
-fontsize = 10;
-for pp=1:length(res)
-    for chan =1:64
-        if length([res(pp).behavior_sws{chan,:}])>3
-            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate);
-            triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths);
-            rate_jid{chan,pp} = cellfun(@(x,y) sum(x, 'omitnan')/sum(y, 'omitnan'),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
-        end
-    end
-end
-%% plot the pooled sw rate JID
-rj = cat(3,cellfun(@(jid) log10(reshape([jid{:}],2500,1)+0.00000000001),rate_jid,'UniformOutput',false));
-figure; 
-tiledlayout(8,8, 'TileSpacing','none')
-[sorted_idx] = sort_electrodes(EEG.Orignalchanlocs); 
-for chan=sorted_idx
-    nexttile;
-    tmp = cat(2,rj{chan,:});
-    plot_jid(reshape(trimmean(tmp,20,2),50,50));
-    clim([-11,-3])
-    % set(gca, 'visible', 'off')
-end
+close all;
+% %% plot SW rate pooled
+% rate_jid = cell(64,length(res));
+% fontsize = 10;
+% for pp=1:length(res)
+%     for chan =1:64
+%         if length([res(pp).behavior_sws{chan,:}])>3
+%             taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate);
+%             triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths);
+%             rate_jid{chan,pp} = cellfun(@(x,y) sum(x, 'omitnan')/sum(y, 'omitnan'),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
+%         end
+%     end
+% end
+% % plot the pooled sw rate JID
+% rj = cat(3,cellfun(@(jid) log10(reshape([jid{:}],2500,1)+0.00000000001),rate_jid,'UniformOutput',false));
+% h = figure; 
+% tiledlayout(8,8, 'TileSpacing','none')
+% [sorted_idx] = sort_electrodes(EEG.Orignalchanlocs); 
+% for chan=sorted_idx
+%     nexttile;
+%     tmp = cat(2,rj{chan,:});
+%     plot_jid(reshape(trimmean(tmp,20,2),50,50));
+%     clim([-11,-3])
+%     % set(gca, 'visible', 'off')
+%     saveas(h, sprintf('%s/pop/rates.svg',figures_save_path))
+% end
 %% plot SW post rate
 mins=1;
 for pp=1:size(res,2)
@@ -338,7 +321,7 @@ for pp=1:41
     end
 end
 close all;
-%% plot SW features
+% plot SW features
 mins=1;
 lim_data = [-4 -3];
 fontsize = 10;
@@ -445,7 +428,7 @@ for pp=1:size(res,2)
         colorbar;
         range = quantile([sw_jid_amplitude{:}], [0.05, 0.95]);
         title(sprintf('E%d R %.0f - %.0f',chan,floor(range(1)),ceil(range(2))))
-        clim(quantile([sw_jid_amplitude{:}], [0.25, 0.75]))
+        clim(quantile([sw_jid_amplitude{:}], [0.05, 0.95]))
     end
     sgtitle(sprintf('SW-JID amplitudes (no log transformation) - Sub:%d',pp))
     saveas(h, sprintf('%s/sw_to_behavior/sw_jid_amplitudes_pp_%d.svg',figures_save_path,pp))

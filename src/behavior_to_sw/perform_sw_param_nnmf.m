@@ -1,6 +1,6 @@
-function [reconstruct,stable_basis,stable_loading] = perform_sw_param_nnmf(reshaped_jid,kept_bins, options)
+function [reconstruct,stable_basis,stable_loading] = perform_oscil_nnmf(jid,kept_bins, options)
 arguments
-    reshaped_jid;
+    jid;
     kept_bins
     options.repetitions_cv = 50;
     options.repetitions = 100;
@@ -8,11 +8,11 @@ arguments
 end
 basis_all = cell(options.repetitions,1);
 loadings_all = cell(options.repetitions,1);
-[~, ~, ~, test_err] = nnmf_cv(reshaped_jid', 'repetitions', options.repetitions_cv);
+[~, ~, ~, test_err] = nnmf_cv(jid', 'repetitions', options.repetitions_cv);
 [best_k_overall]  = choose_best_k({test_err}, 1);
 % perform nnmf multiple times
 for rep = 1:options.repetitions
-    [W, H] = perform_nnmf(reshaped_jid', best_k_overall);
+    [W, H] = perform_nnmf(jid', best_k_overall);
     basis_all{rep,1} = W;
     loadings_all{rep,1} = H;
 end

@@ -171,3 +171,5 @@ title('Population level - pooled across channels')
 xline(0, 'Linewidth', 2);
 set(gca, 'FontSize', 18);
 legend([legends{:}], {'contra sensorimotor', 'ipsi sensorimotor', 'central', 'frontal', 'occipital'}, 'Location', 'eastoutside', 'LineWidth', 1)
+xlim([-1500,1500])
+saveas(fig, sprintf('%s/raster.svg',figures_save_path))

@@ -4,19 +4,23 @@ for pp=1:length(A)
     EEG = A{pp,2};
     [~,EEG.movie_indexes,EEG.movie_present] = find_movie_passive_event(EEG);
     if isfield(EEG.Aligned, 'merged')
-        has_aligned_phone = isfield(EEG.Aligned.merged{1}, 'BS_to_tap') || isfield(EEG.Aligned.merged{2}, 'BS_to_tap');
-        if isfield(EEG.Aligned.merged{1}, 'BS_to_tap') && isfield(EEG.Aligned.merged{2}, 'BS_to_tap')
-           EEG.Aligned.merged_phone  = cat(2,EEG.Aligned.merged{1}.BS_to_tap.Phone, EEG.Aligned.merged{2}.BS_to_tap.Phone);
-        elseif isfield(EEG.Aligned.merged{1}, 'BS_to_tap') && ~isfield(EEG.Aligned.merged{2}, 'BS_to_tap');
-           EEG.Aligned.merged_phone = cat(2,EEG.Aligned.merged{1}.BS_to_tap.Phone,zeros(1,EEG.Aligned.merged_time(1))); 
-        elseif ~isfield(EEG.Aligned.merged{1}, 'BS_to_tap') && isfield(EEG.Aligned.merged{2}, 'BS_to_tap');
-           EEG.Aligned.merged_phone = cat(2,zeros(1,EEG.Aligned.merged_time(1)),EEG.Aligned.merged{2}.BS_to_tap.Phone); 
+        has_aligned_phone = cellfun(@(x) isfield(x, 'BS_to_tap'), EEG.Aligned.merged);
+        EEG.has_aligned_phone = any(has_aligned_phone);
+        if EEG.has_aligned_phone
+            EEG.Aligned.merged_phone = [];
+            for i=1:length(has_aligned_phone)
+                if ~has_aligned_phone(i)
+                    EEG.Aligned.merged_phone= cat(2,EEG.Aligned.merged_phone, zeros(1,EEG.Aligned.merged_time(i)));
+                else
+                    EEG.Aligned.merged_phone= cat(2,EEG.Aligned.merged_phone, EEG.Aligned.merged{i}.BS_to_tap.Phone);
+                end
+            end
         end
-        EEG.has_aligned_phone = has_aligned_phone;
+
     elseif isfield(EEG.Aligned, 'BS_to_tap')
         EEG.has_aligned_phone =1;
     else
-        EEG.has_aligned_phone =0;        
+        EEG.has_aligned_phone =0;
     end
     if EEG.movie_present || EEG.has_aligned_phone
         A{pp,2} = EEG;

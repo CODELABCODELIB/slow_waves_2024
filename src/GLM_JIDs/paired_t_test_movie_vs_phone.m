@@ -34,7 +34,7 @@ LIMO_paths = limo_random_robust(3, input1, input2,1, LIMO);
 
 %%
 significance_threshold = 0.05;
-[mask, cluster_p, one_sample] = run_clustering_linear(LIMO_paths, significance_threshold, nM);
+[mask, cluster_p, one_sample] = run_clustering_linear(LIMO_paths, significance_threshold, channeighbstructmat);
 save(sprintf('%s/mask.mat',path), 'mask')
 save(sprintf('%s/cluster_p.mat',path), 'cluster_p')
 end 

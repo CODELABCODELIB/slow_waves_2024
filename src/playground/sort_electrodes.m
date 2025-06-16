@@ -6,7 +6,7 @@ Y = round([Orignalchanlocs.Y],4);
 [sorted_proj_Y, idx_Y] = sort(Y, 'descend'); 
 sorted_proj_X = X(idx_Y);
 sorted_proj_Z = Z(idx_Y);
-electrode_names = [1:64];
+electrode_names = [1:length(Y)];
 sorted_names = electrode_names(idx_Y);
 
 % Step 2: Within each Y group, sort by X (front to back)

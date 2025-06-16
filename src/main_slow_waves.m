@@ -26,7 +26,7 @@ unique_name = 'sws_2025'; bandpass_lower = 1; bandpass_upper = 4;
 % run f using f2
 f = @get_eeg_structs; 
 f2 = @call_f_all_p_parallel_sw; 
-gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data_path',processed_data_path,'save_path_upper',save_path_upper, 'count',1);
+gen_checkpoints(unique_name,bandpass_lower,bandpass_upper, f,f2, 'processed_data_path',processed_data_path,'save_path_upper',save_path_upper, 'count',5);
 %% perform slow wave detection on EEG checkpoints
 save_path = sprintf('%s/sws_2025_1_4',save_path_upper); 
 data_path = sprintf('%s/erp_sws_2025_1_4',save_path_upper);
@@ -35,7 +35,7 @@ if ~exist(save_path, 'dir')
        mkdir(save_path); addpath(genpath(save_path))
 end
 f = @sw_detection_main;
-run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 0,'start_range',1,'end_range',5);
+run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggregate_res', 0,'start_range',21, 'end_range',21);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Slow waves to behavior %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -60,8 +60,13 @@ run_f_checkpoints(data_path,load_str,data_name,f, 'save_path', save_path, 'aggre
 load(sprintf('%s/sws_2025_features/EEG_res.mat',save_path_upper));
 res = res(cellfun(@(x) isfield(x,'taps'),res));
 res = cat(2,res{:});
-[~,idx_unique] = unique(cellfun(@(x) x(87:90),{res.pp},'UniformOutput',false));
-%% %%%%%%%%%%%%%%%%%%%%%%%%% run NNMF SW JID %%%%%%%%%%%%%%%%%%%%%%%%%%%
+[~,idx_unique,ix] = unique(cellfun(@(x) x(87:90),{res.pp},'UniformOutput',false), 'stable');
+[res,selected_pps,s] = participant_selection(res);
+%%
+% load(sprintf('%s/sws_2025_features/EEG_res.mat',save_path_upper));
+% res = res(cellfun(@(x) isfield(x,'movie_sws'),res));
+% res = cat(2,res{:});
+% %%%%%%%%%%%%%%%%%%%%%%%%% run NNMF SW JID %%%%%%%%%%%%%%%%%%%%%%%%%%%
 save_path = sprintf('%s/sw_jid_phone',save_path_upper);
 if ~exist(save_path, 'dir')
     mkdir(save_path); addpath(genpath(save_path))
@@ -78,7 +83,7 @@ parameters = {'movie', 'phone'};
 for i=1:length(parameters)
     parameter = parameters{i};
     stable_basis_all_pps = {};
-    for pp=1:41
+    for pp=1:length(res)
         load(sprintf('%s/sw_jid_%s/stable_basis_%d',save_path_upper,parameter,pp))
         load(sprintf('%s/sw_jid_%s/reconstruct_%d',save_path_upper,parameter,pp))
         res(pp).(sprintf('stable_basis_%s',parameter)) = stable_basis_all_chans;
@@ -94,18 +99,24 @@ all_jids_phone = cat(2,res.reconstruct_phone);
 %% Find optimal K: kmeans elbow method
 figure;
 tiledlayout(2,2)
+parameters = {'movie','phone'};
 for i=1:length(parameters)
+    if strcmp(parameters{i}, 'movie')
+        all_jids = all_jids_movie;
+    else
+        all_jids = all_jids_phone;
+    end
     kmeans_error = zeros(1,10);
     for n_clus=1:10
         [~,~,~,~,kmeans_error(n_clus)] = cluster(all_jids', 'modkmeans', 0, 'n_clus',n_clus);
     end
     nexttile;
     plot(kmeans_error)
-    title(sprintf('k means error %s',parameter))
+    title(sprintf('k means error %s',parameters{i}))
     evaluation = evalclusters(all_jids',"kmeans","silhouette","KList",1:10);
     nexttile;
     plot(evaluation)
-    title(sprintf('sillhoutte %s',parameter))
+    title(sprintf('sillhoutte %s',parameters{i}))
 end
 
 %% cluster the nnmf maps across the population
