@@ -1,15 +1,15 @@
-#####################################################################################
-Short Description of the Functions/Scripts on the Directory 'local_sleep/figure_1/1b'
-#####################################################################################
+####################################################################
+Short Description of the Functions/Scripts on the Directory 'fig_S2'
+####################################################################
 
 ############################################
-Author: David Hof (last updated: 13-11-2024)
+Author: David Hof (last updated: 30-09-2025)
 ############################################
 
 
 Functions:
 
-– (No functions yet)
+– n/a
 
 
 Other Scripts:
