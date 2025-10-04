@@ -324,10 +324,15 @@ function out = temporal_drift_analysis(top10_SWs, chanlocs, options)
     % ----------------
     if options.visualize
         if ~isempty(stats.cond)
+            if include_interaction
+                plot_title = 'Full Model: \beta_{cond} (phone vs movie) ~ 0';
+            else
+                plot_title = 'Reduced Model: \beta_{cond} (phone vs movie) ~ 0';
+            end
             clim = max(abs(out.stats.cond.t_vals));
             topoplot_linreg(stats.cond.t_vals, chanlocs(incl_channels), clim, ...
                 out.stats.cond.significant_channels, ...
-                'Full Model: \beta_{cond} (phone vs movie) ~ 0', ...
+                plot_title, ...
                 fullfile(pwd, 'topoplot_beta_cond.svg'));
         end
         if include_interaction
@@ -517,7 +522,7 @@ function [] = topoplot_linreg(t_vals, chanlocs, color_limit, highlight_channels,
     end
     colormap(newmap);
 
-    clim([-color_limit, color_limit]);
+    clim([floor(-color_limit), ceil(color_limit)]);
 
     title(plot_title,'FontSize',18);
     cb = colorbar;
