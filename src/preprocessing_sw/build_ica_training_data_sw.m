@@ -1,7 +1,7 @@
-function [EEG_train, overweight_segments] = build_ica_training_data_sw(EEG, event_onsets, options)
+function [EEG_train, overweight_segments, filtered_data] = build_ica_training_data_sw(EEG, event_onsets, options)
 %% Build OPTICAT-style ICA training data (filter + overweight)
 %
-% **Usage:** [EEG_train, overweight_segments] = build_ica_training_data_sw(EEG, event_onsets)
+% **Usage:** [EEG_train, overweight_segments, filtered_data] = build_ica_training_data_sw(EEG, event_onsets)
 %   - build_ica_training_data_sw(..., 'hp_cutoff_hz', 2.5)
 %
 % Adapts Dimigen et al.'s (2020) OPTICAT training-data recommendations:
@@ -20,7 +20,7 @@ function [EEG_train, overweight_segments] = build_ica_training_data_sw(EEG, even
 %
 %  Input(s):
 %   - EEG = EEGLAB struct, raw/unfiltered continuous data
-%   - event_onsets = sample indices of EOG-proxy events (from detect_eog_events_sw)
+%   - event_onsets = sample indices of ocular events (from detect_ocular_events_sw)
 %   - options.hp_cutoff_hz **optional** double = high-pass passband edge (default 2)
 %   - options.lp_hz **optional** double = low-pass passband edge, only applied if
 %     EEG.srate/2 exceeds this (default 100)
@@ -31,9 +31,13 @@ function [EEG_train, overweight_segments] = build_ica_training_data_sw(EEG, even
 %   - EEG_train = EEGLAB struct with filtered + overweighted continuous data, ready for pop_runica
 %   - overweight_segments = [chans x samples x events] array of the mean-centered
 %     snippets that were appended, for sanity-check plotting by the caller
+%   - filtered_data = [chans x samples] the filtered (HP + optional LP) data BEFORE
+%     the overweighted snippets were appended -- same length/timing as the original
+%     EEG, useful for exploratory plotting keyed to the original event onsets
 %
 % Requires:
 %   - pop_eegfiltnew (EEGLAB)
+%   - extract_event_snippets_sw
 %
 % Author: R.M.D. Kock, Leiden University
 
@@ -52,40 +56,21 @@ if EEG_train.srate / 2 > options.lp_hz
     EEG_train = pop_eegfiltnew(EEG_train, [], options.lp_hz);
 end
 
-fs = EEG_train.srate;
-pre_samp = round(abs(options.pre_ms) / 1000 * fs);
-post_samp = round(options.post_ms / 1000 * fs);
+filtered_data = EEG_train.data;
+n_samps = size(filtered_data, 2);
 
-train_data = EEG_train.data;
-n_chans = size(train_data, 1);
-n_samps = size(train_data, 2);
-
-overweight_segments = [];
-n_events_used = 0;
-
-for i = 1:length(event_onsets)
-    onset = event_onsets(i);
-    idx_start = onset - pre_samp;
-    idx_end = onset + post_samp;
-
-    if idx_start < 1 || idx_end > n_samps
-        continue
-    end
-
-    seg = train_data(:, idx_start:idx_end);
-    seg = seg - mean(seg, 2);
-    overweight_segments = cat(3, overweight_segments, seg);
-    n_events_used = n_events_used + 1;
-end
+[overweight_segments, n_events_used] = extract_event_snippets_sw(filtered_data, event_onsets, ...
+    EEG_train.srate, options.pre_ms, options.post_ms);
 
 fprintf('build_ica_training_data_sw: overweighted %d of %d detected events (edges excluded)\n', ...
     n_events_used, length(event_onsets));
 
 if n_events_used > 0
+    n_chans = size(filtered_data, 1);
     appended = reshape(overweight_segments, n_chans, []);
-    train_data_overweighted = [train_data, appended];
+    train_data_overweighted = [filtered_data, appended];
 else
-    train_data_overweighted = train_data;
+    train_data_overweighted = filtered_data;
 end
 
 fprintf('build_ica_training_data_sw: training data length %d -> %d samples (%.2fx)\n', ...
