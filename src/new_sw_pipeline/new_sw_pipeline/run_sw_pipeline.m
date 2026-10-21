@@ -273,11 +273,11 @@ for dataset_idx = 1:numel(dataset_files)
         end
         if ~config.continue_on_error
             batch_summary(dataset_idx).elapsed_seconds = toc(dataset_clock);
-            writetable(struct2table(batch_summary), ...
+            writetable(struct2table(batch_summary, 'AsArray', true), ...
                 config.batch_summary_file);
             rethrow(ME);
         end
     end
     batch_summary(dataset_idx).elapsed_seconds = toc(dataset_clock);
-    writetable(struct2table(batch_summary), config.batch_summary_file);
+    writetable(struct2table(batch_summary, 'AsArray', true), config.batch_summary_file);
 end

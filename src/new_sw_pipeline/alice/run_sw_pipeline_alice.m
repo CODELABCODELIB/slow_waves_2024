@@ -39,6 +39,10 @@ if exist(summary_directory, 'dir') ~= 7
     mkdir(summary_directory);
 end
 
+if exist('eeg_findboundaries', 'file') ~= 2  % Not in EEGLAB <= 2020.
+    addpath(fullfile(fileparts(mfilename('fullpath')), 'compat'));
+end
+
 config_overrides = struct();
 config_overrides.input_directory = input_directory;
 config_overrides.dataset_files = {dataset_file};
