@@ -94,3 +94,9 @@ datasets at the same time with plain MATLAB.
    cleaned_EEG.mat exist; the end of the output lists failed task numbers:
      ./run_sw_local.sh 3 7 12        rerun only these
      FORCE=1 ./run_sw_local.sh 1     rerun even if outputs exist
+
+EEGLAB 2020 + MATLAB R2024a or newer: "Error using warning ...
+'Octave:abbreviated-property-match'" at eeglab line 202 means EEGLAB mistook
+MATLAB for Octave (its check version(1) > '5' fails on version '24.x').
+run_sw_local.sh detects this and prints the one-line fix:
+   sed -i.bak "s/if v(1) > '5'/if exist('OCTAVE_VERSION','builtin') == 0/" <EEGLAB_DIR>/eeglab.m

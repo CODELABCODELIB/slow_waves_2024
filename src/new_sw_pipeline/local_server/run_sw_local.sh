@@ -15,8 +15,21 @@ SW_OUTPUT_DIR=${SW_OUTPUT_DIR:-/mnt/ZETA18/User_Specific_Data_Storage/ruchella/s
 EEGLAB_DIR=${EEGLAB_DIR:-}             # empty: search under /home/ruchella/imports
 N_PARALLEL=${N_PARALLEL:-4}           # datasets at the same time (~40 GB RAM each)
 THREADS_PER_RUN=${THREADS_PER_RUN:-4}
-MATLAB=${MATLAB:-matlab}
+MATLAB=${MATLAB:-}                    # empty: matlab on PATH, else ~/matlab_2024a/bin/matlab
 # ------------------------------------------------------------------------------
+
+if [ -z "$MATLAB" ]; then
+    if command -v matlab > /dev/null; then
+        MATLAB=matlab
+    else
+        MATLAB=$HOME/matlab_2024a/bin/matlab
+    fi
+fi
+if ! command -v "$MATLAB" > /dev/null; then
+    echo "MATLAB not found at '$MATLAB'; set MATLAB at the top of $0" >&2
+    exit 1
+fi
+echo "MATLAB: $MATLAB"
 
 CODE_DIR=$(cd "$(dirname "$0")/.." && pwd)
 PIPELINE_DIR=$CODE_DIR/new_sw_pipeline
@@ -32,6 +45,14 @@ if [ -z "$EEGLAB_DIR" ] || [ ! -f "$EEGLAB_DIR/eeglab.m" ]; then
     exit 1
 fi
 echo "EEGLAB: $EEGLAB_DIR"
+
+# EEGLAB <= 2020 detects MATLAB via version(1) > '5', which fails for MATLAB R2024a+
+# ('24.x') and makes it run its Octave-only setup.
+if grep -q "if v(1) > '5'" "$EEGLAB_DIR/eeglab.m"; then
+    echo "This EEGLAB mistakes MATLAB R2024a+ for Octave. Patch it once (backup: eeglab.m.bak):" >&2
+    echo "  sed -i.bak \"s/if v(1) > '5'/if exist('OCTAVE_VERSION','builtin') == 0/\" '$EEGLAB_DIR/eeglab.m'" >&2
+    exit 1
+fi
 
 mkdir -p "$SW_OUTPUT_DIR" "$LOG_DIR"
 if [ $# -eq 0 ] || [ ! -f "$LIST" ]; then
