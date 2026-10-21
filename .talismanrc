@@ -1,0 +1,14 @@
+fileignoreconfig:
+- filename: src/preprocessing_sw/build_ica_training_data_sw.m
+  checksum: f1f3f737e44e914b384558dc27f5c0ab54046379efd6eea151497af6805ef766
+version: "1.0"
+fileignoreconfig:
+- filename: src/preprocessing_sw/train_ica_opticat_sw.m
+  checksum: a045d4a8c71d966774a07124317fc7a0c82b4bcf3128190d835601ca7b98214e
+- filename: src/preprocessing_sw/run_opticat_training_sw.m
+  checksum: aef5d1ea8676624f854f121b18858c875ae4adcb98603794c093e9d919666f86
+- filename: src/utils/detect_ocular_events_sw.m
+  checksum: 619d1cde435f96d64b0ac00858bace5a84fb995167135b6b84c48d9e921defe6
+- filename: src/playground/blink_exploration.m
+  checksum: 974cdae7a567e0cc893c3da5524d1a8dc2126f537b1fc688804c732b08a443a7
+version: "1.0"
