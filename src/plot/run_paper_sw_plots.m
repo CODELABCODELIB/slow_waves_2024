@@ -18,7 +18,10 @@ save_string = ''; % no extra subfolder in sw_to_behavior_plots
 if ~exist('max_datasets','var'); max_datasets = Inf; end % e.g. 2 for a test run (test runs are not cached)
 %% add folders to paths (this repo, EEGLAB and taps2JID)
 addpath(genpath(fileparts(fileparts(mfilename('fullpath')))))
-addpath(genpath('/home/ruchella/imports'))
+% without fieldtrip/limo_tools (FieldTrip must not be genpath'd, its compat folders shadow builtins)
+imports_path = strsplit(genpath('/home/ruchella/imports'), pathsep);
+imports_path = imports_path(~contains(imports_path, {'/fieldtrip', '/limo_tools'}));
+addpath(strjoin(imports_path, pathsep))
 addpath(genpath('/home/ruchella/TapDataAnalysis'))
 %% create output folders
 for folder = {figures_save_path, plot_data_path, sprintf('%s/pop',figures_save_path), ...

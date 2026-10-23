@@ -47,7 +47,10 @@ if do_fig3 && (~exist(fullfile(neighbours_dir,'expected_chanlocs.mat'),'file') |
     error('run_paper_figures:MissingNeighbours', 'expected_chanlocs.mat / channeighbstructmat.mat not in %s', neighbours_dir);
 end
 addpath(genpath(repo_src))
-addpath(genpath(eeglab_dir))
+% fieldtrip/limo live inside imports: add them only where needed (FieldTrip must not be genpath'd)
+imports_path = strsplit(genpath(eeglab_dir), pathsep);
+imports_path = imports_path(~startsWith(imports_path, {fieldtrip_dir, limo_dir}));
+addpath(strjoin(imports_path, pathsep))
 addpath(genpath(tapdata_dir))
 addpath(fullfile(repo_root,'local_sleep','manuscript_analyses','fig_1'))
 for folder = {figures_root, paper_data}

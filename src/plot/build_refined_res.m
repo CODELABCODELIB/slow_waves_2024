@@ -90,7 +90,7 @@ else
                 fprintf('  skipped %s: no aligned phone taps\n', dataset_id)
             end
         catch ME
-            fprintf(2, '  skipped %s: %s\n', dataset_id, ME.message);
+            fprintf(2, '  skipped %s: %s (%s line %d)\n', dataset_id, ME.message, ME.stack(1).name, ME.stack(1).line);
         end
     end
     timing = timing(~cellfun('isempty', timing(:,1)),:);
