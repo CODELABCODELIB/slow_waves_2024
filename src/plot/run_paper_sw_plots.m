@@ -44,12 +44,20 @@ else
     if exist(durations_file, 'file'); delete(durations_file); end
     res = {};
     EEG = [];
+    unreadable = {};
     for i=1:numel(result_files)
         wave_file = fullfile(result_files(i).folder, result_files(i).name);
         dataset_id = regexp(wave_file, '[\\/]Outputs[\\/]([^\\/]+)[\\/]refined[\\/]', 'tokens', 'once');
         dataset_id = dataset_id{1};
         fprintf('%d/%d %s\n', i, numel(result_files), dataset_id)
-        tmp = load(wave_file, 'top10_filtered_results', 'recording_info', 'chanlocs');
+        try
+            tmp = load(wave_file, 'top10_filtered_results', 'recording_info', 'chanlocs');
+        catch ME
+            % e.g. task killed while saving or still running; see summarize_sw_run
+            fprintf(2, '  skipped %s: cannot read wave_results.mat (%s)\n', dataset_id, ME.message);
+            unreadable{end+1} = dataset_id; %#ok<SAGROW>
+            continue
+        end
         info = tmp.recording_info;
         % EEG struct without data, as in the old checkpoints (get_eeg_structs)
         EEG_stub = eeg_emptyset;
@@ -84,7 +92,12 @@ else
         end
     end
     res = cat(2,res{:});
-    if isinf(max_datasets)
+    if ~isempty(unreadable)
+        fprintf(2, '%d unreadable wave_results.mat (rerun with FORCE=1 ./run_sw_local.sh <task>): %s\n', ...
+            numel(unreadable), strjoin(unreadable, ' '));
+    end
+    % only cache complete runs, so rerun datasets are picked up next time
+    if isinf(max_datasets) && isempty(unreadable)
         save(res_file, 'res', 'EEG', '-v7.3')
     end
 end

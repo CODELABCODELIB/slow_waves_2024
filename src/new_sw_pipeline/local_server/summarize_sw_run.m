@@ -18,6 +18,7 @@ function report = summarize_sw_run(output_root)
 %
 %  Status per task:
 %   - ok      = wave_results.mat and cleaned_EEG.mat exist
+%   - corrupt = wave_results.mat exists but cannot be read
 %   - partial = only one of the two output files exists
 %   - failed  = the pipeline caught an error (batch_summaries/<id>.csv)
 %   - crashed = a log exists but no summary/outputs (MATLAB killed, OOM,
@@ -89,7 +90,19 @@ for i = 1:n_tasks
         error_location{i} = first_error_frame(error_file);
     end
 
-    if has_waves && has_clean
+    readable = true;
+    if has_waves
+        try
+            whos('-file', fullfile(out_dir, 'wave_results.mat'));
+        catch
+            readable = false;
+        end
+    end
+
+    if has_waves && ~readable
+        status{i} = 'corrupt';
+        reason_group{i} = 'wave_results.mat unreadable (killed while saving, or still running?)';
+    elseif has_waves && has_clean
         status{i} = 'ok';
         error_id{i} = ''; message{i} = '';   % old error from an earlier attempt
     elseif has_waves || has_clean
@@ -121,7 +134,7 @@ lines{end+1} = sprintf('SW run report: %s', output_root);
 lines{end+1} = sprintf('%d tasks in %s', n_tasks, list_file);
 lines{end+1} = '';
 lines{end+1} = 'Status counts:';
-for s = {'ok', 'partial', 'failed', 'crashed', 'not_run'}
+for s = {'ok', 'corrupt', 'partial', 'failed', 'crashed', 'not_run'}
     lines{end+1} = sprintf('  %-8s %4d', s{1}, sum(strcmp(status, s{1}))); %#ok<AGROW>
 end
 
@@ -144,13 +157,19 @@ if ~isempty(not_ok)
         end
         lines{end+1} = sprintf('      tasks: %s', strjoin(arrayfun(@num2str, tasks_in_group', 'UniformOutput', false), ' ')); %#ok<AGROW>
         lines{end+1} = sprintf('      ids:   %s', strjoin(dataset_id(tasks_in_group)', ' ')); %#ok<AGROW>
-        lines{end+1} = sprintf('      rerun: ./run_sw_local.sh %s', ...
+        lines{end+1} = sprintf('      rerun: %s./run_sw_local.sh %s', force_prefix(status(tasks_in_group)), ...
             strjoin(arrayfun(@num2str, tasks_in_group', 'UniformOutput', false), ' ')); %#ok<AGROW>
     end
 
     lines{end+1} = '';
     lines{end+1} = 'Rerun everything that is not ok:';
     lines{end+1} = sprintf('  ./run_sw_local.sh %s', strjoin(arrayfun(@num2str, not_ok', 'UniformOutput', false), ' '));
+    corrupt_tasks = find(strcmp(status, 'corrupt'));
+    if ~isempty(corrupt_tasks)
+        lines{end+1} = '  corrupt outputs exist, so run_sw_local.sh skips them unless forced:';
+        lines{end+1} = sprintf('  FORCE=1 ./run_sw_local.sh %s', strjoin(arrayfun(@num2str, corrupt_tasks', 'UniformOutput', false), ' '));
+        lines{end+1} = '  (check first that these tasks are not still running: ps aux | grep run_sw_pipeline_alice)';
+    end
     partial_tasks = find(strcmp(status, 'partial'));
     if ~isempty(partial_tasks)
         lines{end+1} = '  (partial tasks are rerun automatically because one output is missing)';
@@ -174,6 +193,14 @@ fprintf('%s\n', text);
 fid = fopen(fullfile(output_root, 'run_report.txt'), 'w');
 fprintf(fid, '%s\n', text);
 fclose(fid);
+end
+
+function prefix = force_prefix(task_status)
+% run_sw_local.sh skips tasks whose output files exist, even if unreadable
+prefix = '';
+if any(strcmp(task_status, 'corrupt'))
+    prefix = 'FORCE=1 ';
+end
 end
 
 function location = first_error_frame(error_file)
