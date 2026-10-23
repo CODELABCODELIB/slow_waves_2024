@@ -101,6 +101,10 @@ else
         save(res_file, 'res', 'EEG', '-v7.3')
     end
 end
+if isempty(res)
+    error('run_paper_sw_plots:NoData', ['No dataset could be converted to res; ' ...
+        'see the "skipped <id>: ..." lines above for the reason per dataset.']);
+end
 %% one recording per participant (same rule as the old analysis)
 [~, list_idx] = ismember({res.pp}, list_ids);
 participant_ids = list_participants(list_idx)';

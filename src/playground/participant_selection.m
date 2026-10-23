@@ -6,7 +6,8 @@ arguments
 end
 data_path = options.durations_file;
 fieldnames = {'checkpoint','pp','phone','movie', 'phone_end', 'phone_start','movie_end', 'movie_start'};
-T = readtable(data_path);
+% comma only: auto-detection also splits on the '_' in dataset ids; the file has no header
+T = readtable(data_path, 'Delimiter', ',', 'ReadVariableNames', false);
 T.Properties.VariableNames = fieldnames;
 s = table2struct(T);
 [~,idx] = unique({s.pp});
