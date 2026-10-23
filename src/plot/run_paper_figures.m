@@ -1,4 +1,5 @@
 %% Paper figures 1-3 from the refined-ICA rerun
+% SW to behavior plots: <output_root>/figures/{pop,sw_to_behavior,rates} (same as run_paper_sw_plots.m)
 % Fig 1: SW features movie vs phone, FieldTrip cluster-permutation paired t-tests
 %        (local_sleep/manuscript_analyses/fig_1)
 % Fig 2: per-participant NNMF of SW JIDs + k-means clustering of the meta-JIDs
@@ -13,16 +14,17 @@
 % res is shared with run_paper_sw_plots.m (cached in <output_root>/plot_data/res_refined.mat).
 %% settings
 if ~exist('output_root','var'); output_root = '/mnt/ZETA18/User_Specific_Data_Storage/ruchella/slow_waves/sw_refined_ica_rerun'; end
+if ~exist('do_sw_plots','var'); do_sw_plots = 1; end % pop / sw_to_behavior / rates (as run_paper_sw_plots.m)
 if ~exist('do_fig1','var'); do_fig1 = 1; end
 if ~exist('do_fig2','var'); do_fig2 = 1; end
 if ~exist('do_fig3','var'); do_fig3 = 1; end
 % dependencies (TODO: fill in the paths marked with <...> for this server)
 eeglab_dir = '/home/ruchella/imports';                 % EEGLAB (topoplot, pop_resample, eeg_emptyset)
 tapdata_dir = '/home/ruchella/TapDataAnalysis';        % taps2JID
-fieldtrip_dir = '<path to fieldtrip-20240110>';        % Fig 1
+fieldtrip_dir = '/home/ruchella/imports/fieldtrip-20260924';        % Fig 1
 nnmf_dir = '/home/ruchella/NNMF/nnmf_pipeline_spams';  % Fig 2 (nnmf_cv, choose_best_k, perform_nnmf, stable_nnmf + SPAMS)
-limo_dir = '<path to LIMO EEG>';                       % Fig 3
-neighbours_dir = '<folder with expected_chanlocs.mat and channeighbstructmat.mat>'; % Fig 3
+limo_dir = '/home/ruchella/imports/limo_tools';                       % Fig 3
+neighbours_dir = '/home/ruchella/slow_waves_2023_original/data'; % Fig 3
 % Fig 2 number of clusters (check paper_figures/fig2/k_selection_*.svg, then rerun with do_fig1=0, do_fig3=0)
 if ~exist('K_movie','var'); K_movie = 2; end
 if ~exist('K_phone','var'); K_phone = 4; end
@@ -56,6 +58,22 @@ rng(2026) % NNMF and k-means are randomly initialised
 %% res for the selected recordings (Fig 2 and 3), same as run_paper_sw_plots.m
 [res, EEG] = build_refined_res(output_root);
 chanlocs62 = EEG.chanlocs;
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%% SW to behavior plots (pop, rates, ...) %%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if do_sw_plots
+    figures_save_path = sprintf('%s/figures',output_root);
+    data_save_path = output_root; % prepare_sw_data_for_plotting saves in <data_save_path>/plot_data
+    save_string = ''; % no extra subfolder in sw_to_behavior_plots
+    for folder = {sprintf('%s/pop',figures_save_path), sprintf('%s/sw_to_behavior',figures_save_path), ...
+            sprintf('%s/rates',figures_save_path), sprintf('%s/plot_data',data_save_path)}
+        if ~exist(folder{1}, 'dir'); mkdir(folder{1}); end
+    end
+    prepare_sw_data_for_plotting
+    sw_to_behavior_plots
+    close all
+    fprintf('SW to behavior plots done, figures in %s\n', figures_save_path)
+end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Figure 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
