@@ -1,4 +1,4 @@
-save_string = 'feb_2025';
+if ~exist('save_string','var'); save_string = 'feb_2025'; end
 if ~contains(figures_save_path, save_string)
     figures_save_path = sprintf('%s/%s',figures_save_path,save_string);
 end
@@ -26,6 +26,7 @@ for pp=1:size(res,2)
     end
     sgtitle(sprintf('SW JID - Sub %d',pp))
     saveas(h, sprintf('%s/sw_to_behavior/jid_sw_pp_behavior_%d.svg',figures_save_path,pp))
+    close(h)
 end
 %% plot SW jids movie vs phone
 n_chans = 15;
@@ -57,6 +58,7 @@ for pp=1:size(res,2)
     end
     sgtitle(sprintf('SW JID - Sub %d',pp))
     saveas(h, sprintf('%s/sw_to_behavior/jid_sw_movie_vs_behavior_pp_%d.svg',figures_save_path,pp))
+    close(h)
 end
 %% latency JID2D
 for pp=1:size(res,2)
@@ -77,6 +79,7 @@ for pp=1:size(res,2)
     end
     sgtitle(sprintf('Time to next tap (Log10[ms])- Sub %d',pp))
     saveas(h, sprintf('%s/sw_to_behavior/latency_pp_%d.svg',figures_save_path,pp))
+    close(h)
 end
 %% latency 1D
 for pp=1:size(res,2)
@@ -91,6 +94,7 @@ for pp=1:size(res,2)
     end
     sgtitle(sprintf('Time to next tap (Log10[ms])- Sub %d',pp))
     saveas(h, sprintf('%s/sw_to_behavior/latency_hist_pp_%d.svg',figures_save_path,pp))
+    close(h)
 end
 %% plot SW rate individual
 fontsize = 10;
@@ -116,6 +120,7 @@ for pp=1:size(res,2)
     colorbar;
     sgtitle(sprintf('SW JID and behavioral rate - Sub %d',pp))
     saveas(h, sprintf('%s/rates/rate_pp_%d.svg',figures_save_path,pp))
+    close(h)
 
 end
 close all;
@@ -170,6 +175,7 @@ for pp=1:size(res,2)
     colorbar
     sgtitle(sprintf('Rate %d min after SW dynamics - Sub %d',mins,pp))
     saveas(h, sprintf('%s/rates/post_rate_pp_%d.svg',figures_save_path,pp))
+    close(h)
 end
 %% plot SW pre rate
 mins=1;
@@ -194,13 +200,14 @@ for pp=1:size(res,2)
     end
     sgtitle(sprintf('Rate %d min before SW dynamics - Sub %d',mins,pp))
     saveas(h, sprintf('%s/rates/pre_rate_pp_%d.svg',figures_save_path,pp))
+    close(h)
 end
 %% plot SW pre rate, rate and post rate
 mins=1;
 lim_data = [-4 -3];
 fontsize = 10;
 % for pp=1:size(res,2)
-for pp=1:41
+for pp=1:size(res,2)
     for chan =1:10
         h = figure;
         t = tiledlayout(3,3, 'TileSpacing', 'compact');
@@ -318,6 +325,7 @@ for pp=1:41
 
         sgtitle(t, sprintf('Chan:%d Subject:%d',chan,pp))
         saveas(h, sprintf('%s/rates/rates_pp_%d_chan_%d.svg',figures_save_path,pp,chan))
+        close(h)
     end
 end
 close all;
@@ -327,7 +335,7 @@ lim_data = [-4 -3];
 fontsize = 10;
 % for pp=1:size(res,2)
 n_chan = 6;
-for pp=1:41
+for pp=1:size(res,2)
     h = figure;
     t = tiledlayout(n_chan,6, 'TileSpacing', 'none');
     for chan =1:n_chan
@@ -414,6 +422,7 @@ for pp=1:41
         sgtitle(t, sprintf('Subject:%d',pp))
         saveas(h, sprintf('%s/sw_to_behavior/summary_%d.svg',figures_save_path,pp))
     end
+    close(h)
 end
 %% Plot JID-amplitdes
 for pp=1:size(res,2)
@@ -432,6 +441,7 @@ for pp=1:size(res,2)
     end
     sgtitle(sprintf('SW-JID amplitudes (no log transformation) - Sub:%d',pp))
     saveas(h, sprintf('%s/sw_to_behavior/sw_jid_amplitudes_pp_%d.svg',figures_save_path,pp))
+    close(h)
 end
 %% plot JID-SW std/length
 % for pp=1:size(res,2)

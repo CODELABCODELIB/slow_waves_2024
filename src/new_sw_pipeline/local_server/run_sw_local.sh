@@ -15,14 +15,14 @@ SW_OUTPUT_DIR=${SW_OUTPUT_DIR:-/mnt/ZETA18/User_Specific_Data_Storage/ruchella/s
 EEGLAB_DIR=${EEGLAB_DIR:-}             # empty: search under /home/ruchella/imports
 N_PARALLEL=${N_PARALLEL:-4}           # datasets at the same time (~40 GB RAM each)
 THREADS_PER_RUN=${THREADS_PER_RUN:-4}
-MATLAB=${MATLAB:-}                    # empty: matlab on PATH, else ~/matlab_2024a/bin/matlab
+MATLAB=${MATLAB:-}                    # empty: matlab on PATH, else ~/matlab_2024b/bin/matlab
 # ------------------------------------------------------------------------------
 
 if [ -z "$MATLAB" ]; then
     if command -v matlab > /dev/null; then
         MATLAB=matlab
     else
-        MATLAB=$HOME/matlab_2024a/bin/matlab
+        MATLAB=$HOME/matlab_2024b/bin/matlab
     fi
 fi
 if ! command -v "$MATLAB" > /dev/null; then

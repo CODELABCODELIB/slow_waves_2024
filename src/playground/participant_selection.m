@@ -1,6 +1,10 @@
-function [res,selected_pps,s] = participant_selection(res)
-
-data_path = '/mnt/ZETA18/User_Specific_Data_Storage/ruchella/slow_waves/sws_2025_features/durations.txt';
+function [res,selected_pps,s] = participant_selection(res,options)
+arguments
+    res;
+    options.durations_file = '/mnt/ZETA18/User_Specific_Data_Storage/ruchella/slow_waves/sws_2025_features/durations.txt';
+    options.participant_ids = cellfun(@(x) x(87:90),{res.pp},'UniformOutput',false);
+end
+data_path = options.durations_file;
 fieldnames = {'checkpoint','pp','phone','movie', 'phone_end', 'phone_start','movie_end', 'movie_start'};
 T = readtable(data_path);
 T.Properties.VariableNames = fieldnames;
@@ -8,7 +12,7 @@ s = table2struct(T);
 [~,idx] = unique({s.pp});
 s = s(idx);
 
-participants = cellfun(@(x) x(87:90),{res.pp},'UniformOutput',false);
+participants = options.participant_ids;
 selected_pps = ones(size(participants,2),1);
 for i=1:size(participants,2)
     tmp_sel = cellfun(@(x) isempty(x),strfind(participants, participants{i}));

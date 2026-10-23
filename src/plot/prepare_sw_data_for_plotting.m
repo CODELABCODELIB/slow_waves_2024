@@ -1,5 +1,5 @@
-save_path = '/home/ruchella/slow_waves_2023/data';
-n_elecs = 64;
+if exist('data_save_path','var'); save_path = data_save_path; else; save_path = '/home/ruchella/slow_waves_2023/data'; end
+n_elecs = numel(EEG.Orignalchanlocs);
 %% SW jids behavior
 behavior_sw_jid = cell(length(res),n_elecs);
 for pp=1:size(res,2)
@@ -122,3 +122,4 @@ for chan=sorted_idx
         % saveas(h, sprintf('%s/chan_%d.svg',save_path,chan))
 end
     saveas(h, sprintf('%s/electrodes.svg',save_path))
+    close(h)
