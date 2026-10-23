@@ -67,7 +67,7 @@ for pp=1:size(res,2)
     taps = res(pp).taps;
     for chan =1:25
         nexttile;
-        sw_to_behavior_latency = assign_input_to_bin([res(pp).behavior_sws{chan,:}], res(pp).latency);
+        sw_to_behavior_latency = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).latency,chan);
         pooled = cellfun(@(x) median(x,'omitnan'),sw_to_behavior_latency{chan},'UniformOutput', 0);
         plot_jid(log10(reshape([pooled{:}],50,50)+ 0.00000001));
         clim([quantile(log10([pooled{:}]),[0.10, 0.90])])
@@ -104,8 +104,8 @@ for pp=1:size(res,2)
     for chan =1:64
         if length([res(pp).behavior_sws{chan,:}])>3
             nexttile;
-            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate);
-            triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths);
+            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate,chan);
+            triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths,chan);
             rate_jid = cellfun(@(x,y) sum(x, 'omitnan')/sum(y, 'omitnan'),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
             % rate_jid(reshape([rate_jid{:}] == 0, 50,50)) = {NaN};
             plot_jid(log10(reshape([rate_jid{:}],50,50)+ 0.00000000001));
@@ -130,8 +130,8 @@ close all;
 % for pp=1:length(res)
 %     for chan =1:64
 %         if length([res(pp).behavior_sws{chan,:}])>3
-%             taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate);
-%             triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths);
+%             taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate,chan);
+%             triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths,chan);
 %             rate_jid{chan,pp} = cellfun(@(x,y) sum(x, 'omitnan')/sum(y, 'omitnan'),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
 %         end
 %     end
@@ -157,7 +157,7 @@ for pp=1:size(res,2)
     for chan =1:25
         if length([res(pp).behavior_sws{chan,:}])>3
             nexttile;
-            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).post_rate);
+            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).post_rate,chan);
             post_rate_jid = cellfun(@(x) sum(x, 'omitnan')/(mins*60*1000),taps_on_sw{chan}, 'UniformOutput',0);
             % rate_jid(reshape([rate_jid{:}] == 0, 50,50)) = {NaN};
             empty_bins = cellfun(@(x) isempty(x),taps_on_sw{chan}, 'UniformOutput',0);
@@ -185,7 +185,7 @@ for pp=1:size(res,2)
     for chan =1:25
         if length([res(pp).behavior_sws{chan,:}])>3
             nexttile;
-            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).pre_rate);
+            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).pre_rate,chan);
             pre_rate_jid = cellfun(@(x) sum(x, 'omitnan')/(mins*60*1000),taps_on_sw{chan}, 'UniformOutput',0);
             pre_rate_jid(reshape([pre_rate_jid{:}] == 0, 50,50)) = {NaN};
             plot_jid(log10(reshape([pre_rate_jid{:}],50,50)+ 0.00000000001));
@@ -213,7 +213,7 @@ for pp=1:size(res,2)
         t = tiledlayout(3,3, 'TileSpacing', 'compact');
         % pre rate
         nexttile;
-        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).pre_rate);
+        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).pre_rate,chan);
         % calculate the pre rate by taking the number of taps / N min window
         pre_rate_jid = cellfun(@(x) sum(x, 'omitnan')/(mins*60*1000),taps_on_sw{chan}, 'UniformOutput',0);
         % find bins without any SWs and remove them
@@ -252,8 +252,8 @@ for pp=1:size(res,2)
 
         % rate
         nexttile;
-        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate);
-        triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths);
+        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate,chan);
+        triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths,chan);
         rate_jid = cellfun(@(x,y) sum(x, 'omitnan')/sum(y, 'omitnan'),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
         % log transform the data and pad the 0's so they are not -inf and plot the jid
         plot_jid(log10(reshape([rate_jid{:}],50,50)+ 0.00000000001));
@@ -285,7 +285,7 @@ for pp=1:size(res,2)
 
         % post rate
         nexttile;
-        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).post_rate);
+        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).post_rate,chan);
         post_rate_jid = cellfun(@(x) sum(x, 'omitnan')/(mins*60*1000),taps_on_sw{chan}, 'UniformOutput',0);
         % find bins without any SWs and remove them
         empty_bins = cellfun(@(x) isempty(x),taps_on_sw{chan}, 'UniformOutput',0);
@@ -299,7 +299,7 @@ for pp=1:size(res,2)
         set(gca, 'FontSize',fontsize)
 
         nexttile;
-        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).pre_rate);
+        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).pre_rate,chan);
         % calculate the pre rate by taking the number of taps / N min window
         pre_rate_jid = cellfun(@(x) sum(x, 'omitnan')/(mins*60*1000),taps_on_sw{chan}, 'UniformOutput',0);
         % find bins without any SWs and remove them
@@ -351,7 +351,7 @@ for pp=1:size(res,2)
 
         % JID Amplitude
         nexttile;
-        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).amplitude);
+        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).amplitude,chan);
         sw_jid_amplitude = cellfun(@(x) median(x, 'omitnan'),taps_on_sw{chan}, 'UniformOutput',0);
         plot_jid(reshape([sw_jid_amplitude{:}],50,50))
         colorbar;
@@ -362,7 +362,7 @@ for pp=1:size(res,2)
 
         % latency
         nexttile;
-        sw_to_behavior_latency = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).latency);
+        sw_to_behavior_latency = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).latency,chan);
         pooled = cellfun(@(x) median(x,'omitnan'),sw_to_behavior_latency{chan},'UniformOutput', 0);
         plot_jid(log10(reshape([pooled{:}],50,50)+ 0.00000001));
         clim([quantile(log10([pooled{:}]),[0.05, 0.95])])
@@ -374,8 +374,8 @@ for pp=1:size(res,2)
 
         % rate
         nexttile;
-        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate);
-        triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths);
+        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate,chan);
+        triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths,chan);
         rate_jid = cellfun(@(x,y) sum(x, 'omitnan')/sum(y, 'omitnan'),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
         % log transform the data and pad the 0's so they are not -inf and plot the jid
         plot_jid(log10(reshape([rate_jid{:}],50,50)+ 0.00000000001));
@@ -388,7 +388,7 @@ for pp=1:size(res,2)
 
         % pre rate
         nexttile;
-        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).pre_rate);
+        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).pre_rate,chan);
         % calculate the pre rate by taking the number of taps / N min window
         pre_rate_jid = cellfun(@(x) sum(x, 'omitnan')/(mins*60*1000),taps_on_sw{chan}, 'UniformOutput',0);
         % find bins without any SWs and remove them
@@ -405,7 +405,7 @@ for pp=1:size(res,2)
 
         % post rate
         nexttile;
-        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).post_rate);
+        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).post_rate,chan);
         post_rate_jid = cellfun(@(x) sum(x, 'omitnan')/(mins*60*1000),taps_on_sw{chan}, 'UniformOutput',0);
         % find bins without any SWs and remove them
         empty_bins = cellfun(@(x) isempty(x),taps_on_sw{chan}, 'UniformOutput',0);
@@ -431,7 +431,7 @@ for pp=1:size(res,2)
     % estimate the SW jid per channel
     for chan=1:62
         nexttile;
-        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).amplitude);
+        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).amplitude,chan);
         sw_jid_amplitude = cellfun(@(x) median(x, 'omitnan'),taps_on_sw{chan}, 'UniformOutput',0);
         plot_jid(reshape([sw_jid_amplitude{:}],50,50))
         colorbar;

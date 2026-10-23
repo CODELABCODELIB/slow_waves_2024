@@ -17,7 +17,8 @@ function sw_jid_nnmf_main(res,options)
 %   - z_score (Default : 0) = 1 zscore normalize data before NNMF, 0 otherwise
 %   - threshold(Default : 0) = 1 threshold empty bins before NNMF, 0 otherwise
 %   - log_transform(Default : 0) = 1 log_transform data before NNMF, 0 otherwise
-%   - n_bins (Default : 50) = size of jid bins 
+%   - n_bins (Default : 50) = size of jid bins
+%   - skip_existing (Default : 0) = 1 skip participants whose stable_basis_<pp>.mat exists
 %
 %  Output(s):
 %
@@ -33,10 +34,15 @@ arguments
     options.threshold = 0;
     options.log_transform = 0;
     options.n_bins = 50;
+    options.skip_existing logical = 0;
 end
 
 for pp=1:length(res)
-    jid_all_chans = cell(64,1); 
+    % resume an interrupted run
+    if options.skip_existing && exist(sprintf('%s/stable_basis_%d.mat',options.save_path, pp), 'file')
+        continue
+    end
+    jid_all_chans = cell(64,1);
     % prepare sw jid per channel
     for chan=1:62
         if strcmp(options.parameter, 'sw_jid')

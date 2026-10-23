@@ -1,5 +1,5 @@
 if exist('data_save_path','var'); save_path = data_save_path; else; save_path = '/home/ruchella/slow_waves_2023/data'; end
-n_elecs = numel(EEG.Orignalchanlocs);
+n_elecs = numel(EEG.chanlocs);
 %% SW jids behavior
 behavior_sw_jid = cell(length(res),n_elecs);
 for pp=1:size(res,2)
@@ -21,7 +21,7 @@ latency = cell(length(res),n_elecs);
 for pp=1:size(res,2)
     taps = res(pp).taps;
     for chan =1:n_elecs
-        sw_to_behavior_latency = assign_input_to_bin([res(pp).behavior_sws{chan,:}], res(pp).latency);
+        sw_to_behavior_latency = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).latency,chan);
         pooled = cellfun(@(x) median(x,'omitnan'),sw_to_behavior_latency{chan},'UniformOutput', 0);
         latency{pp,chan} = log10(reshape([pooled{:}],50,50)+ 0.00000001);
     end
@@ -32,8 +32,8 @@ rate = cell(length(res),n_elecs);
 for pp=1:length(res)
     for chan =1:n_elecs
         if length([res(pp).behavior_sws{chan,:}])>3
-            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate);
-            triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths);
+            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).rate,chan);
+            triad_lengths_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).triad_lengths,chan);
             rate_jid = cellfun(@(x,y) sum(x, 'omitnan')/sum(y, 'omitnan'),taps_on_sw{chan},triad_lengths_on_sw{chan}, 'UniformOutput',0);
             rate{pp,chan} = (log10(reshape([rate_jid{:}],50,50)+ 0.00000000001));
         end
@@ -46,7 +46,7 @@ post_rate = cell(length(res),n_elecs);
 for pp=1:size(res,2)
     for chan =1:n_elecs
         if length([res(pp).behavior_sws{chan,:}])>3
-            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).post_rate);
+            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).post_rate,chan);
             post_rate_jid = cellfun(@(x) sum(x, 'omitnan')/(mins*60*1000),taps_on_sw{chan}, 'UniformOutput',0);
             % rate_jid(reshape([rate_jid{:}] == 0, 50,50)) = {NaN};
             empty_bins = cellfun(@(x) isempty(x),taps_on_sw{chan}, 'UniformOutput',0);
@@ -62,7 +62,7 @@ pre_rate = cell(length(res),n_elecs);
 for pp=1:size(res,2)
     for chan =1:n_elecs
         if length([res(pp).behavior_sws{chan,:}])>3
-            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).pre_rate);
+            taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).pre_rate,chan);
             pre_rate_jid = cellfun(@(x) sum(x, 'omitnan')/(mins*60*1000),taps_on_sw{chan}, 'UniformOutput',0);
             % pre_rate_jid(reshape([pre_rate_jid{:}] == 0, 50,50)) = {NaN};
             empty_bins = cellfun(@(x) isempty(x),taps_on_sw{chan}, 'UniformOutput',0);
@@ -76,7 +76,7 @@ save(sprintf('%s/plot_data/pre_rate.mat',save_path), 'pre_rate', '-v7.3')
 amp_jid = cell(length(res),n_elecs);
 for pp=1:size(res,2)
     for chan=1:n_elecs
-        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).amplitude);
+        taps_on_sw = assign_input_to_bin([res(pp).behavior_sws{chan,:}],res(pp).amplitude,chan);
         sw_jid_amplitude = cellfun(@(x) median(x, 'omitnan'),taps_on_sw{chan}, 'UniformOutput',0);
         amp_jid{pp,chan} = reshape([sw_jid_amplitude{:}],50,50);
     end
@@ -115,6 +115,7 @@ tiledlayout(8,8, 'TileSpacing','compact')
 for chan=sorted_idx
     % h = figure;
     nexttile;
+    if chan > 62; axis off; continue; end
     electrodes = zeros(1,62);
     electrodes(chan) = 1;
     topoplot(electrodes,EEG.chanlocs(1:62), 'electrodes', 'off', 'style','blank');

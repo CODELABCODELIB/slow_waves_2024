@@ -14,6 +14,12 @@ tiledlayout(8,8, 'TileSpacing','compact')
 [sorted_idx] = sort_electrodes(Orignalchanlocs);
 for chan=sorted_idx
     nexttile;
+    % keep an empty tile for channels without data (e.g. E63/E64 removed
+    % by the refined pipeline) so the other electrodes keep their position
+    if chan > size(rj,2) || isempty(cat(2,rj{:,chan}))
+        axis off;
+        continue
+    end
     tmp = cat(2,rj{:,chan});
     plot_jid(reshape(trimmean(tmp,20,2),50,50));
     if ~isempty(options.color_lims)

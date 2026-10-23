@@ -1,4 +1,12 @@
 % Dimensions: electrodes * frames * betas * participants
+% Needs res, EEG (chanlocs + Orignalchanlocs) and figures_save_path in the workspace.
+% Optional: limo_save_path (LIMO output folder) and neighbours_dir (folder with
+% expected_chanlocs.mat / channeighbstructmat.mat), e.g. set by run_paper_figures.m
+if ~exist('limo_save_path','var'); limo_save_path = '/home/ruchella/slow_waves_2023/data/GLM_movie_vs_behavior'; end
+if ~exist('neighbours_dir','var'); neighbours_dir = ''; end
+fig_path = sprintf('%s/movie_vs_phone',figures_save_path);
+if ~exist(fig_path,'dir'); mkdir(fig_path); end
+if ~exist(sprintf('%s/per_channel',fig_path),'dir'); mkdir(sprintf('%s/per_channel',fig_path)); end
 input_beh = zeros(64, 2500, size(res, 2));
 input_movie = zeros(64, 2500, size(res, 2));
 for pp = 1:size(res, 2)
@@ -19,13 +27,14 @@ end
 %     input1(~sel_idx,:) = NaN;
 %     sel_idxs(chan,:) = se l_idx;
 % end
-range = quantile([std(input_beh,[],3),std(input_movie,[],3)], [0.5], 'all');
+% median SD over the analysed channels only (rows 63/64 are empty)
+range = quantile([std(input_beh(1:62,:,:),[],3),std(input_movie(1:62,:,:),[],3)], [0.5], 'all');
 not_sel_idx = std(input_beh,[],3)<=range | std(input_movie,[],3)<=range;
 tmp_input_beh = input_beh(1:62,~any(not_sel_idx(1:62,:),1),:)+0.000001;
 tmp_input_movie = input_movie(1:62,~any(not_sel_idx(1:62,:),1),:)+0.000001;
 %% run ttest model
-linear_model_save_path = '/home/ruchella/slow_waves_2023/data/GLM_movie_vs_behavior';
-[mask, cluster_p, one_sample] = paired_t_test_movie_vs_phone(tmp_input_beh(1:62,:,:),tmp_input_movie(1:62,:,:),linear_model_save_path);
+linear_model_save_path = limo_save_path;
+[mask, cluster_p, one_sample] = paired_t_test_movie_vs_phone(tmp_input_beh(1:62,:,:),tmp_input_movie(1:62,:,:),linear_model_save_path,neighbours_dir);
 %% reconstruct
 load(fullfile(linear_model_save_path, sprintf('paired_samples_ttest_parameter_%d.mat', 1)), 'paired_samples');
 load(fullfile(linear_model_save_path, 'mask.mat'));
@@ -37,17 +46,17 @@ reconstructed_mask(reconstructed_mask == 0) = NaN;
 reconstructed_mask(reconstructed_mask > 1) = 1;
 reconstructed_paired(:,~any(not_sel_idx(1:62,:)),:) = paired_samples;
 %% plot results
-for n=1:10:60
+for n=1:10:62
     h=figure;
     tiledlayout(2,10);
-    for chan=n:n+9
+    for chan=n:min(n+9,62)
         nexttile;
         plot_jid(reshape(squeeze(reconstructed_paired(chan,:,1)).*reconstructed_mask(chan,:),50,50))
         colorbar;
         clim([-0.1,0.1])
         title(sprintf('Mean E %d',chan))
     end
-    for chan=n:n+9
+    for chan=n:min(n+9,62)
         nexttile;
         plot_jid(reshape(squeeze(reconstructed_paired(chan,:,4)).*reconstructed_mask(chan,:),50,50))
         colorbar;
@@ -59,7 +68,8 @@ for n=1:10:60
     %     plot_jid(reshape(squeeze(reconstructed_paired(chan,:,5)).*reconstructed_mask(chan,:),50,50))
     %     title(sprintf('p<0.05 E %d',chan))
     % end
-    saveas(h, sprintf('%s/ttest_movie_vs_behavior_%d_%d.svg','/home/ruchella/slow_waves_2023/figures/dec_rerun/movie_vs_behavior',n,n+9))
+    saveas(h, sprintf('%s/ttest_movie_vs_behavior_%d_%d.svg',fig_path,n,min(n+9,62)))
+    close(h)
 end
 %% plot mean 
 h=figure;
@@ -77,8 +87,9 @@ for chan=sorted_idx
     xticks([])
     yticks([])
     box off;
-    saveas(h, sprintf('%s/movie_vs_phone/mean_movie_vs_behavior.svg',figures_save_path))
 end
+saveas(h, sprintf('%s/mean_movie_vs_behavior.svg',fig_path))
+close(h)
 %% plot ttests 
 h=figure;
 tiledlayout(8,8, 'TileSpacing','compact');
@@ -96,48 +107,50 @@ for chan=sorted_idx
     yticks([])
     box off;
     colorbar
-    saveas(h, sprintf('%s/movie_vs_phone/ttest_movie_vs_behavior.svg',figures_save_path))
 end
+saveas(h, sprintf('%s/ttest_movie_vs_behavior.svg',fig_path))
+close(h)
 %% movie and behavior per channel
 med_beh = trimmean(input_beh,20,3);
 med_movie = trimmean(input_movie,20,3);
 diff_b_m = med_beh - med_movie;
 med_diff = median(diff_b_m,3);
 mean_diff = trimmean(input_beh-input_movie,20,3);
-for n=1:10:60
+for n=1:10:62
     h=figure;
     tiledlayout(4,10, 'TileSpacing','none');
-    for chan=n:n+9
+    for chan=n:min(n+9,62)
         nexttile
         plot_jid(reshape(med_beh(chan,:),50,50))
-        title(sprintf('Beh E %d'),chan)
+        title(sprintf('Beh E %d',chan))
         % colorbar
         clim([0, 0.6])
     end
-    for chan=n:n+9
+    for chan=n:min(n+9,62)
         nexttile
         plot_jid(reshape(med_movie(chan,:),50,50))
-        title(sprintf('Movie E %d'),chan)
+        title(sprintf('Movie E %d',chan))
         % colorbar
         clim([0, 0.6])
     end
-    for chan=n:n+9
+    for chan=n:min(n+9,62)
         nexttile
         plot_jid(reshape(mean_diff(chan,:),50,50))
-        title(sprintf('Diff E %d'),chan)
+        title(sprintf('Diff E %d',chan))
     end
-    for chan=n:n+9
+    for chan=n:min(n+9,62)
         nexttile
         plot_jid(reshape(squeeze(reconstructed_paired(chan,:,4)).*reconstructed_mask(chan,:),50,50))
-        title(sprintf('T-values E %d'),chan)
+        title(sprintf('T-values E %d',chan))
     end
-    saveas(h, sprintf('%s/movie_vs_phone/all_values_%d_to_%d.svg',figures_save_path,n,n+9))
+    saveas(h, sprintf('%s/all_values_%d_to_%d.svg',fig_path,n,min(n+9,62)))
+    close(h)
 end
 %% behavior or movie across channels per participant
 for chan=1:62
     h = figure;
-    tiledlayout(4,11)
-    for pp=1:41
+    tiledlayout(4,ceil((size(res,2)+3)/4))
+    for pp=1:size(res,2)
         nexttile
         plot_jid(reshape(input_beh(chan,:,pp),50,50))
     end
@@ -148,11 +161,12 @@ for chan=1:62
     nexttile;
     plot_jid(reshape(paired_samples(chan,:,4),50,50)); colorbar;
     sgtitle(sprintf('Behavior E %d',chan))
-    saveas(h, sprintf('%s/behavior_%d.svg','/home/ruchella/slow_waves_2023/figures/movie_vs_behavior',chan))
+    saveas(h, sprintf('%s/per_channel/behavior_%d.svg',fig_path,chan))
+    close(h)
 
     h= figure;
-    tiledlayout(4,11)
-    for pp=1:41
+    tiledlayout(4,ceil((size(res,2)+3)/4))
+    for pp=1:size(res,2)
         nexttile
         plot_jid(reshape(input_movie(chan,:,pp),50,50))
     end
@@ -163,8 +177,7 @@ for chan=1:62
     nexttile;
     plot_jid(reshape(paired_samples(chan,:,4),50,50)); colorbar;
     sgtitle(sprintf('Movie E %d',chan))
-    saveas(h, sprintf('%s/movie_%d.svg','/home/ruchella/slow_waves_2023/figures/movie_vs_behavior',chan))
+    saveas(h, sprintf('%s/per_channel/movie_%d.svg',fig_path,chan))
+    close(h)
 end
-%% 
-mean_diff = trimmean(input_beh-input_movie,20,3);
-figure; plot_jid(reshape(mean_diff(1,:),50,50))
+

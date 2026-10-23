@@ -1,8 +1,18 @@
-function [mask, cluster_p, one_sample] = paired_t_test_movie_vs_phone(input1,input2,path)
+function [mask, cluster_p, one_sample] = paired_t_test_movie_vs_phone(input1,input2,path,neighbours_dir)
 % model num: 2 (model 1) or 3 (model 3)
+% neighbours_dir (optional): folder with expected_chanlocs.mat and
+% channeighbstructmat.mat; empty/missing = load them from the MATLAB path
 
-load('expected_chanlocs.mat')
-load('channeighbstructmat.mat')
+if nargin < 4 || isempty(neighbours_dir)
+    load('expected_chanlocs.mat')
+    load('channeighbstructmat.mat')
+else
+    load(fullfile(neighbours_dir,'expected_chanlocs.mat'))
+    load(fullfile(neighbours_dir,'channeighbstructmat.mat'))
+end
+if ~exist(path,'dir'); mkdir(path); end
+previous_dir = pwd;
+restore_dir = onCleanup(@() cd(previous_dir));
 cd(path) 
 
 channeighbstructmat = channeighbstructmat(1:62,1:62);

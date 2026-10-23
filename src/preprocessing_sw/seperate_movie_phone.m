@@ -60,9 +60,12 @@ for pp=options.start_range:options.end_range
     end
     %% get the movie indexes
     if options.get_movie_idxs
-        EEG.data = zeros(64,length(EEG.times));
         % upsampled to orginal freq for the right urevent and event indexes
-        [EEG] = pop_resample(EEG, 1000);
+        % (already 1000 Hz, e.g. refined pipeline outputs: nothing to resample)
+        if EEG.srate ~= 1000
+            EEG.data = zeros(64,length(EEG.times));
+            [EEG] = pop_resample(EEG, 1000);
+        end
         % find the movie indexes in upsampled data
         [~,movie_indexes{pp}] = find_movie_passive_event(EEG);
 
