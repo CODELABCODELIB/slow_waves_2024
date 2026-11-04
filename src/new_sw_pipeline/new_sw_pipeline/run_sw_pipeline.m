@@ -90,6 +90,14 @@ for dataset_idx = 1:numel(dataset_files)
         %% Load dataset
 
         EEG_sw = pop_loadset(dataset_files{dataset_idx});
+        % Truncated .fdt files were excluded in the original pipeline
+        % (select_from_EEG_struct_3); exclude them here as well.
+        if mod(size(EEG_sw.data, 2), EEG_sw.pnts) ~= 0 || ...
+                numel(EEG_sw.data) ~= EEG_sw.nbchan * EEG_sw.pnts * EEG_sw.trials
+            error('swpipeline:TruncatedData', ...
+                'Data file is truncated (%d values on disk, %d expected); dataset excluded.', ...
+                numel(EEG_sw.data), EEG_sw.nbchan * EEG_sw.pnts * EEG_sw.trials);
+        end
         native_srate = EEG_sw.srate;
         source_xmin = EEG_sw.xmin;
 

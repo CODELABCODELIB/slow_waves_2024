@@ -66,11 +66,14 @@ for i = 1:numel(result_files)
         fprintf('\nSkipping %s: seperate_movie_phone failed (%s).\n', dataset_id, ME.message);
         continue;
     end
-    if isempty(movie_indexes) || isempty(movie_indexes{1}) || ~isfield(movie_indexes{1}, 'movie_latencies')
+    % movie_latencies is empty when the events contain no movie passive block
+    if isempty(movie_indexes) || isempty(movie_indexes{1}) || ~isfield(movie_indexes{1}, 'movie_latencies') ...
+            || isempty(movie_indexes{1}.movie_latencies)
         fprintf('\nSkipping %s due to missing movie indexes.\n', dataset_id);
         continue;
     end
-    if isempty(phone_indexes) || isempty(phone_indexes{1}) || isempty(taps{1})
+    if isempty(phone_indexes) || isempty(phone_indexes{1}) || isempty(taps{1}) ...
+            || isempty(phone_indexes{1}{1}) || isempty(phone_indexes{1}{end})
         fprintf('\nSkipping %s due to missing phone indexes / taps.\n', dataset_id);
         continue;
     end

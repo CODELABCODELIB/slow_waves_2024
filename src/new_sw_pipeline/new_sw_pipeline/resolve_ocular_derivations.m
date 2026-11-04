@@ -2,6 +2,9 @@ function derivations = resolve_ocular_derivations(EEG, options)
 %RESOLVE_OCULAR_DERIVATIONS Resolve source indices before changing channels.
 %   Call immediately after loading the original dataset. The resulting label
 %   definitions remain valid after technical channels are removed.
+%   As in the original pipeline (gettechnicallycleanEEG_sw), configured EOG
+%   channels that were removed as bad are skipped. A derivation left without a
+%   positive or negative channel is dropped; at least one must remain.
 
 labels = {EEG.chanlocs.labels};
 if numel(unique(labels)) ~= numel(labels) || any(cellfun('isempty', labels))
@@ -14,11 +17,20 @@ positive = {options.veog_positive, options.heog_positive};
 negative = {options.veog_negative, options.heog_negative};
 derivations = struct('name', names, 'positive_labels', {{}, {}}, ...
     'negative_labels', {{}, {}});
+keep = true(1, 2);
 for derivation_idx = 1:2
     derivations(derivation_idx).positive_labels = ...
         resolve_group(positive{derivation_idx}, labels);
     derivations(derivation_idx).negative_labels = ...
         resolve_group(negative{derivation_idx}, labels);
+    if isempty(derivations(derivation_idx).positive_labels) || ...
+            isempty(derivations(derivation_idx).negative_labels)
+        warning('swpipeline:DroppedEOGDerivation', ...
+            '%s skipped: no positive or no negative channel left in the dataset.', ...
+            names{derivation_idx});
+        keep(derivation_idx) = false;
+        continue;
+    end
     if ~isempty(intersect(derivations(derivation_idx).positive_labels, ...
             derivations(derivation_idx).negative_labels))
         error('swpipeline:OverlappingEOGChannels', ...
@@ -27,6 +39,11 @@ for derivation_idx = 1:2
     fprintf('%s = mean(%s) - mean(%s).\n', names{derivation_idx}, ...
         strjoin(derivations(derivation_idx).positive_labels, ', '), ...
         strjoin(derivations(derivation_idx).negative_labels, ', '));
+end
+derivations = derivations(keep);
+if isempty(derivations)
+    error('swpipeline:MissingEOGChannel', ...
+        'None of the configured EOG derivations can be formed from the loaded dataset.');
 end
 
 end
@@ -43,9 +60,15 @@ elseif iscellstr(selection) || isstring(selection) || ischar(selection)
         selected_labels = cellstr(selection);
     end
     selected_labels = selected_labels(:)';
-    if isempty(selected_labels) || ~all(ismember(selected_labels, labels))
-        error('swpipeline:MissingEOGChannel', ...
-            'Every configured EOG channel must exist in the loaded dataset.');
+    if isempty(selected_labels)
+        error('swpipeline:InvalidEOGDefinition', 'An EOG group must not be empty.');
+    end
+    missing = ~ismember(selected_labels, labels);
+    if any(missing)
+        warning('swpipeline:DroppedEOGChannel', ...
+            'EOG channel(s) %s not in the dataset (removed as bad); using the remaining ones.', ...
+            strjoin(selected_labels(missing), ', '));
+        selected_labels = selected_labels(~missing);
     end
 else
     error('swpipeline:InvalidEOGDefinition', ...
