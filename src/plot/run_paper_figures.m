@@ -10,7 +10,8 @@
 % Only some figures, e.g.:
 %   matlab -batch "do_fig2 = 0; do_fig3 = 0; run('<repo>/src/plot/run_paper_figures.m')"
 %
-% Outputs: <output_root>/paper_figures/{fig1,fig2,fig3}, data in <output_root>/paper_data.
+% Outputs: <output_root>/paper_figures/{fig1,fig2,fig3}, data in <output_root>/paper_data,
+% log of each run in <output_root>/paper_figures/logs/run_paper_figures_<date_time>.log.
 % res is shared with run_paper_sw_plots.m (cached in <output_root>/plot_data/res_refined.mat).
 %% settings
 if ~exist('output_root','var'); output_root = '/mnt/ZETA18/User_Specific_Data_Storage/ruchella/slow_waves/sw_refined_ica_rerun'; end
@@ -53,9 +54,13 @@ imports_path = imports_path(~startsWith(imports_path, {fieldtrip_dir, limo_dir})
 addpath(strjoin(imports_path, pathsep))
 addpath(genpath(tapdata_dir))
 addpath(fullfile(repo_root,'local_sleep','manuscript_analyses','fig_1'))
-for folder = {figures_root, paper_data}
+for folder = {figures_root, paper_data, sprintf('%s/logs',figures_root)}
     if ~exist(folder{1}, 'dir'); mkdir(folder{1}); end
 end
+% everything printed from here on is also written to the log
+log_file = sprintf('%s/logs/run_paper_figures_%s.log', figures_root, datestr(now,'yyyymmdd_HHMMSS'));
+diary(log_file)
+fprintf('Log: %s\n', log_file)
 set(0, 'DefaultFigureVisible', 'off');
 rng(2026) % NNMF and k-means are randomly initialised
 %% res for the selected recordings (Fig 2 and 3), same as run_paper_sw_plots.m
@@ -180,3 +185,4 @@ if do_fig3
     close all
     fprintf('Fig 3 done, figures in %s/movie_vs_phone\n', figures_save_path)
 end
+diary off
