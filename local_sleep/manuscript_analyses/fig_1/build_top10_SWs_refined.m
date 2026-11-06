@@ -11,6 +11,8 @@ function top10_SWs = build_top10_SWs_refined(output_root, target_path)
 %       SW_OUTPUT_DIR of the run (dataset_list.txt, Outputs/<id>/refined/wave_results.mat)
 %   target_path (char)
 %       Directory where 'top10_SWs.mat' is saved.
+%   max_participants (name-value, default Inf)
+%       Stop after this many participants are stored (quick test runs).
 % Outputs:
 %   top10_SWs (struct)
 %       One field per participant (participant folder, e.g. AT08) with the same
@@ -24,6 +26,7 @@ function top10_SWs = build_top10_SWs_refined(output_root, target_path)
 arguments
     output_root char;
     target_path char;
+    options.max_participants = Inf;
 end
 
 % Participant folder per dataset id (same ID rule as run_sw_pipeline_alice.m)
@@ -35,6 +38,10 @@ list_participants = cellfun(@(x) strtok(x, '/'), dataset_list, 'UniformOutput', 
 top10_SWs = struct();
 result_files = dir(fullfile(output_root, 'Outputs', '*', 'refined', 'wave_results.mat'));
 for i = 1:numel(result_files)
+    if numel(fieldnames(top10_SWs)) >= options.max_participants
+        fprintf('\nStopping: %d participants stored (max_participants).\n', options.max_participants);
+        break;
+    end
     wave_file = fullfile(result_files(i).folder, result_files(i).name);
     dataset_id = regexp(wave_file, '[\\/]Outputs[\\/]([^\\/]+)[\\/]refined[\\/]', 'tokens', 'once');
     dataset_id = dataset_id{1};
