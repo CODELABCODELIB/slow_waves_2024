@@ -81,8 +81,9 @@ previous_dir = pwd;
 res_ok = true;
 try
     if test_mode && ~exist(sprintf('%s/plot_data/res_refined.mat',output_root),'file')
-        % no cache: only read the first recordings (some are skipped, e.g. no taps)
-        [res, EEG] = build_refined_res(output_root, 'max_datasets', 3*n_test, ...
+        % no cache: stop after the first recordings with aligned taps
+        % (2x: participant_selection keeps one recording per participant)
+        [res, EEG] = build_refined_res(output_root, 'max_datasets', 2*n_test, ...
             'plot_data_path', sprintf('%s/plot_data',out_root));
     else
         [res, EEG] = build_refined_res(output_root);

@@ -11,7 +11,7 @@ function [res, EEG, participant_ids] = build_refined_res(output_root, options)
 %  Optional Input(s):
 %   - plot_data_path (Default : <output_root>/plot_data) = cache folder (res_refined.mat,
 %       durations.txt, timing_check.csv, selected_recordings.txt)
-%   - max_datasets (Default : Inf) = only use the first N recordings (test run, not cached)
+%   - max_datasets (Default : Inf) = stop after the first N recordings with aligned taps (test run, not cached)
 %   - select (Default : 1) = 1 keep one recording per participant (participant_selection), 0 keep all
 %
 %  Output(s):
@@ -49,7 +49,6 @@ else
     result_files = dir(sprintf('%s/Outputs/*/refined/wave_results.mat',output_root));
     [~, order] = sort(fullfile({result_files.folder}, {result_files.name}));
     result_files = result_files(order);
-    result_files = result_files(1:min(options.max_datasets, numel(result_files)));
     durations_file = sprintf('%s/durations.txt',plot_data_path);
     if exist(durations_file, 'file'); delete(durations_file); end
     res = {};
@@ -61,6 +60,12 @@ else
         dataset_id = dataset_id{1};
         fprintf('%d/%d %s\n', i, numel(result_files), dataset_id)
         try
+            % recording_info first: skip recordings without taps before loading the SWs
+            tmp = load(wave_file, 'recording_info');
+            if ~has_aligned_taps(tmp.recording_info)
+                fprintf('  skipped %s: no aligned phone taps\n', dataset_id)
+                continue
+            end
             tmp = load(wave_file, 'top10_filtered_results', 'recording_info');
         catch ME
             % e.g. task killed while saving or still running; see summarize_sw_run
@@ -86,6 +91,7 @@ else
             res_pp = sw_to_behavior_all_pps(load_data, 'save_results', 0, 'save_path', plot_data_path, 'file', dataset_id);
             if isfield(res_pp, 'taps')
                 res{end+1} = res_pp; %#ok<AGROW>
+                if numel(res) >= options.max_datasets; break; end
             else
                 fprintf('  skipped %s: no aligned phone taps\n', dataset_id)
             end
@@ -133,6 +139,15 @@ if options.select
     fprintf('%d recordings selected: %s\n', numel(res), strjoin({res.pp}, ' '))
     writecell({res.pp}', sprintf('%s/selected_recordings.txt',plot_data_path))
 end
+end
+
+function ok = has_aligned_taps(recording_info)
+% same tap sources as seperate_movie_phone (BS_to_tap.Phone or merged_phone)
+ok = false;
+if ~isfield(recording_info, 'Aligned'); return; end
+aligned = recording_info.Aligned;
+ok = (isfield(aligned, 'BS_to_tap') && isfield(aligned.BS_to_tap, 'Phone')) || ...
+    isfield(aligned, 'merged_phone');
 end
 
 function max_shift = timing_shift(top10_filtered_results, recording_info)
