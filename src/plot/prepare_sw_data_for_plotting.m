@@ -109,18 +109,34 @@ save_path = sprintf('%s/pop/latency.svg',figures_save_path);
 population_sw_to_behavior_plots(latency, EEG.Orignalchanlocs,'color_lims', [2,4], 'show_title', 0,'save_path',save_path);
 %% electrode locations
 save_path = sprintf('%s/pop',figures_save_path);
-h = figure;
-tiledlayout(8,8, 'TileSpacing','compact')
 [sorted_idx] = sort_electrodes(EEG.Orignalchanlocs);
-for chan=sorted_idx
-    % h = figure;
-    nexttile;
-    if chan > 62; axis off; continue; end
-    electrodes = zeros(1,62);
-    electrodes(chan) = 1;
-    topoplot(electrodes,EEG.chanlocs(1:62), 'electrodes', 'off', 'style','blank');
-    % title(sprintf('%d',chan))
-        % saveas(h, sprintf('%s/chan_%d.svg',save_path,chan))
-end
-    saveas(h, sprintf('%s/electrodes.svg',save_path))
+n_chans = numel(EEG.chanlocs);
+% grid order in the log (row by row, as the 8x8 tiles), to compare with the old figures
+grid_labels = string({EEG.Orignalchanlocs(sorted_idx).labels});
+grid_labels(end+1:ceil(numel(grid_labels)/8)*8) = "";
+fprintf('Electrode grid (8 columns, %d entries):\n', numel(sorted_idx));
+fprintf('  %s\n', join(pad(reshape(grid_labels,8,[])',4),' ',2));
+% labelled: 1 = with E<n> titles (tiles of non-analysed channels labelled too)
+for labelled = [0 1]
+    h = figure;
+    tiledlayout(8,8, 'TileSpacing','compact')
+    for chan=sorted_idx
+        nexttile;
+        if chan > n_chans
+            axis off;
+        else
+            electrodes = zeros(1,n_chans);
+            electrodes(chan) = 1;
+            topoplot(electrodes,EEG.chanlocs, 'electrodes', 'off', 'style','blank');
+        end
+        if labelled
+            title(EEG.Orignalchanlocs(chan).labels, 'FontSize',8, 'Visible','on')
+        end
+    end
+    if labelled
+        saveas(h, sprintf('%s/electrodes_labelled.svg',save_path))
+    else
+        saveas(h, sprintf('%s/electrodes.svg',save_path))
+    end
     close(h)
+end

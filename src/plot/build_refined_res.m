@@ -1,4 +1,4 @@
-function [res, EEG, participant_ids] = build_refined_res(output_root, options)
+function [res, EEG, participant_ids, source_files] = build_refined_res(output_root, options)
 %% Build the SW-to-behaviour res struct from the refined SW pipeline outputs
 %
 % **Usage:**
@@ -19,6 +19,7 @@ function [res, EEG, participant_ids] = build_refined_res(output_root, options)
 %   - EEG = struct with chanlocs (62 analysed channels) and Orignalchanlocs (all 64,
 %       for the sort_electrodes grid order)
 %   - participant_ids = participant folder per res entry (e.g. 'AT08')
+%   - source_files = dataset_list.txt entry (recording file) per res entry
 %
 % res (before participant selection) is cached in <plot_data_path>/res_refined.mat
 % when every wave_results.mat could be read; delete it to rebuild.
@@ -106,6 +107,10 @@ else
     if ~isempty(unreadable)
         fprintf(2, '%d unreadable wave_results.mat (rerun with FORCE=1 ./run_sw_local.sh <task>): %s\n', ...
             numel(unreadable), strjoin(unreadable, ' '));
+        if isinf(options.max_datasets)
+            fprintf(2, ['res is NOT cached in %s because of the unreadable files: every run rebuilds it ' ...
+                '(slow) until they are fixed or removed from Outputs\n'], res_file);
+        end
     end
     % only cache complete runs, so rerun datasets are picked up next time
     if isinf(options.max_datasets) && isempty(unreadable) && ~isempty(res)
@@ -122,12 +127,30 @@ end
 tmp = load(sprintf('%s/Outputs/%s/refined/wave_results.mat',output_root,res(1).pp), 'recording_info', 'chanlocs');
 EEG = struct('chanlocs', tmp.chanlocs);
 if isfield(tmp.recording_info, 'Orignalchanlocs')
-    EEG.Orignalchanlocs = tmp.recording_info.Orignalchanlocs;
+    Orignalchanlocs = tmp.recording_info.Orignalchanlocs;
 elseif isfield(tmp.recording_info, 'Originalchanlocs')
-    EEG.Orignalchanlocs = tmp.recording_info.Originalchanlocs;
+    Orignalchanlocs = tmp.recording_info.Originalchanlocs;
 else
-    EEG.Orignalchanlocs = tmp.chanlocs;
+    error('build_refined_res:NoOriginalChanlocs', ['recording_info of %s has no Orignalchanlocs: ' ...
+        'the 8x8 electrode grid (sort_electrodes) needs all 64 channel positions'], res(1).pp);
 end
+% recording_info is saved before the pipeline removes the x_dir/y_dir/z_dir
+% direction points (run_sw_pipeline: prepare_channels after recording_info).
+% Remove them as the old pipeline did (gettechnicallycleanEEG_sw), otherwise
+% sort_electrodes places them in the grid and shifts all electrodes.
+is_dir = cellfun(@(s) numel(s) > 4 && strcmpi(s(end-3:end), '_dir'), {Orignalchanlocs.labels});
+if any(is_dir)
+    fprintf('Removed direction points from Orignalchanlocs: %s\n', strjoin({Orignalchanlocs(is_dir).labels}, ', '));
+end
+Orignalchanlocs = Orignalchanlocs(~is_dir);
+analysed_labels = {EEG.chanlocs.labels};
+n_analysed = numel(analysed_labels);
+if numel(Orignalchanlocs) ~= 64 || ~isequal({Orignalchanlocs(1:n_analysed).labels}, analysed_labels)
+    error('build_refined_res:ChanlocsMismatch', ['Orignalchanlocs (%d entries: %s) does not start with the ' ...
+        '%d analysed channels (%s): grid tiles would show the wrong channel'], numel(Orignalchanlocs), ...
+        strjoin({Orignalchanlocs.labels}, ' '), n_analysed, strjoin(analysed_labels, ' '));
+end
+EEG.Orignalchanlocs = Orignalchanlocs;
 %% one recording per participant (same rule as the old analysis)
 [~, list_idx] = ismember({res.pp}, list_ids);
 participant_ids = list_participants(list_idx)';
@@ -136,6 +159,9 @@ if options.select
         'participant_ids', participant_ids);
     [~, list_idx] = ismember({res.pp}, list_ids);
     participant_ids = list_participants(list_idx)';
+end
+source_files = dataset_list(list_idx)';
+if options.select
     fprintf('%d recordings selected: %s\n', numel(res), strjoin({res.pp}, ' '))
     writecell({res.pp}', sprintf('%s/selected_recordings.txt',plot_data_path))
 end

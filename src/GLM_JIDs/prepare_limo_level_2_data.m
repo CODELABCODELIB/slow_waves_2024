@@ -2,6 +2,8 @@
 % Needs res, EEG (chanlocs + Orignalchanlocs) and figures_save_path in the workspace.
 % Optional: limo_save_path (LIMO output folder) and neighbours_dir (folder with
 % expected_chanlocs.mat / channeighbstructmat.mat), e.g. set by run_paper_figures.m
+% Optional: do_individual_plots (0 skips the per-channel figures with one tile per
+% participant) and rebuild_cache (0 reuses the LIMO result for the same recordings)
 if ~exist('limo_save_path','var'); limo_save_path = '/home/ruchella/slow_waves_2023/data/GLM_movie_vs_behavior'; end
 if ~exist('neighbours_dir','var'); neighbours_dir = ''; end
 fig_path = sprintf('%s/movie_vs_phone',figures_save_path);
@@ -34,7 +36,25 @@ tmp_input_beh = input_beh(1:62,~any(not_sel_idx(1:62,:),1),:)+0.000001;
 tmp_input_movie = input_movie(1:62,~any(not_sel_idx(1:62,:),1),:)+0.000001;
 %% run ttest model
 linear_model_save_path = limo_save_path;
-[mask, cluster_p, one_sample] = paired_t_test_movie_vs_phone(tmp_input_beh(1:62,:,:),tmp_input_movie(1:62,:,:),linear_model_save_path,neighbours_dir);
+% reuse an earlier LIMO result for the same recordings (run_paper_figures.m sets
+% rebuild_cache; standalone the test is always rerun)
+limo_recordings_file = fullfile(linear_model_save_path, 'recordings.txt');
+limo_cached = false;
+if exist('rebuild_cache','var') && ~rebuild_cache && exist(limo_recordings_file,'file') && ...
+        exist(fullfile(linear_model_save_path,'mask.mat'),'file') && ...
+        exist(fullfile(linear_model_save_path,'paired_samples_ttest_parameter_1.mat'),'file')
+    limo_previous = strtrim(splitlines(fileread(limo_recordings_file)));
+    limo_previous = limo_previous(~cellfun('isempty',limo_previous));
+    limo_cached = isequal(limo_previous(:), {res.pp}');
+end
+if limo_cached
+    fprintf('Fig 3: using cached LIMO results in %s (rebuild_cache = 1 to rerun)\n', linear_model_save_path)
+else
+    if exist(limo_recordings_file,'file'); delete(limo_recordings_file); end
+    [mask, cluster_p, one_sample] = paired_t_test_movie_vs_phone(tmp_input_beh(1:62,:,:),tmp_input_movie(1:62,:,:),linear_model_save_path,neighbours_dir);
+    % written after the test finished, so an interrupted run is not reused
+    writecell({res.pp}', limo_recordings_file)
+end
 %% reconstruct
 load(fullfile(linear_model_save_path, sprintf('paired_samples_ttest_parameter_%d.mat', 1)), 'paired_samples');
 load(fullfile(linear_model_save_path, 'mask.mat'));
@@ -147,7 +167,14 @@ for n=1:10:62
     close(h)
 end
 %% behavior or movie across channels per participant
-for chan=1:62
+% individual-level figures (124 figures with one tile per participant): skipped
+% when do_individual_plots = 0 (run_paper_figures.m)
+if exist('do_individual_plots','var') && ~do_individual_plots
+    channels_individual = [];
+else
+    channels_individual = 1:62;
+end
+for chan=channels_individual
     h = figure;
     tiledlayout(4,ceil((size(res,2)+3)/4))
     for pp=1:size(res,2)
