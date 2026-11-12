@@ -4,11 +4,15 @@
 %        (local_sleep/manuscript_analyses/fig_1)
 % Fig 2: per-participant NNMF of SW JIDs + k-means clustering of the meta-JIDs
 % Fig 3: LIMO paired t-test of SW JIDs, phone - movie (src/GLM_JIDs)
+% Supp Fig 4: Spearman rho and LIMO regression rate ~ SW density + amplitude, 1-min bins
+%        (src/regression/supp_fig4.m)
 %
 % Run on the server (set the paths below first):
 %   nohup matlab -batch "run('<repo>/src/plot/run_paper_figures.m')" > paper_figures.out 2>&1 &
 % Only some figures, e.g.:
 %   matlab -batch "do_fig2 = 0; do_fig3 = 0; run('<repo>/src/plot/run_paper_figures.m')"
+% Only Supp Fig 4:
+%   matlab -batch "do_sw_plots = 0; do_fig1 = 0; do_fig2 = 0; do_fig3 = 0; run('<repo>/src/plot/run_paper_figures.m')"
 % Also the individual-level (per participant) figures:
 %   matlab -batch "do_individual_plots = 1; run('<repo>/src/plot/run_paper_figures.m')"
 % Recompute everything instead of reusing earlier results:
@@ -27,6 +31,7 @@
 %   Fig 2 NNMF              <paper_data>/sw_jid_<condition>/ (always resumed)
 %   Fig 2 K selection       <paper_figures>/fig2/k_selection_<condition>.mat
 %   Fig 3 LIMO test         <paper_data>/GLM_movie_vs_behavior/
+%   Supp Fig 4 LIMO         <paper_data>/supp_fig4/regression.mat
 % A failing section does not stop the run: all errors are listed at the end (and in the log),
 % after which the script errors so matlab -batch exits non-zero.
 %% settings
@@ -35,6 +40,7 @@ if ~exist('do_sw_plots','var'); do_sw_plots = 1; end % pop / sw_to_behavior / ra
 if ~exist('do_fig1','var'); do_fig1 = 1; end
 if ~exist('do_fig2','var'); do_fig2 = 1; end
 if ~exist('do_fig3','var'); do_fig3 = 1; end
+if ~exist('do_supp_fig4','var'); do_supp_fig4 = 1; end
 % 1: also the per-participant figures (sw_to_behavior_plots, Fig 1 participant topoplots,
 % Fig 3 per-channel figures with a tile per participant); 0: population figures only
 if ~exist('do_individual_plots','var'); do_individual_plots = 0; end
@@ -65,14 +71,14 @@ paper_data = sprintf('%s/paper_data',out_root);
 needed = {eeglab_dir, tapdata_dir};
 if do_fig1; needed{end+1} = fieldtrip_dir; end
 if do_fig2; needed{end+1} = nnmf_dir; end
-if do_fig3; needed = [needed, {limo_dir, neighbours_dir}]; end
+if do_fig3 || do_supp_fig4; needed = [needed, {limo_dir, neighbours_dir}]; end
 missing = needed(~cellfun(@(d) exist(d,'dir')==7, needed));
 if (do_fig1 || do_fig2) && ~exist(chanlocs_file,'file'); missing{end+1} = chanlocs_file; end
 if ~isempty(missing)
     error('run_paper_figures:MissingPath', 'Set these paths at the top of %s:\n  %s', ...
         mfilename('fullpath'), strjoin(missing, '\n  '));
 end
-if do_fig3 && (~exist(fullfile(neighbours_dir,'expected_chanlocs.mat'),'file') || ...
+if (do_fig3 || do_supp_fig4) && (~exist(fullfile(neighbours_dir,'expected_chanlocs.mat'),'file') || ...
         ~exist(fullfile(neighbours_dir,'channeighbstructmat.mat'),'file'))
     error('run_paper_figures:MissingNeighbours', 'expected_chanlocs.mat / channeighbstructmat.mat not in %s', neighbours_dir);
 end
@@ -331,6 +337,22 @@ if do_fig3 && res_ok
         fprintf('Fig 3 done (%d participants), figures in %s/movie_vs_phone\n', numel(res), figures_save_path)
     catch ME
         run_errors(end+1,:) = {'Fig 3', ME};
+        fprintf(2, '\n%s\n', getReport(ME, 'extended', 'hyperlinks', 'off'));
+    end
+    close all
+end
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Supplementary Figure 4 %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if do_supp_fig4 && res_ok
+    try
+        addpath(genpath(limo_dir))
+        figures_save_path = sprintf('%s/supp_fig4',figures_root);
+        supp4_data_path = sprintf('%s/supp_fig4',paper_data);
+        supp_fig4 % uses res, EEG, neighbours_dir and rebuild_cache
+        fprintf('Supp Fig 4 done (%d participants), figures in %s\n', numel(res), figures_save_path)
+    catch ME
+        run_errors(end+1,:) = {'Supp Fig 4', ME};
         fprintf(2, '\n%s\n', getReport(ME, 'extended', 'hyperlinks', 'off'));
     end
     close all
