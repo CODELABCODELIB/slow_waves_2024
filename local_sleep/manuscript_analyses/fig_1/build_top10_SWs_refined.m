@@ -1,4 +1,4 @@
-function top10_SWs = build_top10_SWs_refined(output_root, target_path)
+function top10_SWs = build_top10_SWs_refined(output_root, target_path, options)
 % Builds the 'top10_SWs.mat' summary of sw_pars_per_participant_v3 (Mode 1)
 % from the refined SW pipeline outputs instead of the old checkpoint files.
 % Afterwards run sw_pars_per_participant_v3(target_path, true, chanlocs, ...)

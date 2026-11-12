@@ -408,6 +408,10 @@ for c=1:numel(conditions)
     stop = cumsum(info.n_components);
     for i=1:numel(info.n_components)
         r = find(T.res_index == i);
+        if numel(r) ~= 1
+            fprintf(2, 'subject overview: no single row for res_index %d (%s), NNMF info skipped\n', i, conditions{c});
+            continue
+        end
         T.(sprintf('n_nnmf_components_%s',conditions{c}))(r) = info.n_components(i);
         if has_labels
             labels = info.labels(stop(i)-info.n_components(i)+1:stop(i));
