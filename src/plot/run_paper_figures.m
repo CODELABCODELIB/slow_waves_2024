@@ -1,5 +1,7 @@
 %% Paper figures 1-3 from the refined-ICA rerun
 % SW to behavior plots: <output_root>/figures/{pop,sw_to_behavior,rates} (same as run_paper_sw_plots.m)
+%        incl. JID diagonal summaries (slope / |derivative| topoplots, diagonal profiles) per feature
+%        in <output_root>/figures/pop/jid_diagonal (data: <output_root>/plot_data/<feature>_diagonal.mat)
 % Fig 1: SW features movie vs phone, FieldTrip cluster-permutation paired t-tests
 %        (local_sleep/manuscript_analyses/fig_1)
 % Fig 2: per-participant NNMF of SW JIDs + k-means clustering of the meta-JIDs

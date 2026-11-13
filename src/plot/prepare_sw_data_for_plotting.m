@@ -1,4 +1,5 @@
 if exist('data_save_path','var'); save_path = data_save_path; else; save_path = '/home/ruchella/slow_waves_2023/data'; end
+plot_data_dir = sprintf('%s/plot_data',save_path); % save_path is reused for the figures below
 n_elecs = numel(EEG.chanlocs);
 %% SW jids behavior
 behavior_sw_jid = cell(length(res),n_elecs);
@@ -107,6 +108,25 @@ population_sw_to_behavior_plots(pre_rate, EEG.Orignalchanlocs, 'color_lims', [-4
 %% plot sw latency 
 save_path = sprintf('%s/pop/latency.svg',figures_save_path);
 population_sw_to_behavior_plots(latency, EEG.Orignalchanlocs,'color_lims', [2,4], 'show_title', 0,'save_path',save_path);
+%% JID diagonal summaries (steady rhythms fast -> slow): slope / |derivative| topoplots + diagonal profiles
+diag_dir = sprintf('%s/pop/jid_diagonal',figures_save_path);
+if ~exist(diag_dir,'dir'); mkdir(diag_dir); end
+diag_features = {behavior_sw_jid, 'phone_sw_density', 'SW density'; ...
+    movie_sw_jid, 'movie_sw_density', 'SW density'; ...
+    rate, 'rate', 'log10 rate'; ...
+    post_rate, 'post_rate', 'log10 post rate'; ...
+    pre_rate, 'pre_rate', 'log10 pre rate'; ...
+    latency, 'latency', 'log10 latency (ms)'; ...
+    amp_jid, 'amplitude', 'amplitude (uV)'};
+for f=1:size(diag_features,1)
+    try
+        plot_jid_diagonal(diag_features{f,1}, EEG.chanlocs, EEG.Orignalchanlocs, diag_features{f,2}, diag_dir, ...
+            'ylabel', diag_features{f,3}, 'data_dir', plot_data_dir);
+    catch ME
+        fprintf(2, 'JID diagonal %s failed: %s\n', diag_features{f,2}, getReport(ME, 'extended', 'hyperlinks', 'off'));
+    end
+    close all
+end
 %% electrode locations
 save_path = sprintf('%s/pop',figures_save_path);
 [sorted_idx] = sort_electrodes(EEG.Orignalchanlocs);
